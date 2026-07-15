@@ -772,18 +772,7 @@ function applyTheme(isDark){
 }
 
 function seedProducts(){
-  const seed = [
-    { name:'Jasmine Rice 5kg', price:65, category:'Groceries', qty:24, image:'' },
-    { name:'Cooking Oil 3L', price:48, category:'Groceries', qty:18, image:'' },
-    { name:'Fresh Eggs (Crate)', price:42, category:'Fresh Produce', qty:15, image:'' },
-    { name:'Milo 400g', price:29, category:'Beverages', qty:30, image:'' },
-    { name:'Coca-Cola 500ml', price:6, category:'Beverages', qty:60, image:'' },
-    { name:'Bread Loaf', price:12, category:'Bakery', qty:4, image:'' },
-    { name:'Tomato Paste 400g', price:9, category:'Groceries', qty:40, image:'' },
-    { name:'Detergent Powder 1kg', price:22, category:'Household', qty:3, image:'' },
-    { name:'Toilet Roll (4pk)', price:14, category:'Household', qty:25, image:'' },
-    { name:'Plantain (bunch)', price:18, category:'Fresh Produce', qty:0, image:'' },
-  ];
+  const seed = [];
   return seed.map(s => ({
     id: nextProductId(),
     ...s,
