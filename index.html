@@ -18,6 +18,7 @@
   --charcoal: #1E2129;
   --charcoal-2: #2A2E38;
   --charcoal-3: #363B47;
+  --ink: #1E2129;
   --bg: #F3F4F8;
   --card: #FFFFFF;
   --text: #1E2129;
@@ -76,6 +77,16 @@
 [data-theme="dark"] .receipt{ background:#fff; color:#1a1a1a; }
 [data-theme="dark"] .low-stock-item{ background:#171921; }
 [data-theme="dark"] .product-card .thumb{ background:#171921; }
+[data-theme="dark"] .btn-outline{ background:var(--card); color:var(--text); border-color:var(--border); }
+[data-theme="dark"] .btn-dark{ background:#2A2E38; color:#fff; }
+[data-theme="dark"] .btn-dark:hover{ background:#363B47; }
+[data-theme="dark"] .chip.active{ background:var(--orange); border-color:var(--orange); color:#fff; }
+[data-theme="dark"] .pay-methods button.active{ background:var(--orange); border-color:var(--orange); color:#fff; }
+[data-theme="dark"] .toast{ color:#fff; }
+[data-theme="dark"] .gate-box input,
+[data-theme="dark"] .lock-card input{ background:#12141A; color:var(--text); border-color:var(--border); }
+[data-theme="dark"] .chan-choice label{ border-color:var(--border); color:var(--text); }
+[data-theme="dark"] .chan-choice label:has(input:checked){ background: var(--orange-light); border-color:var(--orange); }
 
 *{ box-sizing: border-box; margin:0; padding:0; }
 html,body{ height:100%; }
@@ -277,7 +288,6 @@ a{ color:inherit; text-decoration:none; }
   border:1.5px solid var(--border); background: var(--bg); font-size:13.5px;
   transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
-/* .search-wrap input:focus{ border-color: var(--orange); background:#262133; box-shadow: 0 0 0 4px rgb(255, 255, 255); } */
 .search-wrap .icon{ position:absolute; left:13px; top:50%; transform:translateY(-50%); opacity:0.45; padding: 20px; }
 
 .topbar-actions{ display:flex; align-items:center; gap:10px; margin-left:auto; }
@@ -303,14 +313,18 @@ a{ color:inherit; text-decoration:none; }
 @keyframes viewIn{ from{ opacity:0; transform: translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
 .section-head{ 
-  display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  margin-bottom: 0px;
+  flex-wrap: wrap; 
+  gap: 12px;
   position: sticky;
   top: var(--topbar-h);
+  z-index: 11;
   background: var(--bg);
-  z-index: 10;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  margin-top: -8px;
+  padding-top: 14px;
+  padding-bottom: 10px;
 }
 .section-head h1{ font-family:var(--font-display); font-size:22px; font-weight:700; }
 .section-head p{ color:var(--muted); font-size:13px; margin-top:2px; }
@@ -327,9 +341,9 @@ a{ color:inherit; text-decoration:none; }
 .btn:active{ transform: scale(0.96); }
 .btn-primary{ background: linear-gradient(135deg, var(--orange), var(--orange-dark)); color:#fff; box-shadow: 0 6px 16px rgba(246,139,30,0.35); }
 .btn-primary:hover{ box-shadow: 0 8px 22px rgba(246,139,30,0.48); transform: translateY(-1px); }
-.btn-dark{ background: var(--charcoal); color:#fff; }
+.btn-dark{ background: var(--ink); color:#fff; }
 .btn-dark:hover{ background: var(--charcoal-2); }
-.btn-outline{ background:#fff; border:1.5px solid var(--border); color:var(--text); }
+.btn-outline{ background:var(--card); border:1.5px solid var(--border); color:var(--text); }
 .btn-outline:hover{ border-color: var(--orange); color:var(--orange-dark); }
 .btn-success{ background: var(--success); color:#fff; }
 .btn-success:hover{ background: var(--success-dark); }
@@ -377,30 +391,30 @@ a{ color:inherit; text-decoration:none; }
 .chip-row{ 
   display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:14px; 
   position: sticky;
-  top: var(--topbar-h);
+  top: calc(var(--topbar-h) + 62px); 
   z-index: 10;
-  background: rgba(243, 244, 248, 0.72); /* Semi-transparent color matching your main body background */
-  backdrop-filter: blur(12px) saturate(180%); /* iPhone glass blur effect */
-  -webkit-backdrop-filter: blur(12px) saturate(180%); /* Safari support */
-  margin-top: -8px; 
-  padding-top: 8px;
+  background: rgba(243, 244, 248, 0.72);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  padding-top: 10px;
 }
+[data-theme="dark"] .chip-row{ background: rgba(20, 22, 28, 0.72); }
 .chip{
-  flex-shrink:0; padding: 9px 18px; border-radius:20px; background:#fff; border:1.5px solid var(--border);
+  flex-shrink:0; padding: 9px 18px; border-radius:20px; background:var(--card); border:1.5px solid var(--border);
   font-size:13px; font-weight:600; color:var(--muted); transition: all .18s ease;
 }
 .chip:hover{ border-color: var(--orange); color:var(--orange-dark); }
-.chip.active{ background: var(--charcoal); border-color:var(--charcoal); color:#488a7b; }
+.chip.active{ background: var(--ink); border-color:var(--ink); color:#fff; }
 
 .product-grid{
   display:grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap:14px;
 }
 .product-card{
-  background:#fff; border-radius: var(--radius); overflow:hidden; border:1px solid var(--border);
+  background:var(--card); border-radius: var(--radius); overflow:hidden; border:1px solid var(--border);
   cursor:pointer; position:relative; transition: transform .18s ease, box-shadow .18s ease;
   animation: cardPop .3s ease backwards;
 }
-.product-card:hover{ transform: translateY(-4px); box-shadow: var(--shadow-md); border-color:#fff; }
+.product-card:hover{ transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--orange); }
 .product-card:active{ transform: scale(0.97); }
 .product-card .thumb{
   height:110px; background:var(--bg); display:flex; align-items:center; justify-content:center; overflow:hidden;
@@ -433,23 +447,22 @@ a{ color:inherit; text-decoration:none; }
 /* ============================================================
    CART PANEL
    ============================================================ */
-/* ============================================================
-   CART PANEL
-   ============================================================ */
 .cart-panel{
-  width:380px; flex-shrink:0; background:#fff; border-radius: var(--radius);
-  border:1px solid var(--border); box-shadow: var(--shadow-sm);
-  display:flex; flex-direction:column; position: sticky; top: calc(var(--topbar-h) + 22px);
-  height: calc(100vh - var(--topbar-h) - 44px);
-  max-height: calc(100vh - var(--topbar-h) - 44px);
+  width:380px; flex-shrink:0; background:var(--card); border-radius: var(--radius);
+  border:1px solid var(--border); box-shadow: var(--shadow-lg);
+  display:flex; flex-direction:column; position: sticky; top: calc(var(--topbar-h) + 14px);
+  height: calc(100vh - var(--topbar-h) - 30px);
+  max-height: calc(100vh - var(--topbar-h) - 30px);
   transition: transform .32s ease;
+  z-index: 25;
 }
 .cart-head{
   padding:16px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
 }
 .cart-head h3{ font-family:var(--font-display); font-size:15.5px; display:flex; align-items:center; gap:8px;}
 .cart-head .cart-count{ background:var(--orange); color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;}
-.cart-items{ flex:1; overflow-y:auto; padding: 8px 14px; min-height:80px; max-height:280px; }
+.cart-items{ flex:1 1 auto; overflow-y:auto; padding: 8px 14px; min-height:80px; }
 .cart-line{
   display:flex; gap:10px; align-items:center; padding:10px 4px; border-bottom:1px dashed var(--border);
   animation: lineIn .25s ease;
@@ -473,13 +486,15 @@ a{ color:inherit; text-decoration:none; }
 .cart-empty{ text-align:center; padding:30px 10px; color:var(--muted); font-size:13px; }
 
 .cart-details{
-  border-top:1px solid var(--border); padding: 14px 18px; overflow:hidden;
-  max-height: 600px; transition: max-height .35s ease, padding .35s ease, opacity .3s ease;
+  border-top:1px solid var(--border); padding: 14px 18px; overflow-y:auto;
+  max-height: 260px; transition: max-height .35s ease, padding .35s ease, opacity .3s ease;
+  flex-shrink:0;
 }
-.cart-details.collapsed{ max-height:0; padding-top:0; padding-bottom:0; opacity:0; }
+.cart-details.collapsed{ max-height:0; padding-top:0; padding-bottom:0; opacity:0; overflow:hidden; }
 .toggle-details{
   width:100%; padding:11px 18px; display:flex; align-items:center; justify-content:space-between;
   font-size:12.5px; font-weight:700; color:var(--muted); border-top:1px solid var(--border);
+  flex-shrink:0;
 }
 .toggle-details .chevron{ transition: transform .3s ease; }
 .toggle-details.open .chevron{ transform: rotate(180deg); }
@@ -489,7 +504,7 @@ a{ color:inherit; text-decoration:none; }
 .field-row input, .field-row select, .field-row textarea{
   width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13.5px;
   transition: border-color .18s ease, box-shadow .18s ease;
-  background:#fff;
+  background:var(--card); color:var(--text);
 }
 .field-row input:focus, .field-row select:focus, .field-row textarea:focus{
   border-color:var(--orange); box-shadow: 0 0 0 4px rgba(246,139,30,0.12);
@@ -497,22 +512,22 @@ a{ color:inherit; text-decoration:none; }
 .pay-methods{ display:flex; gap:8px; }
 .pay-methods button{
   flex:1; padding:10px 6px; border-radius:8px; border:1.5px solid var(--border); font-size:11.5px; font-weight:700; text-align:center;
-  transition: all .18s ease;
+  transition: all .18s ease; color:var(--text);
 }
-.pay-methods button.active{ background:var(--charcoal); border-color:var(--charcoal); color:#fff; }
+.pay-methods button.active{ background:var(--ink); border-color:var(--ink); color:#fff; }
 
-.totals-box{ padding: 14px 18px; border-top:1px solid var(--border); }
+.totals-box{ padding: 14px 18px; border-top:1px solid var(--border); flex-shrink:0; }
 .tot-row{ display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:7px; }
 .tot-row.grand{ font-size:17px; font-weight:800; color:var(--text); font-family:var(--font-display); margin-top:8px; padding-top:10px; border-top:1px dashed var(--border); }
 .tot-row.change{ color:var(--success-dark); font-weight:700; font-size:14px; }
 .tot-row span:last-child{ font-weight:700; color:var(--text); }
 
-.cart-actions{ padding: 6px 18px 18px; display:flex; gap:8px; }
+.cart-actions{ padding: 6px 18px 18px; display:flex; gap:8px; flex-shrink:0; }
 
 /* ============================================================
    TABLES
    ============================================================ */
-.table-wrap{ overflow-x:auto; border-radius: var(--radius); border:1px solid var(--border); background:#fff; }
+.table-wrap{ overflow-x:auto; border-radius: var(--radius); border:1px solid var(--border); background:var(--card); }
 table{ width:100%; border-collapse:collapse; font-size:13px; min-width:640px;}
 thead th{
   text-align:left; padding:13px 16px; background:var(--bg); font-weight:700; font-size:11.5px;
@@ -547,7 +562,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .modal-overlay.show{ display:flex; }
 @keyframes overlayIn{ from{ opacity:0;} to{opacity:1;} }
 .modal{
-  background:#fff; border-radius:16px; width:100%; max-width:460px; max-height:88vh; overflow-y:auto;
+  background:var(--card); color:var(--text); border-radius:16px; width:100%; max-width:460px; max-height:88vh; overflow-y:auto;
   box-shadow: var(--shadow-lg); animation: modalIn .3s cubic-bezier(.2,.9,.3,1.2);
 }
 .modal.modal-lg{ max-width:640px; }
@@ -558,7 +573,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .modal-close{ width:32px; height:32px; border-radius:50%; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--muted); transition: all .15s ease;}
 .modal-close:hover{ background:var(--danger); color:#fff; transform: rotate(90deg); }
 .modal-body{ padding:22px; }
-.modal-foot{ padding:16px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+.modal-foot{ padding:16px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
 
 .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .form-grid .full{ grid-column: 1 / -1; }
@@ -578,13 +593,9 @@ tbody tr:last-child td{ border-bottom:none; }
    ============================================================ */
 .receipt{
   font-family: var(--font-mono); padding: 20px 22px; font-size:12.5px; color:#1a1a1a;
-  background: repeating-linear-gradient(45deg, #fff, #fff 100%);
+  background: #fff;
 }
-.receipt-edge{
-  height:14px;
-  background: radial-gradient(circle at 8px 0, transparent 7px, #fff 7px) repeat-x;
-  background-size: 16px 14px;
-}
+.receipt.thermal-58, .receipt.thermal-80{ padding: 10px 8px; }
 .receipt-top{ text-align:center; margin-bottom:10px; }
 .receipt-top .rlogo{ font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:0.5px; }
 .receipt-top small{ display:block; color:#555; font-size:10.5px; margin-top:2px; }
@@ -604,7 +615,7 @@ tbody tr:last-child td{ border-bottom:none; }
    ============================================================ */
 #toast-stack{ position:fixed; bottom:22px; right:22px; z-index:2000; display:flex; flex-direction:column; gap:10px; }
 .toast{
-  background:var(--charcoal); color:#fff; padding:13px 18px; border-radius:10px; font-size:13px; font-weight:600;
+  background:var(--ink); color:#fff; padding:13px 18px; border-radius:10px; font-size:13px; font-weight:600;
   box-shadow: var(--shadow-lg); display:flex; align-items:center; gap:10px; min-width:240px;
   animation: toastIn .35s cubic-bezier(.2,.9,.3,1.2);
 }
@@ -649,8 +660,10 @@ tbody tr:last-child td{ border-bottom:none; }
 /* ============================================================
    PRINT
    ============================================================ */
+#print-area{ display:none; }
 @media print{
   body *{ visibility:hidden; }
+  #print-area{ display:block !important; visibility:visible; }
   #print-area, #print-area *{ visibility:visible; }
   #print-area{ position:absolute; top:0; left:0; width:100%; }
   .modal-overlay{ position:absolute; background:none; backdrop-filter:none; }
@@ -663,7 +676,7 @@ tbody tr:last-child td{ border-bottom:none; }
 
 @media (max-width: 1180px){
   .pos-layout{ flex-direction:column; }
-  .cart-panel{ width:100%; position:static; max-height:none; }
+  .cart-panel{ width:100%; position:static; max-height:none; height:auto; }
   .stat-grid{ grid-template-columns: repeat(2,1fr); }
 }
 
@@ -694,52 +707,6 @@ tbody tr:last-child td{ border-bottom:none; }
   .table-toolbar{ flex-direction:column; align-items:stretch; }
   .table-toolbar .right-tools{ justify-content:stretch; }
   .table-toolbar .right-tools .btn{ flex:1; }
-}
-
-
-
-/* ============================================================
-   STATIC POS HEADERS (PINNED TO THE TOP)
-   ============================================================ */
-
-/* 1. Main Title & Actions Section */
-.section-head { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  margin-bottom: 0px; /* Removed margin to prevent gaps while sticking */
-  flex-wrap: wrap; 
-  gap: 12px;
-  position: sticky;
-  top: var(--topbar-h); /* Pinned directly below the main header bar */
-  z-index: 11; /* Keep it layered above the scrolling products */
-  background: var(--bg); /* Solid background to prevent bleed-through */
-  padding-top: 14px;
-  padding-bottom: 10px;
-}
-.section-head h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
-.section-head p { color: var(--muted); font-size: 13px; margin-top: 2px; }
-
-/* 2. Category Chips Section (With Apple Glass Blur Effect) */
-.chip-row { 
-  display: flex; 
-  gap: 8px; 
-  overflow-x: auto; 
-  padding-bottom: 12px; 
-  margin-bottom: 14px; 
-  position: sticky;
-  /* Top calculation: Topbar height + approximate height of the section-head above it (~62px) */
-  top: calc(var(--topbar-h) + 62px); 
-  z-index: 10; /* Sits slightly below section-head level but above products */
-  background: rgba(243, 244, 248, 0.72); /* Matching light body background */
-  backdrop-filter: blur(12px) saturate(180%); /* iOS-style backdrop blur */
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  padding-top: 10px;
-}
-
-/* Dark theme fix for the transparent glass effect background */
-[data-theme="dark"] .chip-row {
-  background: rgba(20, 22, 28, 0.72); /* Dark theme transparent background */
 }
 </style>
 </head>
@@ -772,8 +739,11 @@ const DEFAULT_SETTINGS = {
   receiptFooter: 'Thank you for shopping with us!',
   theme: 'light',
   sidebarCollapsed: false,
-  whatsappTemplate: 'Hi {name}, thanks for shopping at ' + '{store}' + '! Your receipt {receiptId}: total {total}. We appreciate you!',
-  smsTemplate: 'Hi {name}, thanks for shopping at {store}! Receipt {receiptId}, total {total}.'
+  printerType: 'standard',
+  whatsappTemplate: 'Hi {name}, thanks for shopping at {store}! Your receipt {receiptId}: total {total}. We appreciate you!',
+  smsTemplate: 'Hi {name}, thanks for shopping at {store}! Receipt {receiptId}, total {total}.',
+  offerWhatsappTemplate: 'Hi {name}, {store} has something special for you: {message}',
+  offerSmsTemplate: 'Hi {name}, {store}: {message}'
 };
 
 const DEFAULT_SYNC = {
@@ -796,12 +766,13 @@ let currentView = 'pos';
 let activeCategory = 'All';
 let productSearchTerm = '';
 let editingProductId = null;
+let editingCustomerId = null;
 let cartDetailsOpen = false;
 let activePayMethod = 'Cash';
 let pendingAdminAction = null; // function to run after password verified
 let historyFilter = { from: '', to: '', q: '' };
 let lastReceiptSale = null;
-let bulkSelectedCustomers = new Set();
+let selectedCustomerIds = new Set();
 let customersTableSearch = '';
 
 /* ---------------- PERSISTENCE ---------------- */
@@ -826,8 +797,8 @@ function loadState(){
     SYNC = { ...DEFAULT_SYNC };
   }
   if(!PRODUCTS.length){ PRODUCTS = seedProducts(); saveProducts(); }
-  // Ensure every product has a history array (for older saved data)
   PRODUCTS.forEach(p=>{ if(!Array.isArray(p.history)) p.history = []; if(!p.lastUpdated) p.lastUpdated = p.dateAdded; });
+  CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); });
   saveSettings();
   applyTheme(SETTINGS.theme === 'dark');
 }
@@ -896,6 +867,13 @@ function downloadBlob(content, filename, type){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+function normalizePhone(phone){
+  if(!phone) return '';
+  let p = String(phone).trim().replace(/[^\d+]/g,'');
+  if(p.startsWith('0')) p = '233' + p.slice(1); // Ghana default country code
+  if(p.startsWith('+')) p = p.slice(1);
+  return p;
+}
 
 /* ---------------- TOASTS ---------------- */
 function toast(msg, type='info', icon){
@@ -940,14 +918,14 @@ function renderShell(){
       ${navItem('dashboard', ICONS.dashboard, 'Dashboard')}
       <div class="nav-section-label">Manage</div>
       ${navItem('products', ICONS.products, 'Products', true)}
-      ${navItem('customers', ICONS.customers, 'Customers')}
+      ${navItem('customers', ICONS.customers, 'Customers', true)}
       ${navItem('history', ICONS.history, 'Sales History')}
       ${navItem('reports', ICONS.reports, 'Reports')}
       <div class="nav-section-label">System</div>
       ${navItem('settings', ICONS.settings, 'Settings', true)}
     </nav>
     <div class="sidebar-foot">
-      <b>${escapeHtml(SETTINGS.storeName)}</b> POS · v1.0<br>Built for offline & online use
+      <b>${escapeHtml(SETTINGS.storeName)}</b> POS · v1.1<br>Built for offline & online use
     </div>
   </aside>
 
@@ -989,7 +967,6 @@ function renderShell(){
   </div>
   `;
 
-  // Apply persisted sidebar-collapsed / theme state
   document.getElementById('sidebar').classList.toggle('collapsed', !!SETTINGS.sidebarCollapsed);
   document.getElementById('mainWrap').classList.toggle('collapsed', !!SETTINGS.sidebarCollapsed);
 
@@ -1051,7 +1028,6 @@ function startClock(){
   tick(); setInterval(tick, 30000);
 }
 
-/* Admin unlock is session-based (resets on reload) for simplicity + security */
 let unlockedSections = {};
 function isAdminUnlocked(section){ return !!unlockedSections[section]; }
 function unlockAdminFor(section){ unlockedSections[section] = true; }
@@ -1259,7 +1235,12 @@ function renderCartPanel(){
       </div>
       <div class="field-row">
         <label>Customer Name (optional)</label>
-        <input type="text" id="custNameInput" value="${window.__custName||''}" placeholder="Walk-in customer">
+        <input type="text" id="custNameInput" value="${window.__custName||''}" placeholder="Walk-in customer" list="custDatalist">
+        <datalist id="custDatalist">${CUSTOMERS.map(c=>`<option value="${escapeHtml(c.name)}">`).join('')}</datalist>
+      </div>
+      <div class="field-row">
+        <label>Customer Phone (optional, for receipt via WhatsApp/SMS)</label>
+        <input type="text" id="custPhoneInput" value="${window.__custPhone||''}" placeholder="e.g. 024xxxxxxx">
       </div>
       <div class="field-row">
         <label>Payment Method</label>
@@ -1287,7 +1268,6 @@ function renderCartPanel(){
     </div>
   `;
 
-  // Bind events
   const clearBtn = document.getElementById('clearCartBtn');
   if(clearBtn) clearBtn.onclick = () => { if(confirm('Clear the current cart?')) clearCart(); };
 
@@ -1306,7 +1286,13 @@ function renderCartPanel(){
   const discountInput = document.getElementById('discountInput');
   if(discountInput) discountInput.oninput = (e)=>{ window.__discount = parseFloat(e.target.value)||0; refreshTotalsOnly(); };
   const custInput = document.getElementById('custNameInput');
-  if(custInput) custInput.oninput = (e)=>{ window.__custName = e.target.value; };
+  if(custInput) custInput.oninput = (e)=>{
+    window.__custName = e.target.value;
+    const match = CUSTOMERS.find(c=>c.name.toLowerCase()===e.target.value.trim().toLowerCase());
+    if(match && match.phone){ window.__custPhone = match.phone; const pi=document.getElementById('custPhoneInput'); if(pi) pi.value = match.phone; }
+  };
+  const custPhoneInput = document.getElementById('custPhoneInput');
+  if(custPhoneInput) custPhoneInput.oninput = (e)=>{ window.__custPhone = e.target.value; };
   const tenderedInput = document.getElementById('tenderedInput');
   if(tenderedInput) tenderedInput.oninput = (e)=>{ window.__tendered = e.target.value===''?undefined:parseFloat(e.target.value); refreshTotalsOnly(); };
 
@@ -1363,7 +1349,6 @@ function completeSale(){
   }
   const change = activePayMethod==='Cash' ? (tendered-total) : 0;
 
-  // Verify & deduct stock
   for(const l of lines){
     const p = PRODUCTS.find(x=>x.id===l.productId);
     if(!p || p.qty < l.qty){ toast(`Not enough stock for ${l.product.name}`, 'error'); return; }
@@ -1380,14 +1365,15 @@ function completeSale(){
     items: lines.map(l=>({ productId:l.productId, name:l.product.name, price:l.product.price, qty:l.qty, lineTotal:l.lineTotal })),
     subtotal, discount, total, paymentMethod: activePayMethod,
     amountTendered: tendered, change,
-    customerName: (window.__custName||'').trim() || 'Walk-in customer'
+    customerName: (window.__custName||'').trim() || 'Walk-in customer',
+    customerPhone: (window.__custPhone||'').trim()
   };
   SALES.unshift(sale);
   saveSales();
 
   lastReceiptSale = sale;
   CART = [];
-  window.__discount = 0; window.__tendered = undefined; window.__custName='';
+  window.__discount = 0; window.__tendered = undefined; window.__custName=''; window.__custPhone='';
   cartDetailsOpen = false;
   activePayMethod = 'Cash';
   renderPosView();
@@ -1411,8 +1397,9 @@ function ensureModalRoot(){
 
 /* ---------------- RECEIPT MODAL ---------------- */
 function buildReceiptHtml(sale){
+  const cls = SETTINGS.printerType === 'thermal58' ? 'thermal-58' : (SETTINGS.printerType === 'thermal80' ? 'thermal-80' : '');
   return `
-    <div class="receipt" id="receiptContent">
+    <div class="receipt ${cls}" id="receiptContent">
       <div class="receipt-top">
         <div class="rlogo">${escapeHtml(SETTINGS.storeName.toUpperCase())}</div>
         <small>Supermarket · Accra, Ghana</small>
@@ -1445,6 +1432,27 @@ function buildReceiptHtml(sale){
   `;
 }
 
+function receiptMessageText(sale, template){
+  return (template||'')
+    .replace(/\{name\}/g, sale.customerName || 'Customer')
+    .replace(/\{store\}/g, SETTINGS.storeName)
+    .replace(/\{receiptId\}/g, sale.id)
+    .replace(/\{total\}/g, fmtMoney(sale.total));
+}
+
+function sendReceiptWhatsApp(sale){
+  const phone = normalizePhone(sale.customerPhone);
+  if(!phone){ toast('No phone number saved for this sale', 'error'); return; }
+  const msg = receiptMessageText(sale, SETTINGS.whatsappTemplate);
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+function sendReceiptSms(sale){
+  const phone = normalizePhone(sale.customerPhone);
+  if(!phone){ toast('No phone number saved for this sale', 'error'); return; }
+  const msg = receiptMessageText(sale, SETTINGS.smsTemplate);
+  window.location.href = `sms:${sale.customerPhone.trim()}?body=${encodeURIComponent(msg)}`;
+}
+
 function openReceiptModal(sale){
   ensureModalRoot();
   const root = document.getElementById('modalRoot');
@@ -1463,6 +1471,9 @@ function openReceiptModal(sale){
         ${buildReceiptHtml(sale)}
       </div>
       <div class="modal-foot">
+        ${sale.customerPhone ? `
+        <button class="btn btn-success btn-sm" id="waReceiptBtn">${ICONS.whatsapp} WhatsApp</button>
+        <button class="btn btn-outline btn-sm" id="smsReceiptBtn">${ICONS.sms} SMS</button>` : ''}
         <button class="btn btn-outline" id="printReceiptBtn">${ICONS.print} Print</button>
         <button class="btn btn-primary btn-block" id="newSaleBtn">New Sale</button>
       </div>
@@ -1472,13 +1483,28 @@ function openReceiptModal(sale){
   document.getElementById('receiptCloseBtn').onclick = () => wrap.remove();
   document.getElementById('newSaleBtn').onclick = () => wrap.remove();
   document.getElementById('printReceiptBtn').onclick = () => printReceipt(sale);
+  const waBtn = document.getElementById('waReceiptBtn');
+  if(waBtn) waBtn.onclick = () => sendReceiptWhatsApp(sale);
+  const smsBtn = document.getElementById('smsReceiptBtn');
+  if(smsBtn) smsBtn.onclick = () => sendReceiptSms(sale);
   wrap.onclick = (e)=>{ if(e.target===wrap) wrap.remove(); };
 }
 
+function setPrintPageStyle(){
+  let styleEl = document.getElementById('dynamicPrintStyle');
+  if(!styleEl){ styleEl = document.createElement('style'); styleEl.id = 'dynamicPrintStyle'; document.head.appendChild(styleEl); }
+  let size = 'auto';
+  if(SETTINGS.printerType === 'thermal58') size = '58mm auto';
+  else if(SETTINGS.printerType === 'thermal80') size = '80mm auto';
+  styleEl.textContent = `@media print{ @page{ size:${size}; margin:${size==='auto'?'12mm':'2mm'}; } }`;
+}
+
 function printReceipt(sale){
+  setPrintPageStyle();
   const area = document.getElementById('print-area');
   area.innerHTML = buildReceiptHtml(sale);
   window.print();
+  setTimeout(()=>{ area.innerHTML = ''; }, 500);
 }
 
 /* ---------------- CONFIRM DIALOG ---------------- */
@@ -1737,6 +1763,232 @@ function openProductModal(productId){
 }
 
 /* ============================================================
+   CUSTOMERS VIEW — CRM + WHATSAPP/SMS MESSAGING
+   ============================================================ */
+function renderCustomersView(){
+  const el = document.getElementById('viewCustomers');
+  el.innerHTML = `
+    <div class="section-head">
+      <div><h1>Customers</h1><p>Store contacts and message them about receipts, offers &amp; new products</p></div>
+      <div class="flex gap-8">
+        <button class="btn btn-outline" id="bulkMessageBtn">${ICONS.whatsapp} Message Selected</button>
+        <button class="btn btn-primary" id="addCustomerBtn">+ Add Customer</button>
+      </div>
+    </div>
+    <div class="table-toolbar">
+      <div class="search-wrap" style="max-width:320px;margin-left:0;">
+        <span class="icon">${ICONS.search}</span>
+        <input type="text" id="customerTableSearch" placeholder="Search by name, phone, location...">
+      </div>
+      <div class="right-tools">
+        <span class="text-muted" style="font-size:12.5px;align-self:center;">${CUSTOMERS.length} customer(s) · <span id="selCount">0</span> selected</span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><input type="checkbox" id="selectAllCust"></th>
+          <th>Name</th><th>Phone</th><th>Location</th><th>Notes</th><th>Added</th><th></th>
+        </tr></thead>
+        <tbody id="customersTbody"></tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('addCustomerBtn').onclick = () => openCustomerModal(null);
+  document.getElementById('bulkMessageBtn').onclick = () => {
+    if(!selectedCustomerIds.size){ toast('Select at least one customer first', 'error'); return; }
+    openBulkMessageModal();
+  };
+  document.getElementById('customerTableSearch').oninput = debounce(e=>{
+    customersTableSearch = e.target.value.trim().toLowerCase();
+    renderCustomersTable();
+  }, 150);
+  document.getElementById('selectAllCust').onchange = (e)=>{
+    const list = filteredCustomers();
+    if(e.target.checked){ list.forEach(c=>selectedCustomerIds.add(c.id)); }
+    else{ list.forEach(c=>selectedCustomerIds.delete(c.id)); }
+    renderCustomersTable();
+  };
+  renderCustomersTable();
+}
+
+function filteredCustomers(){
+  let list = CUSTOMERS.slice().sort((a,b)=> new Date(b.dateAdded)-new Date(a.dateAdded));
+  if(customersTableSearch){
+    const q = customersTableSearch;
+    list = list.filter(c => (c.name||'').toLowerCase().includes(q) ||
+      (c.phone||'').toLowerCase().includes(q) ||
+      (c.location||'').toLowerCase().includes(q));
+  }
+  return list;
+}
+
+function renderCustomersTable(){
+  const tbody = document.getElementById('customersTbody');
+  if(!tbody) return;
+  const list = filteredCustomers();
+  const selCount = document.getElementById('selCount');
+  if(selCount) selCount.textContent = selectedCustomerIds.size;
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="ico">👥</div><h3>No customers yet</h3><p>Add a customer to start sending receipts and offers via WhatsApp/SMS.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(c=>`
+    <tr data-id="${c.id}">
+      <td><input type="checkbox" class="custCheck" ${selectedCustomerIds.has(c.id)?'checked':''}></td>
+      <td><b>${escapeHtml(c.name)}</b></td>
+      <td>${escapeHtml(c.phone||'—')}</td>
+      <td>${escapeHtml(c.location||'—')}</td>
+      <td class="text-muted" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(c.notes||'')}</td>
+      <td class="text-muted" style="font-size:12px;">${fmtDate(c.dateAdded)}</td>
+      <td>
+        <div class="row-actions">
+          ${c.phone ? `<button class="btn btn-success btn-icon" data-act="msg" title="Message">${ICONS.whatsapp}</button>` : ''}
+          <button class="btn btn-outline btn-icon" data-act="edit" title="Edit">${ICONS.edit}</button>
+          <button class="btn btn-danger btn-icon" data-act="delete" title="Delete">${ICONS.trash}</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  tbody.querySelectorAll('tr').forEach(row=>{
+    const id = row.dataset.id;
+    const check = row.querySelector('.custCheck');
+    if(check) check.onchange = (e)=>{ if(e.target.checked) selectedCustomerIds.add(id); else selectedCustomerIds.delete(id); const sc=document.getElementById('selCount'); if(sc) sc.textContent = selectedCustomerIds.size; };
+    const msgBtn = row.querySelector('[data-act="msg"]');
+    if(msgBtn) msgBtn.onclick = () => { selectedCustomerIds = new Set([id]); openBulkMessageModal(); };
+    const editBtn = row.querySelector('[data-act="edit"]');
+    if(editBtn) editBtn.onclick = () => openCustomerModal(id);
+    const delBtn = row.querySelector('[data-act="delete"]');
+    if(delBtn) delBtn.onclick = () => {
+      confirmDialog('Delete this customer? This cannot be undone.', () => {
+        CUSTOMERS = CUSTOMERS.filter(c=>c.id!==id);
+        selectedCustomerIds.delete(id);
+        saveCustomers();
+        renderCustomersTable();
+        toast('Customer deleted', 'success');
+      });
+    };
+  });
+}
+
+function openCustomerModal(customerId){
+  editingCustomerId = customerId;
+  const c = customerId ? CUSTOMERS.find(x=>x.id===customerId) : null;
+  ensureModalRoot();
+  const root = document.getElementById('modalRoot');
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-overlay show';
+  wrap.innerHTML = `
+    <div class="modal">
+      <div class="modal-head">
+        <h3>${c ? 'Edit Customer' : 'Add New Customer'}</h3>
+        <button class="modal-close" id="cmClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-row"><label>Full Name *</label><input type="text" id="cfName" value="${c?escapeHtml(c.name):''}" placeholder="e.g. Kwame Mensah"></div>
+        <div class="field-row"><label>Phone Number (WhatsApp/SMS) *</label><input type="text" id="cfPhone" value="${c?escapeHtml(c.phone||''):''}" placeholder="e.g. 024xxxxxxx"></div>
+        <div class="field-row"><label>Location / Area</label><input type="text" id="cfLocation" value="${c?escapeHtml(c.location||''):''}" placeholder="e.g. Kumasi, Adum"></div>
+        <div class="field-row"><label>Notes</label><textarea id="cfNotes" rows="3" placeholder="Optional notes about this customer">${c?escapeHtml(c.notes||''):''}</textarea></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" id="cmCancel">Cancel</button>
+        <button class="btn btn-primary" id="cmSave">${c ? 'Save Changes' : 'Add Customer'}</button>
+      </div>
+    </div>
+  `;
+  root.appendChild(wrap);
+  const close = () => wrap.remove();
+  document.getElementById('cmClose').onclick = close;
+  document.getElementById('cmCancel').onclick = close;
+  wrap.onclick = (e)=>{ if(e.target===wrap) close(); };
+  document.getElementById('cmSave').onclick = () => {
+    const name = document.getElementById('cfName').value.trim();
+    const phone = document.getElementById('cfPhone').value.trim();
+    const location = document.getElementById('cfLocation').value.trim();
+    const notes = document.getElementById('cfNotes').value.trim();
+    if(!name){ toast('Customer name is required', 'error'); return; }
+    if(c){
+      c.name=name; c.phone=phone; c.location=location; c.notes=notes;
+      toast('Customer updated', 'success');
+    } else {
+      CUSTOMERS.push({ id: uid('CUS-'), name, phone, location, notes, dateAdded: new Date().toISOString() });
+      toast('Customer added', 'success');
+    }
+    saveCustomers();
+    renderCustomersTable();
+    close();
+  };
+}
+
+/* ---------------- BULK MESSAGING (WhatsApp / SMS) ---------------- */
+function openBulkMessageModal(){
+  const targets = CUSTOMERS.filter(c=>selectedCustomerIds.has(c.id) && c.phone);
+  if(!targets.length){ toast('Selected customer(s) have no phone number saved', 'error'); return; }
+  ensureModalRoot();
+  const root = document.getElementById('modalRoot');
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-overlay show';
+  wrap.innerHTML = `
+    <div class="modal modal-lg">
+      <div class="modal-head">
+        <h3>${ICONS.whatsapp} Message ${targets.length} Customer(s)</h3>
+        <button class="modal-close" id="bmClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <label>Message Type</label>
+          <select id="bmType">
+            <option value="offer">Special Offer / Discount</option>
+            <option value="product">New Product Announcement</option>
+            <option value="custom">Custom Message</option>
+          </select>
+        </div>
+        <div class="chan-choice">
+          <label><input type="radio" name="bmChan" value="whatsapp" checked><span>${ICONS.whatsapp} WhatsApp</span></label>
+          <label><input type="radio" name="bmChan" value="sms"><span>${ICONS.sms} SMS</span></label>
+        </div>
+        <div class="field-row">
+          <label>Message</label>
+          <textarea id="bmMessage" rows="4" placeholder="e.g. 20% off all beverages this weekend only!"></textarea>
+          <div class="msg-tpl-vars">Variables auto-filled per customer: <b>{name}</b> <b>{store}</b></div>
+        </div>
+        <div class="divider"></div>
+        <p class="text-muted" style="font-size:12px;">Sending to: ${targets.map(t=>escapeHtml(t.name)).join(', ')}</p>
+        <p class="text-muted" style="font-size:11.5px;margin-top:6px;">Each customer opens in a new tab/window one at a time — allow pop-ups for this site if your browser blocks them.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" id="bmCancel">Cancel</button>
+        <button class="btn btn-primary" id="bmSend">Send Messages</button>
+      </div>
+    </div>
+  `;
+  root.appendChild(wrap);
+  const close = () => wrap.remove();
+  document.getElementById('bmClose').onclick = close;
+  document.getElementById('bmCancel').onclick = close;
+  wrap.onclick = (e)=>{ if(e.target===wrap) close(); };
+
+  document.getElementById('bmSend').onclick = () => {
+    const type = document.getElementById('bmType').value;
+    const channel = wrap.querySelector('input[name="bmChan"]:checked').value;
+    const rawMsg = document.getElementById('bmMessage').value.trim();
+    if(!rawMsg){ toast('Enter a message to send', 'error'); return; }
+    targets.forEach((c, i)=>{
+      setTimeout(()=>{
+        const text = rawMsg.replace(/\{name\}/g, c.name).replace(/\{store\}/g, SETTINGS.storeName);
+        if(channel === 'whatsapp'){
+          window.open(`https://wa.me/${normalizePhone(c.phone)}?text=${encodeURIComponent(text)}`, '_blank');
+        } else {
+          window.location.href = `sms:${c.phone.trim()}?body=${encodeURIComponent(text)}`;
+        }
+      }, i * 350);
+    });
+    toast(`Opening ${channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} for ${targets.length} customer(s)`, 'success');
+    close();
+  };
+}
+
+/* ============================================================
    SALES HISTORY VIEW
    ============================================================ */
 function filteredSales(){
@@ -1769,10 +2021,9 @@ function renderHistoryView(){
         <input type="text" id="filterQ" placeholder="Search receipt #, customer, item..." value="${historyFilter.q}" style="min-width:220px;">
       </div>
       <div class="right-tools">
-        <button class="btn btn-outline btn-sm" id="exportJsonBtn">${ICONS.download} JSON</button>
-        <button class="btn btn-outline btn-sm" id="exportCsvBtn">${ICONS.download} Excel (CSV)</button>
+        <button class="btn btn-outline btn-sm" id="exportJsonBtn">${ICONS.download} Sales JSON</button>
         <button class="btn btn-outline btn-sm" id="exportPdfBtn">${ICONS.print} PDF</button>
-        <button class="btn btn-dark btn-sm" id="importJsonBtn">${ICONS.upload} Import JSON</button>
+        <button class="btn btn-dark btn-sm" id="importJsonBtn">${ICONS.upload} Import Sales JSON</button>
         <input type="file" id="importJsonInput" accept="application/json" class="hidden">
       </div>
     </div>
@@ -1786,7 +2037,7 @@ function renderHistoryView(){
     </div>
   `;
   const style = document.createElement('style');
-  style.textContent = `.hist-input{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;}`;
+  style.textContent = `.hist-input{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);}`;
   el.appendChild(style);
 
   document.getElementById('filterFrom').onchange = e => { historyFilter.from = e.target.value; renderSalesTable(); };
@@ -1794,7 +2045,6 @@ function renderHistoryView(){
   document.getElementById('filterQ').oninput = debounce(e=>{ historyFilter.q = e.target.value; renderSalesTable(); }, 200);
 
   document.getElementById('exportJsonBtn').onclick = exportSalesJson;
-  document.getElementById('exportCsvBtn').onclick = exportSalesCsv;
   document.getElementById('exportPdfBtn').onclick = exportSalesPdf;
   document.getElementById('importJsonBtn').onclick = () => document.getElementById('importJsonInput').click();
   document.getElementById('importJsonInput').onchange = handleImportJson;
@@ -1831,27 +2081,13 @@ function renderSalesTable(){
   });
 }
 
-/* ---------------- EXPORT ---------------- */
+/* ---------------- EXPORT (SALES ONLY, from History view) ---------------- */
 function exportSalesJson(){
   const list = filteredSales();
   if(!list.length){ toast('No sales to export', 'error'); return; }
   downloadBlob(JSON.stringify({ exportedAt:new Date().toISOString(), store:SETTINGS.storeName, sales:list }, null, 2),
     `sales-export-${Date.now()}.json`, 'application/json');
   toast('Sales exported as JSON', 'success');
-}
-
-function exportSalesCsv(){
-  const list = filteredSales();
-  if(!list.length){ toast('No sales to export', 'error'); return; }
-  const header = ['Receipt #','Date','Customer','Payment Method','Items','Subtotal','Discount','Total','Tendered','Change'];
-  const rows = list.map(s=>[
-    s.id, fmtDate(s.timestamp), s.customerName, s.paymentMethod,
-    s.items.map(i=>`${i.name} x${i.qty}`).join(' | '),
-    s.subtotal.toFixed(2), s.discount.toFixed(2), s.total.toFixed(2), s.amountTendered.toFixed(2), s.change.toFixed(2)
-  ]);
-  const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  downloadBlob(csv, `sales-export-${Date.now()}.csv`, 'text/csv');
-  toast('Sales exported as CSV (opens in Excel)', 'success');
 }
 
 function exportSalesPdf(){
@@ -1879,9 +2115,13 @@ function exportSalesPdf(){
       </table>
     </div>
   `;
+  setPrintPageStyle();
   document.getElementById('print-area').innerHTML = html;
   toast('Opening print dialog — choose "Save as PDF"', 'info');
-  setTimeout(()=>window.print(), 200);
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{ document.getElementById('print-area').innerHTML = ''; }, 500);
+  }, 200);
 }
 
 function handleImportJson(e){
@@ -1920,7 +2160,6 @@ function renderDashboardView(){
   const lowStock = PRODUCTS.filter(p=>p.qty<=SETTINGS.lowStockThreshold && p.qty>0);
   const outStock = PRODUCTS.filter(p=>p.qty<=0);
 
-  // top products by qty sold
   const soldMap = {};
   SALES.forEach(s => s.items.forEach(it => { soldMap[it.name] = (soldMap[it.name]||0) + it.qty; }));
   const topProducts = Object.entries(soldMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -2054,7 +2293,7 @@ function renderReportsView(){
 function renderSettingsView(){
   const el = document.getElementById('viewSettings');
   el.innerHTML = `
-    <div class="section-head"><div><h1>Settings</h1><p>Store configuration and security</p></div></div>
+    <div class="section-head"><div><h1>Settings</h1><p>Store configuration, printing, and data</p></div></div>
     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
       <div class="card" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">Store Details</h3>
@@ -2064,16 +2303,53 @@ function renderSettingsView(){
         <div class="field-row"><label>Receipt Footer Message</label><input type="text" id="setFooter" value="${escapeHtml(SETTINGS.receiptFooter)}"></div>
         <button class="btn btn-primary" id="saveStoreSettings">Save Changes</button>
       </div>
+
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">🖨 Printer</h3>
+        <div class="field-row">
+          <label>Receipt Printer Type</label>
+          <select id="setPrinterType">
+            <option value="standard" ${SETTINGS.printerType==='standard'?'selected':''}>Standard / A4 Printer</option>
+            <option value="thermal58" ${SETTINGS.printerType==='thermal58'?'selected':''}>Thermal Printer — 58mm</option>
+            <option value="thermal80" ${SETTINGS.printerType==='thermal80'?'selected':''}>Thermal Printer — 80mm</option>
+          </select>
+        </div>
+        <p class="text-muted" style="font-size:12px;margin-bottom:12px;">Choose your printer type so receipts print at the correct paper width. Thermal printers use a narrower, condensed receipt layout automatically.</p>
+        <button class="btn btn-primary" id="savePrinterSettings">Save Printer Setting</button>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">💬 Messaging Templates</h3>
+        <div class="field-row"><label>WhatsApp Receipt Message</label><textarea id="setWaTpl" rows="2">${escapeHtml(SETTINGS.whatsappTemplate)}</textarea></div>
+        <div class="field-row"><label>SMS Receipt Message</label><textarea id="setSmsTpl" rows="2">${escapeHtml(SETTINGS.smsTemplate)}</textarea></div>
+        <div class="msg-tpl-vars mb-16">Variables: <b>{name}</b> <b>{store}</b> <b>{receiptId}</b> <b>{total}</b></div>
+        <button class="btn btn-primary" id="saveMsgTemplates">Save Templates</button>
+      </div>
+
       <div class="card" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">Security</h3>
         <div class="field-row"><label>Current Password</label><input type="password" id="curPw" placeholder="••••••••"></div>
         <div class="field-row"><label>New Password</label><input type="password" id="newPw" placeholder="••••••••"></div>
         <div class="field-row"><label>Confirm New Password</label><input type="password" id="confPw" placeholder="••••••••"></div>
         <button class="btn btn-dark" id="changePwBtn">Update Password</button>
+      </div>
+
+      <div class="card" style="padding:20px;grid-column:1/-1;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">💾 Data &amp; Backup</h3>
+        <p class="text-muted" style="font-size:12.5px;margin-bottom:14px;">Move your whole store — products (with pictures), stock, prices, sales history, customers and settings — to a new machine, or keep a safe backup.</p>
+        <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px;">
+          <button class="btn btn-primary btn-sm" id="exportFullJsonBtn">${ICONS.download} Export Full Backup (JSON)</button>
+          <button class="btn btn-dark btn-sm" id="importFullJsonBtn">${ICONS.upload} Import Full Backup (JSON)</button>
+          <input type="file" id="importFullJsonInput" accept="application/json" class="hidden">
+          <button class="btn btn-outline btn-sm" id="exportExcelBtn">${ICONS.download} Export to Excel (multi-sheet)</button>
+        </div>
         <div class="divider"></div>
-        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:10px;">Danger Zone</h3>
-        <p class="text-muted" style="font-size:12px;margin-bottom:10px;">Permanently clear all sales history. Products are kept.</p>
-        <button class="btn btn-danger btn-sm" id="wipeSalesBtn">Clear Sales History</button>
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:10px;color:var(--danger-dark);">Danger Zone</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:10px;">Clear sales history only, or wipe everything (products, stock, sales, customers) to start completely fresh.</p>
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+          <button class="btn btn-danger btn-sm" id="wipeSalesBtn">Clear Sales History Only</button>
+          <button class="btn btn-danger btn-sm" id="wipeAllBtn">Clear ALL Data</button>
+        </div>
       </div>
     </div>
   `;
@@ -2089,6 +2365,19 @@ function renderSettingsView(){
     toast('Store settings saved', 'success');
   };
 
+  document.getElementById('savePrinterSettings').onclick = () => {
+    SETTINGS.printerType = document.getElementById('setPrinterType').value;
+    saveSettings();
+    toast('Printer setting saved', 'success');
+  };
+
+  document.getElementById('saveMsgTemplates').onclick = () => {
+    SETTINGS.whatsappTemplate = document.getElementById('setWaTpl').value;
+    SETTINGS.smsTemplate = document.getElementById('setSmsTpl').value;
+    saveSettings();
+    toast('Message templates saved', 'success');
+  };
+
   document.getElementById('changePwBtn').onclick = () => {
     const cur = document.getElementById('curPw').value;
     const nw = document.getElementById('newPw').value;
@@ -2102,6 +2391,11 @@ function renderSettingsView(){
     ['curPw','newPw','confPw'].forEach(id=>document.getElementById(id).value='');
   };
 
+  document.getElementById('exportFullJsonBtn').onclick = exportFullBackupJson;
+  document.getElementById('importFullJsonBtn').onclick = () => document.getElementById('importFullJsonInput').click();
+  document.getElementById('importFullJsonInput').onchange = handleImportFullBackup;
+  document.getElementById('exportExcelBtn').onclick = exportFullExcel;
+
   document.getElementById('wipeSalesBtn').onclick = () => {
     confirmDialog('This will permanently delete all sales history. Continue?', () => {
       SALES = [];
@@ -2110,6 +2404,120 @@ function renderSettingsView(){
       renderSettingsView();
     });
   };
+
+  document.getElementById('wipeAllBtn').onclick = () => {
+    confirmDialog('This will permanently delete ALL data — products, stock, sales history and customers — and cannot be undone. Continue?', () => {
+      requestAdminPassword(() => {
+        PRODUCTS = [];
+        SALES = [];
+        CUSTOMERS = [];
+        selectedCustomerIds = new Set();
+        SETTINGS = { ...DEFAULT_SETTINGS, storeName: SETTINGS.storeName, adminPassword: SETTINGS.adminPassword };
+        saveProducts(); saveSales(); saveCustomers(); saveSettings();
+        toast('All data cleared', 'success');
+        renderShell();
+        switchView('settings');
+      });
+    });
+  };
+}
+
+/* ============================================================
+   FULL BACKUP EXPORT / IMPORT (products+images, sales, customers, settings)
+   ============================================================ */
+function exportFullBackupJson(){
+  const backup = {
+    exportedAt: new Date().toISOString(),
+    appVersion: '1.1',
+    store: SETTINGS.storeName,
+    products: PRODUCTS,
+    sales: SALES,
+    customers: CUSTOMERS,
+    settings: SETTINGS
+  };
+  downloadBlob(JSON.stringify(backup, null, 2), `gliffits-pos-full-backup-${Date.now()}.json`, 'application/json');
+  toast('Full backup exported — copy this file to your new machine', 'success');
+}
+
+function handleImportFullBackup(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data || (!data.products && !data.sales && !data.customers)){
+        toast('This does not look like a valid full backup file', 'error');
+        return;
+      }
+      confirmDialog('Importing will REPLACE your current products, sales and customers with the data in this file. Continue?', () => {
+        if(Array.isArray(data.products)) PRODUCTS = data.products;
+        if(Array.isArray(data.sales)) SALES = data.sales;
+        if(Array.isArray(data.customers)) CUSTOMERS = data.customers;
+        if(data.settings){
+          SETTINGS = { ...DEFAULT_SETTINGS, ...data.settings, adminPassword: SETTINGS.adminPassword };
+        }
+        PRODUCTS.forEach(p=>{ if(!Array.isArray(p.history)) p.history = []; });
+        CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); });
+        saveProducts(); saveSales(); saveCustomers(); saveSettings();
+        toast('Full backup imported successfully', 'success');
+        renderShell();
+        switchView('dashboard');
+      });
+    }catch(err){
+      toast('Invalid backup JSON file', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ---------------- MULTI-SHEET EXCEL EXPORT ---------------- */
+function exportFullExcel(){
+  if(typeof XLSX === 'undefined'){ toast('Excel library failed to load — check your internet connection', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+
+  const productsSheet = PRODUCTS.map(p=>({
+    'Product ID': p.id, 'Name': p.name, 'Category': p.category||'Uncategorized',
+    'Price': p.price, 'Quantity in Stock': p.qty, 'Date Added': fmtDate(p.dateAdded),
+    'Has Picture': p.image ? 'Yes' : 'No'
+  }));
+  const wsProducts = XLSX.utils.json_to_sheet(productsSheet);
+  XLSX.utils.book_append_sheet(wb, wsProducts, 'Products & Stock');
+
+  const salesSheet = SALES.map(s=>({
+    'Receipt #': s.id, 'Date': fmtDate(s.timestamp), 'Customer': s.customerName,
+    'Phone': s.customerPhone||'', 'Payment Method': s.paymentMethod,
+    'Items': s.items.map(i=>`${i.name} x${i.qty}`).join(' | '),
+    'Subtotal': s.subtotal, 'Discount': s.discount, 'Total': s.total,
+    'Tendered': s.amountTendered, 'Change': s.change
+  }));
+  const wsSales = XLSX.utils.json_to_sheet(salesSheet);
+  XLSX.utils.book_append_sheet(wb, wsSales, 'Sales History');
+
+  const customersSheet = CUSTOMERS.map(c=>({
+    'Name': c.name, 'Phone': c.phone||'', 'Location': c.location||'',
+    'Notes': c.notes||'', 'Date Added': fmtDate(c.dateAdded)
+  }));
+  const wsCust = XLSX.utils.json_to_sheet(customersSheet);
+  XLSX.utils.book_append_sheet(wb, wsCust, 'Customers');
+
+  const totalRevenue = SALES.reduce((s,x)=>s+x.total,0);
+  const summarySheet = [
+    { Metric: 'Store Name', Value: SETTINGS.storeName },
+    { Metric: 'Exported On', Value: fmtDate(new Date().toISOString()) },
+    { Metric: 'Total Products', Value: PRODUCTS.length },
+    { Metric: 'Total Transactions', Value: SALES.length },
+    { Metric: 'Total Revenue', Value: fmtMoney(totalRevenue) },
+    { Metric: 'Total Customers', Value: CUSTOMERS.length },
+    { Metric: 'Low Stock Items', Value: PRODUCTS.filter(p=>p.qty>0 && p.qty<=SETTINGS.lowStockThreshold).length },
+    { Metric: 'Out of Stock Items', Value: PRODUCTS.filter(p=>p.qty<=0).length }
+  ];
+  const wsSummary = XLSX.utils.json_to_sheet(summarySheet);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  XLSX.writeFile(wb, `gliffits-mart-export-${Date.now()}.xlsx`);
+  toast('Excel file exported with Products, Sales, Customers & Summary sheets', 'success');
 }
 
 /* ============================================================
@@ -2124,10 +2532,8 @@ function startApp(){
   renderShell();
   switchView('pos');
 
-  // periodic badge refresh
   setInterval(updateTopBadges, 5000);
 
-  // Warn about low stock once on load
   const low = PRODUCTS.filter(p=>p.qty<=SETTINGS.lowStockThreshold);
   if(low.length){
     setTimeout(()=> toast(`${low.length} product(s) are low or out of stock`, 'error'), 900);
