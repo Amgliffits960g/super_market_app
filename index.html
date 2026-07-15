@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 /* ============================================================
    GLIFFITS MART POS — DESIGN TOKENS
@@ -48,12 +49,12 @@
   --bg: #14161C;
   --card: #1E2129;
   --text: #ffffff;
-  --muted: #65686e;
-  --border: #272727;
+  --muted: #9AA0AF;
+  --border: #33363F;
   --orange-light: #3A2C18;
-  #refreshStockBtn{ background: var(--orange); }
-  #holdCartBtn{ background: var(--white); color: var(--orange); }
 }
+[data-theme="dark"] #refreshStockBtn{ background:var(--card); color:var(--orange); border-color:var(--orange); }
+[data-theme="dark"] #holdCartBtn{ background:var(--card); color:var(--orange); border-color:var(--orange); }
 [data-theme="dark"] body{ background: var(--bg); color: var(--text); }
 [data-theme="dark"] .sidebar{ background: linear-gradient(180deg,#0F1015 0%, #08090C 100%); }
 [data-theme="dark"] .card,
@@ -527,13 +528,15 @@ a{ color:inherit; text-decoration:none; }
 /* ============================================================
    TABLES
    ============================================================ */
-.table-wrap{ overflow-x:auto; border-radius: var(--radius); border:1px solid var(--border); background:var(--card); }
+.table-wrap{ overflow:auto; max-height: 62vh; border-radius: var(--radius); border:1px solid var(--border); background:var(--card); }
 table{ width:100%; border-collapse:collapse; font-size:13px; min-width:640px;}
 thead th{
+  position: sticky; top: 0; z-index: 5;
   text-align:left; padding:13px 16px; background:var(--bg); font-weight:700; font-size:11.5px;
   text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); border-bottom:1px solid var(--border);
   white-space:nowrap;
 }
+[data-theme="dark"] thead th{ background:#171921; }
 tbody td{ padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
 tbody tr{ transition: background .15s ease; }
 tbody tr:hover{ background: var(--orange-light); }
@@ -732,6 +735,8 @@ const K_UNLOCKED  = 'gth_pos_session_unlocked';
 /* ---------------- DEFAULT SETTINGS ---------------- */
 const DEFAULT_SETTINGS = {
   storeName: 'Gliffits Mart',
+  storeAddress: '',
+  storeContacts: [],
   currency: 'GHS',
   adminPassword: 'admin123',
   nextProductSeq: 1,
@@ -752,8 +757,26 @@ const DEFAULT_SYNC = {
   productsTable: 'products',
   salesTable: 'sales',
   customersTable: 'customers',
-  lastSync: ''
+  lastSync: '',
+  autoSync: true,
+  syncIntervalSec: 60
 };
+
+const K_DELETED_QUEUE = 'gth_pos_deleted_queue';
+let DELETED_QUEUE = { products: [], customers: [] };
+function loadDeletedQueue(){
+  try{
+    const raw = localStorage.getItem(K_DELETED_QUEUE);
+    DELETED_QUEUE = raw ? JSON.parse(raw) : { products: [], customers: [] };
+  }catch(e){ DELETED_QUEUE = { products: [], customers: [] }; }
+  if(!Array.isArray(DELETED_QUEUE.products)) DELETED_QUEUE.products = [];
+  if(!Array.isArray(DELETED_QUEUE.customers)) DELETED_QUEUE.customers = [];
+}
+function saveDeletedQueue(){ localStorage.setItem(K_DELETED_QUEUE, JSON.stringify(DELETED_QUEUE)); }
+function queueDelete(kind, id){
+  if(!DELETED_QUEUE[kind].includes(id)) DELETED_QUEUE[kind].push(id);
+  saveDeletedQueue();
+}
 
 /* ---------------- STATE ---------------- */
 let PRODUCTS = [];
@@ -797,15 +820,18 @@ function loadState(){
     SYNC = { ...DEFAULT_SYNC };
   }
   if(!PRODUCTS.length){ PRODUCTS = seedProducts(); saveProducts(); }
-  PRODUCTS.forEach(p=>{ if(!Array.isArray(p.history)) p.history = []; if(!p.lastUpdated) p.lastUpdated = p.dateAdded; });
-  CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); });
+  PRODUCTS.forEach(p=>{ if(!Array.isArray(p.history)) p.history = []; if(!p.lastUpdated) p.lastUpdated = p.dateAdded || new Date().toISOString(); });
+  CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); if(!c.lastUpdated) c.lastUpdated = c.dateAdded || new Date().toISOString(); });
+  SALES.forEach(s=>{ if(!s.lastUpdated) s.lastUpdated = s.timestamp; });
+  if(!Array.isArray(SETTINGS.storeContacts)) SETTINGS.storeContacts = SETTINGS.storeContacts ? [SETTINGS.storeContacts] : [];
+  loadDeletedQueue();
   saveSettings();
   applyTheme(SETTINGS.theme === 'dark');
 }
-function saveProducts(){ localStorage.setItem(K_PRODUCTS, JSON.stringify(PRODUCTS)); }
-function saveSales(){ localStorage.setItem(K_SALES, JSON.stringify(SALES)); }
+function saveProducts(){ localStorage.setItem(K_PRODUCTS, JSON.stringify(PRODUCTS)); scheduleSync(); }
+function saveSales(){ localStorage.setItem(K_SALES, JSON.stringify(SALES)); scheduleSync(); }
 function saveSettings(){ localStorage.setItem(K_SETTINGS, JSON.stringify(SETTINGS)); }
-function saveCustomers(){ localStorage.setItem(K_CUSTOMERS, JSON.stringify(CUSTOMERS)); }
+function saveCustomers(){ localStorage.setItem(K_CUSTOMERS, JSON.stringify(CUSTOMERS)); scheduleSync(); }
 function saveSync(){ localStorage.setItem(K_SYNC, JSON.stringify(SYNC)); }
 
 function applyTheme(isDark){
@@ -873,6 +899,225 @@ function normalizePhone(phone){
   if(p.startsWith('0')) p = '233' + p.slice(1); // Ghana default country code
   if(p.startsWith('+')) p = p.slice(1);
   return p;
+}
+
+/* ============================================================
+   SUPABASE SYNC — OFFLINE-FIRST
+   Local storage (localStorage) is always the source of truth.
+   Sync is a best-effort background process: it pushes local
+   changes up and pulls remote changes down, merging by
+   "last updated wins". The app works fully with sync OFF/failed.
+   ============================================================ */
+let supabaseClient = null;
+let syncInFlight = false;
+let syncTimer = null;
+const syncLog = []; // {time, message, ok}
+
+function addSyncLog(message, ok){
+  syncLog.unshift({ time: new Date().toISOString(), message, ok });
+  if(syncLog.length > 30) syncLog.length = 30;
+  renderSyncStatusIfVisible();
+}
+
+function isSyncConfigured(){
+  return !!(SYNC.url && SYNC.anonKey);
+}
+
+function initSupabaseClient(){
+  if(!isSyncConfigured()){ supabaseClient = null; return false; }
+  if(typeof supabase === 'undefined'){ return false; }
+  try{
+    supabaseClient = supabase.createClient(SYNC.url, SYNC.anonKey);
+    return true;
+  }catch(e){
+    supabaseClient = null;
+    return false;
+  }
+}
+
+/* ---- Row <-> local object mappers ---- */
+function productToRow(p){
+  return {
+    id: p.id, name: p.name, price: p.price, category: p.category || 'Uncategorized',
+    qty: p.qty, image: p.image || '', date_added: p.dateAdded || null,
+    last_updated: p.lastUpdated || p.dateAdded || new Date().toISOString()
+  };
+}
+function rowToProduct(r){
+  return {
+    id: r.id, name: r.name, price: Number(r.price)||0, category: r.category || 'Uncategorized',
+    qty: Number(r.qty)||0, image: r.image || '', dateAdded: r.date_added || r.last_updated,
+    lastUpdated: r.last_updated, history: []
+  };
+}
+function customerToRow(c){
+  return {
+    id: c.id, name: c.name, phone: c.phone || '', location: c.location || '',
+    notes: c.notes || '', date_added: c.dateAdded || null,
+    last_updated: c.lastUpdated || c.dateAdded || new Date().toISOString()
+  };
+}
+function rowToCustomer(r){
+  return {
+    id: r.id, name: r.name, phone: r.phone || '', location: r.location || '',
+    notes: r.notes || '', dateAdded: r.date_added || r.last_updated, lastUpdated: r.last_updated
+  };
+}
+function saleToRow(s){
+  return {
+    id: s.id, timestamp: s.timestamp, items: s.items, subtotal: s.subtotal, discount: s.discount,
+    total: s.total, payment_method: s.paymentMethod, amount_tendered: s.amountTendered, change: s.change,
+    customer_name: s.customerName, customer_phone: s.customerPhone || '',
+    last_updated: s.lastUpdated || s.timestamp
+  };
+}
+function rowToSale(r){
+  return {
+    id: r.id, timestamp: r.timestamp, items: r.items || [], subtotal: Number(r.subtotal)||0,
+    discount: Number(r.discount)||0, total: Number(r.total)||0, paymentMethod: r.payment_method,
+    amountTendered: Number(r.amount_tendered)||0, change: Number(r.change)||0,
+    customerName: r.customer_name || 'Walk-in customer', customerPhone: r.customer_phone || '',
+    lastUpdated: r.last_updated
+  };
+}
+
+function setSyncStatus(state, text){
+  const dot = document.getElementById('syncStatusDot');
+  const label = document.getElementById('syncStatusText');
+  if(dot){ dot.className = 'sync-status-dot' + (state==='ok'?' ok':state==='err'?' err':''); }
+  if(label){ label.textContent = text; }
+}
+
+/* Push local changes up, then pull remote changes down, merging by lastUpdated. */
+async function runSync(manual){
+  if(syncInFlight) return;
+  if(!isSyncConfigured()){
+    if(manual) toast('Add your Supabase URL and anon key first (Settings > Sync)', 'error');
+    return;
+  }
+  if(typeof navigator !== 'undefined' && navigator.onLine === false){
+    if(manual) toast('You are offline — will sync automatically once back online', 'error');
+    setSyncStatus('err', 'Offline — waiting to reconnect');
+    return;
+  }
+  if(!initSupabaseClient()){
+    if(manual) toast('Could not start Supabase client — check URL/key', 'error');
+    setSyncStatus('err', 'Sync library not ready');
+    return;
+  }
+  syncInFlight = true;
+  setSyncStatus('', 'Syncing…');
+  try{
+    // 1) Push local upserts
+    if(PRODUCTS.length){
+      const { error } = await supabaseClient.from(SYNC.productsTable).upsert(PRODUCTS.map(productToRow), { onConflict: 'id' });
+      if(error) throw error;
+    }
+    if(SALES.length){
+      const { error } = await supabaseClient.from(SYNC.salesTable).upsert(SALES.map(saleToRow), { onConflict: 'id' });
+      if(error) throw error;
+    }
+    if(CUSTOMERS.length){
+      const { error } = await supabaseClient.from(SYNC.customersTable).upsert(CUSTOMERS.map(customerToRow), { onConflict: 'id' });
+      if(error) throw error;
+    }
+    // 2) Push deletions
+    if(DELETED_QUEUE.products.length){
+      const { error } = await supabaseClient.from(SYNC.productsTable).delete().in('id', DELETED_QUEUE.products);
+      if(error) throw error;
+      DELETED_QUEUE.products = [];
+    }
+    if(DELETED_QUEUE.customers.length){
+      const { error } = await supabaseClient.from(SYNC.customersTable).delete().in('id', DELETED_QUEUE.customers);
+      if(error) throw error;
+      DELETED_QUEUE.customers = [];
+    }
+    saveDeletedQueue();
+
+    // 3) Pull remote and merge (last-updated wins; new remote rows are added)
+    const [{ data: remoteProducts, error: pErr }, { data: remoteSales, error: sErr }, { data: remoteCustomers, error: cErr }] = await Promise.all([
+      supabaseClient.from(SYNC.productsTable).select('*'),
+      supabaseClient.from(SYNC.salesTable).select('*'),
+      supabaseClient.from(SYNC.customersTable).select('*')
+    ]);
+    if(pErr) throw pErr; if(sErr) throw sErr; if(cErr) throw cErr;
+
+    mergeRemote(PRODUCTS, remoteProducts || [], rowToProduct, r=>r.id, 'lastUpdated');
+    mergeRemote(SALES, remoteSales || [], rowToSale, r=>r.id, 'lastUpdated');
+    mergeRemote(CUSTOMERS, remoteCustomers || [], rowToCustomer, r=>r.id, 'lastUpdated');
+
+    localStorage.setItem(K_PRODUCTS, JSON.stringify(PRODUCTS));
+    localStorage.setItem(K_SALES, JSON.stringify(SALES));
+    localStorage.setItem(K_CUSTOMERS, JSON.stringify(CUSTOMERS));
+
+    SYNC.lastSync = new Date().toISOString();
+    saveSync();
+    setSyncStatus('ok', 'Synced ' + fmtDate(SYNC.lastSync));
+    addSyncLog('Synced successfully', true);
+    if(manual) toast('Sync complete', 'success');
+
+    // Refresh the current screen if it shows any of this data
+    if(['pos','dashboard','products','customers','history','reports'].includes(currentView)) switchView(currentView);
+  }catch(err){
+    console.error('Sync error', err);
+    setSyncStatus('err', 'Sync failed — will retry');
+    addSyncLog('Sync failed: ' + (err && err.message ? err.message : 'unknown error'), false);
+    if(manual) toast('Sync failed: ' + (err && err.message ? err.message : 'check your connection/keys'), 'error');
+  }finally{
+    syncInFlight = false;
+  }
+}
+
+function mergeRemote(localArr, remoteRows, rowMapper, idFn, tsField){
+  const localById = new Map(localArr.map(x=>[x.id, x]));
+  remoteRows.forEach(row=>{
+    const mapped = rowMapper(row);
+    const existing = localById.get(mapped.id);
+    if(!existing){
+      localArr.push(mapped);
+      localById.set(mapped.id, mapped);
+    } else {
+      const localTime = new Date(existing[tsField] || 0).getTime();
+      const remoteTime = new Date(mapped[tsField] || 0).getTime();
+      if(remoteTime > localTime){
+        Object.assign(existing, mapped);
+      }
+    }
+  });
+}
+
+let syncDebounceTimer = null;
+function scheduleSync(){
+  if(!isSyncConfigured()) return;
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(()=>runSync(false), 4000);
+}
+
+function startAutoSyncLoop(){
+  if(syncTimer) clearInterval(syncTimer);
+  if(!SYNC.autoSync || !isSyncConfigured()) return;
+  const seconds = Math.max(20, Number(SYNC.syncIntervalSec)||60);
+  syncTimer = setInterval(()=>runSync(false), seconds*1000);
+}
+
+window.addEventListener('online', ()=>{ toast('Back online — syncing…', 'info'); runSync(false); });
+window.addEventListener('offline', ()=>{ setSyncStatus('err', 'Offline'); });
+
+function renderSyncStatusIfVisible(){
+  if(currentView==='settings' && document.getElementById('syncStatusDot')){
+    renderSyncHistoryList();
+  }
+}
+function renderSyncHistoryList(){
+  const list = document.getElementById('syncHistoryList');
+  if(!list) return;
+  if(!syncLog.length){ list.innerHTML = `<div class="history-item text-muted">No sync activity yet.</div>`; return; }
+  list.innerHTML = syncLog.map(l=>`
+    <div class="history-item">
+      <div class="h-date">${fmtDate(l.time)}</div>
+      <div style="color:${l.ok?'var(--success-dark)':'var(--danger-dark)'};">${escapeHtml(l.message)}</div>
+    </div>
+  `).join('');
 }
 
 /* ---------------- TOASTS ---------------- */
@@ -1359,9 +1604,11 @@ function completeSale(){
   });
   saveProducts();
 
+  const nowIso = new Date().toISOString();
   const sale = {
     id: uid('TXN-'),
-    timestamp: new Date().toISOString(),
+    timestamp: nowIso,
+    lastUpdated: nowIso,
     items: lines.map(l=>({ productId:l.productId, name:l.product.name, price:l.product.price, qty:l.qty, lineTotal:l.lineTotal })),
     subtotal, discount, total, paymentMethod: activePayMethod,
     amountTendered: tendered, change,
@@ -1653,6 +1900,7 @@ function renderProductsTable(){
     if(delBtn) delBtn.onclick = () => {
       confirmDialog('Delete this product? This cannot be undone.', () => {
         PRODUCTS = PRODUCTS.filter(p=>p.id!==id);
+        queueDelete('products', id);
         saveProducts();
         renderProductsTable();
         toast('Product deleted', 'success');
@@ -1747,11 +1995,12 @@ function openProductModal(productId){
 
     if(p){
       p.name=name; p.price=price; p.qty=qty; p.category=category; p.image=pendingImage;
+      p.lastUpdated = new Date().toISOString();
       toast('Product updated', 'success');
     } else {
       PRODUCTS.push({
         id: nextProductId(), name, price, qty, category, image: pendingImage,
-        dateAdded: new Date().toISOString()
+        dateAdded: new Date().toISOString(), lastUpdated: new Date().toISOString()
       });
       toast('Product added', 'success');
     }
@@ -1863,6 +2112,7 @@ function renderCustomersTable(){
       confirmDialog('Delete this customer? This cannot be undone.', () => {
         CUSTOMERS = CUSTOMERS.filter(c=>c.id!==id);
         selectedCustomerIds.delete(id);
+        queueDelete('customers', id);
         saveCustomers();
         renderCustomersTable();
         toast('Customer deleted', 'success');
@@ -1909,9 +2159,10 @@ function openCustomerModal(customerId){
     if(!name){ toast('Customer name is required', 'error'); return; }
     if(c){
       c.name=name; c.phone=phone; c.location=location; c.notes=notes;
+      c.lastUpdated = new Date().toISOString();
       toast('Customer updated', 'success');
     } else {
-      CUSTOMERS.push({ id: uid('CUS-'), name, phone, location, notes, dateAdded: new Date().toISOString() });
+      CUSTOMERS.push({ id: uid('CUS-'), name, phone, location, notes, dateAdded: new Date().toISOString(), lastUpdated: new Date().toISOString() });
       toast('Customer added', 'success');
     }
     saveCustomers();
@@ -2408,11 +2659,13 @@ function renderSettingsView(){
   document.getElementById('wipeAllBtn').onclick = () => {
     confirmDialog('This will permanently delete ALL data — products, stock, sales history and customers — and cannot be undone. Continue?', () => {
       requestAdminPassword(() => {
+        PRODUCTS.forEach(p=>queueDelete('products', p.id));
+        CUSTOMERS.forEach(c=>queueDelete('customers', c.id));
         PRODUCTS = [];
         SALES = [];
         CUSTOMERS = [];
         selectedCustomerIds = new Set();
-        SETTINGS = { ...DEFAULT_SETTINGS, storeName: SETTINGS.storeName, adminPassword: SETTINGS.adminPassword };
+        SETTINGS = { ...DEFAULT_SETTINGS, storeName: SETTINGS.storeName, adminPassword: SETTINGS.adminPassword, storeAddress: SETTINGS.storeAddress, storeContacts: SETTINGS.storeContacts };
         saveProducts(); saveSales(); saveCustomers(); saveSettings();
         toast('All data cleared', 'success');
         renderShell();
