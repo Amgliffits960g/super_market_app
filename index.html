@@ -300,7 +300,16 @@ a{ color:inherit; text-decoration:none; }
 .view.active{ display:block; }
 @keyframes viewIn{ from{ opacity:0; transform: translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
-.section-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
+.section-head{ 
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;
+  position: sticky;
+  top: var(--topbar-h);
+  background: var(--bg);
+  z-index: 10;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: -8px;
+}
 .section-head h1{ font-family:var(--font-display); font-size:22px; font-weight:700; }
 .section-head p{ color:var(--muted); font-size:13px; margin-top:2px; }
 
@@ -363,7 +372,17 @@ a{ color:inherit; text-decoration:none; }
 .pos-layout{ display:flex; gap:18px; align-items:flex-start; }
 .pos-main{ flex:1; min-width:0; }
 
-.chip-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:14px; }
+.chip-row{ 
+  display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:14px; 
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 10;
+  background: rgba(243, 244, 248, 0.72); /* Semi-transparent color matching your main body background */
+  backdrop-filter: blur(12px) saturate(180%); /* iPhone glass blur effect */
+  -webkit-backdrop-filter: blur(12px) saturate(180%); /* Safari support */
+  margin-top: -8px; 
+  padding-top: 8px;
+}
 .chip{
   flex-shrink:0; padding: 9px 18px; border-radius:20px; background:#fff; border:1.5px solid var(--border);
   font-size:13px; font-weight:600; color:var(--muted); transition: all .18s ease;
@@ -412,10 +431,14 @@ a{ color:inherit; text-decoration:none; }
 /* ============================================================
    CART PANEL
    ============================================================ */
+/* ============================================================
+   CART PANEL
+   ============================================================ */
 .cart-panel{
   width:380px; flex-shrink:0; background:#fff; border-radius: var(--radius);
   border:1px solid var(--border); box-shadow: var(--shadow-sm);
-  display:flex; flex-direction:column; position:sticky; top: calc(var(--topbar-h) + 22px);
+  display:flex; flex-direction:column; position: sticky; top: calc(var(--topbar-h) + 22px);
+  height: calc(100vh - var(--topbar-h) - 44px);
   max-height: calc(100vh - var(--topbar-h) - 44px);
   transition: transform .32s ease;
 }
@@ -669,6 +692,52 @@ tbody tr:last-child td{ border-bottom:none; }
   .table-toolbar{ flex-direction:column; align-items:stretch; }
   .table-toolbar .right-tools{ justify-content:stretch; }
   .table-toolbar .right-tools .btn{ flex:1; }
+}
+
+
+
+/* ============================================================
+   STATIC POS HEADERS (PINNED TO THE TOP)
+   ============================================================ */
+
+/* 1. Main Title & Actions Section */
+.section-head { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  margin-bottom: 0px; /* Removed margin to prevent gaps while sticking */
+  flex-wrap: wrap; 
+  gap: 12px;
+  position: sticky;
+  top: var(--topbar-h); /* Pinned directly below the main header bar */
+  z-index: 11; /* Keep it layered above the scrolling products */
+  background: var(--bg); /* Solid background to prevent bleed-through */
+  padding-top: 14px;
+  padding-bottom: 10px;
+}
+.section-head h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.section-head p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+/* 2. Category Chips Section (With Apple Glass Blur Effect) */
+.chip-row { 
+  display: flex; 
+  gap: 8px; 
+  overflow-x: auto; 
+  padding-bottom: 12px; 
+  margin-bottom: 14px; 
+  position: sticky;
+  /* Top calculation: Topbar height + approximate height of the section-head above it (~62px) */
+  top: calc(var(--topbar-h) + 62px); 
+  z-index: 10; /* Sits slightly below section-head level but above products */
+  background: rgba(243, 244, 248, 0.72); /* Matching light body background */
+  backdrop-filter: blur(12px) saturate(180%); /* iOS-style backdrop blur */
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  padding-top: 10px;
+}
+
+/* Dark theme fix for the transparent glass effect background */
+[data-theme="dark"] .chip-row {
+  background: rgba(20, 22, 28, 0.72); /* Dark theme transparent background */
 }
 </style>
 </head>
