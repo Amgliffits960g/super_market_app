@@ -52,7 +52,12 @@
   --muted: #9AA0AF;
   --border: #33363F;
   --orange-light: #3A2C18;
+  color-scheme: dark;
 }
+[data-theme="light"]{ color-scheme: light; }
+input[type="checkbox"], input[type="radio"]{ accent-color: var(--orange); width:16px; height:16px; cursor:pointer; }
+[data-theme="dark"] select{ background:#12141A; color:var(--text); }
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator{ filter: invert(1); }
 [data-theme="dark"] #refreshStockBtn{ background:var(--card); color:var(--orange); border-color:var(--orange); }
 [data-theme="dark"] #holdCartBtn{ background:var(--card); color:var(--orange); border-color:var(--orange); }
 [data-theme="dark"] body{ background: var(--bg); color: var(--text); }
@@ -659,6 +664,7 @@ tbody tr:last-child td{ border-bottom:none; }
 
 .low-stock-list{ display:flex; flex-direction:column; gap:8px; }
 .low-stock-item{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg); border-radius:8px; font-size:12.5px; }
+.hist-input{ padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; background:var(--card); color:var(--text); }
 
 /* ============================================================
    PRINT
@@ -737,8 +743,14 @@ const DEFAULT_SETTINGS = {
   storeName: 'Gliffits Mart',
   storeAddress: '',
   storeContacts: [],
-  currency: 'GH¢',
-  adminPassword: 'Gliffitsss',
+  storeLogo: '',
+  currency: 'GHS',
+  adminPassword: 'admin123',
+  deletePassword: 'admin123',
+  pricePassword: 'admin123',
+  messagePassword: 'admin123',
+  cashiers: [],
+  activeCashierId: '',
   nextProductSeq: 1,
   lowStockThreshold: 5,
   receiptFooter: 'Thank you for shopping with us!',
@@ -794,6 +806,7 @@ let cartDetailsOpen = false;
 let activePayMethod = 'Cash';
 let pendingAdminAction = null; // function to run after password verified
 let historyFilter = { from: '', to: '', q: '' };
+let reportFilter = { from: '', to: '' };
 let lastReceiptSale = null;
 let selectedCustomerIds = new Set();
 let customersTableSearch = '';
@@ -824,6 +837,10 @@ function loadState(){
   CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); if(!c.lastUpdated) c.lastUpdated = c.dateAdded || new Date().toISOString(); });
   SALES.forEach(s=>{ if(!s.lastUpdated) s.lastUpdated = s.timestamp; });
   if(!Array.isArray(SETTINGS.storeContacts)) SETTINGS.storeContacts = SETTINGS.storeContacts ? [SETTINGS.storeContacts] : [];
+  if(!SETTINGS.deletePassword) SETTINGS.deletePassword = SETTINGS.adminPassword;
+  if(!SETTINGS.pricePassword) SETTINGS.pricePassword = SETTINGS.adminPassword;
+  if(!SETTINGS.messagePassword) SETTINGS.messagePassword = SETTINGS.adminPassword;
+  if(!Array.isArray(SETTINGS.cashiers)) SETTINGS.cashiers = [];
   loadDeletedQueue();
   saveSettings();
   applyTheme(SETTINGS.theme === 'dark');
@@ -967,7 +984,7 @@ function saleToRow(s){
   return {
     id: s.id, timestamp: s.timestamp, items: s.items, subtotal: s.subtotal, discount: s.discount,
     total: s.total, payment_method: s.paymentMethod, amount_tendered: s.amountTendered, change: s.change,
-    customer_name: s.customerName, customer_phone: s.customerPhone || '',
+    customer_name: s.customerName, customer_phone: s.customerPhone || '', cashier_name: s.cashierName || '',
     last_updated: s.lastUpdated || s.timestamp
   };
 }
@@ -977,7 +994,7 @@ function rowToSale(r){
     discount: Number(r.discount)||0, total: Number(r.total)||0, paymentMethod: r.payment_method,
     amountTendered: Number(r.amount_tendered)||0, change: Number(r.change)||0,
     customerName: r.customer_name || 'Walk-in customer', customerPhone: r.customer_phone || '',
-    lastUpdated: r.last_updated
+    cashierName: r.cashier_name || '', lastUpdated: r.last_updated
   };
 }
 
@@ -1154,7 +1171,7 @@ function renderShell(){
   <div class="sidebar-scrim" id="sidebarScrim"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <div class="mark">G</div>
+      <div class="mark">${SETTINGS.storeLogo ? `<img src="${SETTINGS.storeLogo}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : 'G'}</div>
       <div class="name">${escapeHtml(SETTINGS.storeName)} <small>Point of Sale</small></div>
       <button class="sidebar-close" id="sidebarCloseBtn">✕</button>
     </div>
@@ -1487,6 +1504,14 @@ function renderCartPanel(){
         <label>Customer Phone (optional, for receipt via WhatsApp/SMS)</label>
         <input type="text" id="custPhoneInput" value="${window.__custPhone||''}" placeholder="e.g. 024xxxxxxx">
       </div>
+      ${SETTINGS.cashiers.length ? `
+      <div class="field-row">
+        <label>Sold By (Cashier)</label>
+        <select id="cashierSelect">
+          <option value="">— Not specified —</option>
+          ${SETTINGS.cashiers.map(cs=>`<option value="${cs.id}" ${window.__cashierId===cs.id?'selected':''}>${escapeHtml(cs.name)}</option>`).join('')}
+        </select>
+      </div>` : ''}
       <div class="field-row">
         <label>Payment Method</label>
         <div class="pay-methods">
@@ -1538,6 +1563,8 @@ function renderCartPanel(){
   };
   const custPhoneInput = document.getElementById('custPhoneInput');
   if(custPhoneInput) custPhoneInput.oninput = (e)=>{ window.__custPhone = e.target.value; };
+  const cashierSelect = document.getElementById('cashierSelect');
+  if(cashierSelect) cashierSelect.onchange = (e)=>{ window.__cashierId = e.target.value; };
   const tenderedInput = document.getElementById('tenderedInput');
   if(tenderedInput) tenderedInput.oninput = (e)=>{ window.__tendered = e.target.value===''?undefined:parseFloat(e.target.value); refreshTotalsOnly(); };
 
@@ -1605,6 +1632,7 @@ function completeSale(){
   saveProducts();
 
   const nowIso = new Date().toISOString();
+  const cashier = SETTINGS.cashiers.find(cs=>cs.id===window.__cashierId);
   const sale = {
     id: uid('TXN-'),
     timestamp: nowIso,
@@ -1613,7 +1641,8 @@ function completeSale(){
     subtotal, discount, total, paymentMethod: activePayMethod,
     amountTendered: tendered, change,
     customerName: (window.__custName||'').trim() || 'Walk-in customer',
-    customerPhone: (window.__custPhone||'').trim()
+    customerPhone: (window.__custPhone||'').trim(),
+    cashierName: cashier ? cashier.name : ''
   };
   SALES.unshift(sale);
   saveSales();
@@ -1645,18 +1674,21 @@ function ensureModalRoot(){
 /* ---------------- RECEIPT MODAL ---------------- */
 function buildReceiptHtml(sale){
   const cls = SETTINGS.printerType === 'thermal58' ? 'thermal-58' : (SETTINGS.printerType === 'thermal80' ? 'thermal-80' : '');
+  const contacts = (SETTINGS.storeContacts||[]).filter(Boolean);
   return `
     <div class="receipt ${cls}" id="receiptContent">
       <div class="receipt-top">
+        ${SETTINGS.storeLogo ? `<img src="${SETTINGS.storeLogo}" alt="logo" style="width:52px;height:52px;object-fit:contain;margin:0 auto 6px;display:block;">` : ''}
         <div class="rlogo">${escapeHtml(SETTINGS.storeName.toUpperCase())}</div>
-        <small>Supermarket · Accra, Ghana</small>
-        <small>Tel: 024-XXX-XXXX</small>
+        ${SETTINGS.storeAddress ? `<small>${escapeHtml(SETTINGS.storeAddress)}</small>` : ''}
+        ${contacts.length ? `<small>Tel: ${contacts.map(escapeHtml).join(' / ')}</small>` : ''}
       </div>
       <hr>
       <div class="rmeta">Receipt #: ${sale.id}</div>
       <div class="rmeta">Date: ${fmtDate(sale.timestamp)}</div>
       <div class="rmeta">Customer: ${escapeHtml(sale.customerName)}</div>
       <div class="rmeta">Payment: ${escapeHtml(sale.paymentMethod)}</div>
+      ${sale.cashierName ? `<div class="rmeta">Served by: ${escapeHtml(sale.cashierName)}</div>` : ''}
       <hr>
       ${sale.items.map(it=>`
         <div class="ritem">
@@ -1697,7 +1729,7 @@ function sendReceiptSms(sale){
   const phone = normalizePhone(sale.customerPhone);
   if(!phone){ toast('No phone number saved for this sale', 'error'); return; }
   const msg = receiptMessageText(sale, SETTINGS.smsTemplate);
-  window.location.href = `sms:${sale.customerPhone.trim()}?body=${encodeURIComponent(msg)}`;
+  window.open(`sms:${sale.customerPhone.trim()}?body=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function openReceiptModal(sale){
@@ -1782,6 +1814,10 @@ function confirmDialog(message, onYes){
    ADMIN PASSWORD GATE
    ============================================================ */
 function requestAdminPassword(onSuccess){
+  requestPasswordFor('adminPassword', 'Admin Access Required', 'Enter the admin password to continue', onSuccess);
+}
+
+function requestPasswordFor(fieldKey, title, subtitle, onSuccess){
   ensureModalRoot();
   const root = document.getElementById('modalRoot');
   const wrap = document.createElement('div');
@@ -1791,8 +1827,8 @@ function requestAdminPassword(onSuccess){
       <div class="modal-body">
         <div class="gate-box">
           <div class="gate-ico">${ICONS.lock}</div>
-          <h3>Admin Access Required</h3>
-          <p>Enter the admin password to continue</p>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(subtitle)}</p>
           <input type="password" id="adminPwInput" class="w-full" placeholder="••••••••" autocomplete="off">
           <div class="mt-16">
             <button class="btn btn-primary btn-block" id="adminPwSubmit">Unlock</button>
@@ -1806,7 +1842,7 @@ function requestAdminPassword(onSuccess){
   const box = wrap.querySelector('.gate-box');
   input.focus();
   function tryUnlock(){
-    if(input.value === SETTINGS.adminPassword){
+    if(input.value === SETTINGS[fieldKey]){
       wrap.remove();
       onSuccess();
     } else {
@@ -1898,12 +1934,14 @@ function renderProductsTable(){
     const delBtn = row.querySelector('[data-act="delete"]');
     if(editBtn) editBtn.onclick = () => openProductModal(id);
     if(delBtn) delBtn.onclick = () => {
-      confirmDialog('Delete this product? This cannot be undone.', () => {
-        PRODUCTS = PRODUCTS.filter(p=>p.id!==id);
-        queueDelete('products', id);
-        saveProducts();
-        renderProductsTable();
-        toast('Product deleted', 'success');
+      requestPasswordFor('deletePassword', 'Delete Password Required', 'Enter the delete password to remove this product', () => {
+        confirmDialog('Delete this product? This cannot be undone.', () => {
+          PRODUCTS = PRODUCTS.filter(p=>p.id!==id);
+          queueDelete('products', id);
+          saveProducts();
+          renderProductsTable();
+          toast('Product deleted', 'success');
+        });
       });
     };
   });
@@ -1993,21 +2031,30 @@ function openProductModal(productId){
     if(isNaN(price) || price < 0){ toast('Enter a valid price', 'error'); return; }
     if(isNaN(qty) || qty < 0){ toast('Enter a valid stock quantity', 'error'); return; }
 
-    if(p){
-      p.name=name; p.price=price; p.qty=qty; p.category=category; p.image=pendingImage;
-      p.lastUpdated = new Date().toISOString();
-      toast('Product updated', 'success');
+    const priceChanged = p && Number(p.price) !== price;
+    const doSave = () => {
+      if(p){
+        p.name=name; p.price=price; p.qty=qty; p.category=category; p.image=pendingImage;
+        p.lastUpdated = new Date().toISOString();
+        toast('Product updated', 'success');
+      } else {
+        PRODUCTS.push({
+          id: nextProductId(), name, price, qty, category, image: pendingImage,
+          dateAdded: new Date().toISOString(), lastUpdated: new Date().toISOString()
+        });
+        toast('Product added', 'success');
+      }
+      saveProducts();
+      saveSettings();
+      renderProductsTable();
+      close();
+    };
+
+    if(priceChanged){
+      requestPasswordFor('pricePassword', 'Price Password Required', 'Enter the price password to change this product\'s price', doSave);
     } else {
-      PRODUCTS.push({
-        id: nextProductId(), name, price, qty, category, image: pendingImage,
-        dateAdded: new Date().toISOString(), lastUpdated: new Date().toISOString()
-      });
-      toast('Product added', 'success');
+      doSave();
     }
-    saveProducts();
-    saveSettings();
-    renderProductsTable();
-    close();
   };
 }
 
@@ -2046,7 +2093,7 @@ function renderCustomersView(){
   document.getElementById('addCustomerBtn').onclick = () => openCustomerModal(null);
   document.getElementById('bulkMessageBtn').onclick = () => {
     if(!selectedCustomerIds.size){ toast('Select at least one customer first', 'error'); return; }
-    openBulkMessageModal();
+    requestPasswordFor('messagePassword', 'Messaging Password Required', 'Enter the messaging password to contact customers', openBulkMessageModal);
   };
   document.getElementById('customerTableSearch').oninput = debounce(e=>{
     customersTableSearch = e.target.value.trim().toLowerCase();
@@ -2104,18 +2151,20 @@ function renderCustomersTable(){
     const check = row.querySelector('.custCheck');
     if(check) check.onchange = (e)=>{ if(e.target.checked) selectedCustomerIds.add(id); else selectedCustomerIds.delete(id); const sc=document.getElementById('selCount'); if(sc) sc.textContent = selectedCustomerIds.size; };
     const msgBtn = row.querySelector('[data-act="msg"]');
-    if(msgBtn) msgBtn.onclick = () => { selectedCustomerIds = new Set([id]); openBulkMessageModal(); };
+    if(msgBtn) msgBtn.onclick = () => { selectedCustomerIds = new Set([id]); requestPasswordFor('messagePassword', 'Messaging Password Required', 'Enter the messaging password to contact this customer', openBulkMessageModal); };
     const editBtn = row.querySelector('[data-act="edit"]');
     if(editBtn) editBtn.onclick = () => openCustomerModal(id);
     const delBtn = row.querySelector('[data-act="delete"]');
     if(delBtn) delBtn.onclick = () => {
-      confirmDialog('Delete this customer? This cannot be undone.', () => {
-        CUSTOMERS = CUSTOMERS.filter(c=>c.id!==id);
-        selectedCustomerIds.delete(id);
-        queueDelete('customers', id);
-        saveCustomers();
-        renderCustomersTable();
-        toast('Customer deleted', 'success');
+      requestPasswordFor('deletePassword', 'Delete Password Required', 'Enter the delete password to remove this customer', () => {
+        confirmDialog('Delete this customer? This cannot be undone.', () => {
+          CUSTOMERS = CUSTOMERS.filter(c=>c.id!==id);
+          selectedCustomerIds.delete(id);
+          queueDelete('customers', id);
+          saveCustomers();
+          renderCustomersTable();
+          toast('Customer deleted', 'success');
+        });
       });
     };
   });
@@ -2197,6 +2246,7 @@ function openBulkMessageModal(){
         <div class="chan-choice">
           <label><input type="radio" name="bmChan" value="whatsapp" checked><span>${ICONS.whatsapp} WhatsApp</span></label>
           <label><input type="radio" name="bmChan" value="sms"><span>${ICONS.sms} SMS</span></label>
+          <label><input type="radio" name="bmChan" value="both"><span>${ICONS.whatsapp}+${ICONS.sms} Both</span></label>
         </div>
         <div class="field-row">
           <label>Message</label>
@@ -2204,8 +2254,8 @@ function openBulkMessageModal(){
           <div class="msg-tpl-vars">Variables auto-filled per customer: <b>{name}</b> <b>{store}</b></div>
         </div>
         <div class="divider"></div>
-        <p class="text-muted" style="font-size:12px;">Sending to: ${targets.map(t=>escapeHtml(t.name)).join(', ')}</p>
-        <p class="text-muted" style="font-size:11.5px;margin-top:6px;">Each customer opens in a new tab/window one at a time — allow pop-ups for this site if your browser blocks them.</p>
+        <p class="text-muted" style="font-size:12px;">Sending to ${targets.length} customer(s): ${targets.map(t=>escapeHtml(t.name)).join(', ')}</p>
+        <p class="text-muted" style="font-size:11.5px;margin-top:6px;">Each customer's message opens a moment apart so your browser doesn't block them — allow pop-ups for this site if prompted. "Both" sends WhatsApp and SMS to every selected customer.</p>
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline" id="bmCancel">Cancel</button>
@@ -2225,16 +2275,21 @@ function openBulkMessageModal(){
     const rawMsg = document.getElementById('bmMessage').value.trim();
     if(!rawMsg){ toast('Enter a message to send', 'error'); return; }
     targets.forEach((c, i)=>{
-      setTimeout(()=>{
-        const text = rawMsg.replace(/\{name\}/g, c.name).replace(/\{store\}/g, SETTINGS.storeName);
-        if(channel === 'whatsapp'){
+      const text = rawMsg.replace(/\{name\}/g, c.name).replace(/\{store\}/g, SETTINGS.storeName);
+      const baseDelay = i * 500;
+      if(channel === 'whatsapp' || channel === 'both'){
+        setTimeout(()=>{
           window.open(`https://wa.me/${normalizePhone(c.phone)}?text=${encodeURIComponent(text)}`, '_blank');
-        } else {
-          window.location.href = `sms:${c.phone.trim()}?body=${encodeURIComponent(text)}`;
-        }
-      }, i * 350);
+        }, baseDelay);
+      }
+      if(channel === 'sms' || channel === 'both'){
+        setTimeout(()=>{
+          window.open(`sms:${c.phone.trim()}?body=${encodeURIComponent(text)}`, '_blank');
+        }, baseDelay + (channel==='both' ? 300 : 0));
+      }
     });
-    toast(`Opening ${channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} for ${targets.length} customer(s)`, 'success');
+    const label = channel === 'both' ? 'WhatsApp and SMS' : (channel === 'whatsapp' ? 'WhatsApp' : 'SMS');
+    toast(`Opening ${label} for ${targets.length} customer(s)`, 'success');
     close();
   };
 }
@@ -2281,7 +2336,7 @@ function renderHistoryView(){
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Receipt #</th><th>Date &amp; Time</th><th>Customer</th><th>Items</th><th>Payment</th><th>Total</th><th></th>
+          <th>Receipt #</th><th>Date &amp; Time</th><th>Customer</th><th>Cashier</th><th>Items</th><th>Payment</th><th>Total</th><th></th>
         </tr></thead>
         <tbody id="salesTbody"></tbody>
       </table>
@@ -2316,6 +2371,7 @@ function renderSalesTable(){
       <td><span class="pid-tag">${s.id}</span></td>
       <td class="text-muted" style="font-size:12.5px;">${fmtDate(s.timestamp)}</td>
       <td>${escapeHtml(s.customerName)}</td>
+      <td class="text-muted">${escapeHtml(s.cashierName||'—')}</td>
       <td>${s.items.reduce((a,i)=>a+i.qty,0)} item(s)</td>
       <td><span class="badge badge-info">${escapeHtml(s.paymentMethod)}</span></td>
       <td><b>${fmtMoney(s.total)}</b></td>
@@ -2476,42 +2532,91 @@ function renderDashboardView(){
 /* ============================================================
    REPORTS VIEW
    ============================================================ */
+function reportFilteredSales(){
+  let list = SALES.slice();
+  if(reportFilter.from) list = list.filter(s => new Date(s.timestamp) >= new Date(reportFilter.from + 'T00:00:00'));
+  if(reportFilter.to) list = list.filter(s => new Date(s.timestamp) <= new Date(reportFilter.to + 'T23:59:59'));
+  return list;
+}
+
 function renderReportsView(){
   const el = document.getElementById('viewReports');
   const outStock = PRODUCTS.filter(p=>p.qty<=0);
   const lowStock = PRODUCTS.filter(p=>p.qty>0 && p.qty<=SETTINGS.lowStockThreshold);
 
+  const allTimeTotal = SALES.reduce((s,x)=>s+x.total,0);
+  const allTimeCount = SALES.length;
+
+  const rangeSales = reportFilteredSales();
+  const rangeTotal = rangeSales.reduce((s,x)=>s+x.total,0);
+
   const byDay = {};
-  SALES.forEach(s=>{
-    const day = new Date(s.timestamp).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-    byDay[day] = (byDay[day]||0) + s.total;
+  rangeSales.forEach(s=>{
+    const dayKey = new Date(s.timestamp).toISOString().slice(0,10);
+    byDay[dayKey] = (byDay[dayKey]||0) + s.total;
   });
-  const days = Object.entries(byDay).slice(-7);
-  const maxDay = days.length ? Math.max(...days.map(d=>d[1])) : 1;
+  const dayKeys = Object.keys(byDay).sort();
+  const days = dayKeys.map(k=>[new Date(k).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}), byDay[k]]);
+  const maxDay = days.length ? Math.max(...days.map(d=>d[1]), 1) : 1;
 
   const catRevenue = {};
-  SALES.forEach(s=>s.items.forEach(it=>{
+  rangeSales.forEach(s=>s.items.forEach(it=>{
     const prod = PRODUCTS.find(p=>p.id===it.productId);
     const cat = prod ? (prod.category||'Uncategorized') : 'Uncategorized';
     catRevenue[cat] = (catRevenue[cat]||0) + it.lineTotal;
   }));
 
+  // Build an SVG line chart from the day/value pairs
+  let lineChartSvg = '';
+  if(days.length){
+    const W = 640, H = 180, padX = 30, padY = 20;
+    const stepX = days.length>1 ? (W-padX*2)/(days.length-1) : 0;
+    const points = days.map(([,val],i)=>{
+      const x = padX + i*stepX;
+      const y = H - padY - (val/maxDay)*(H-padY*2);
+      return [x,y];
+    });
+    const pointsAttr = points.map(p=>p.join(',')).join(' ');
+    const areaAttr = `${padX},${H-padY} ` + pointsAttr + ` ${padX + (days.length-1)*stepX},${H-padY}`;
+    const dots = points.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="3.5" fill="var(--orange-dark)"><title>${days[i][0]}: ${fmtMoney(days[i][1])}</title></circle>`).join('');
+    const labels = days.map(([day],i)=>{
+      if(days.length>10 && i%Math.ceil(days.length/10)!==0) return '';
+      const x = padX + i*stepX;
+      return `<text x="${x}" y="${H-2}" font-size="10" fill="var(--muted)" text-anchor="middle">${day}</text>`;
+    }).join('');
+    lineChartSvg = `
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:180px;overflow:visible;">
+        <polygon points="${areaAttr}" fill="var(--orange)" opacity="0.12"></polygon>
+        <polyline points="${pointsAttr}" fill="none" stroke="var(--orange-dark)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        ${dots}
+        ${labels}
+      </svg>`;
+  }
+
   el.innerHTML = `
     <div class="section-head"><div><h1>Reports</h1><p>Business insights at a glance</p></div></div>
 
+    <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);">
+      <div class="stat-card"><div class="stat-ico" style="background:var(--orange-light);color:var(--orange-dark);">💰</div>
+        <div class="stat-info"><b>${fmtMoney(allTimeTotal)}</b><span>All-Time Total Sales (${allTimeCount} transactions)</span></div></div>
+      <div class="stat-card"><div class="stat-ico" style="background:rgba(47,128,237,0.12);color:var(--info);">📅</div>
+        <div class="stat-info"><b>${fmtMoney(rangeTotal)}</b><span>Total for Selected Range (${rangeSales.length} transactions)</span></div></div>
+    </div>
+
+    <div class="card" style="padding:20px;margin-bottom:16px;">
+      <div class="flex gap-8 items-center" style="flex-wrap:wrap;">
+        <label class="text-muted" style="font-size:12.5px;font-weight:700;">Date range:</label>
+        <input type="date" id="repFrom" class="hist-input" value="${reportFilter.from}">
+        <span class="text-muted">to</span>
+        <input type="date" id="repTo" class="hist-input" value="${reportFilter.to}">
+        <button class="btn btn-outline btn-sm" id="repClearBtn">Clear (All Time)</button>
+      </div>
+    </div>
+
     <div class="form-grid" style="grid-template-columns: 1.4fr 1fr;">
       <div class="card" style="padding:20px;">
-        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:16px;">Revenue — Last 7 Active Days</h3>
-        ${days.length ? `
-        <div class="flex items-center gap-12" style="align-items:flex-end;height:160px;">
-          ${days.map(([day,val])=>`
-            <div class="flex" style="flex-direction:column;align-items:center;gap:6px;flex:1;">
-              <div style="font-size:10.5px;color:var(--muted);font-weight:700;">${fmtMoney(val).replace(SETTINGS.currency,'').trim()}</div>
-              <div style="width:100%;max-width:34px;background:linear-gradient(180deg,var(--orange),var(--orange-dark));border-radius:6px 6px 0 0;height:${Math.max((val/maxDay*120),4)}px;transition:height .5s ease;"></div>
-              <div style="font-size:10.5px;color:var(--muted);">${day}</div>
-            </div>
-          `).join('')}
-        </div>` : `<p class="text-muted" style="font-size:13px;">Not enough data yet.</p>`}
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:16px;">Revenue Trend</h3>
+        ${days.length ? lineChartSvg : `<p class="text-muted" style="font-size:13px;">Not enough data yet for this range.</p>`}
       </div>
       <div class="card" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">Revenue by Category</h3>
@@ -2522,7 +2627,7 @@ function renderReportsView(){
             <div class="flex" style="justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>${escapeHtml(cat)}</span><b>${fmtMoney(val)}</b></div>
             <div style="background:var(--bg);border-radius:20px;height:7px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--info);"></div></div>
           </div>`;
-        }).join('') : `<p class="text-muted" style="font-size:13px;">No sales yet.</p>`}
+        }).join('') : `<p class="text-muted" style="font-size:13px;">No sales in this range.</p>`}
       </div>
     </div>
 
@@ -2536,6 +2641,10 @@ function renderReportsView(){
       ` : `<p class="text-muted" style="font-size:13px;">Everything is well stocked 🎉</p>`}
     </div>
   `;
+
+  document.getElementById('repFrom').onchange = (e)=>{ reportFilter.from = e.target.value; renderReportsView(); };
+  document.getElementById('repTo').onchange = (e)=>{ reportFilter.to = e.target.value; renderReportsView(); };
+  document.getElementById('repClearBtn').onclick = () => { reportFilter = {from:'', to:''}; renderReportsView(); };
 }
 
 /* ============================================================
@@ -2548,11 +2657,37 @@ function renderSettingsView(){
     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
       <div class="card" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">Store Details</h3>
+        <div class="img-drop" id="logoDrop" style="margin-bottom:14px;">
+          <img class="preview" id="logoPreview" src="${SETTINGS.storeLogo||''}" style="${SETTINGS.storeLogo?'display:block;':''}">
+          <div class="ph-ico" id="logoPh" style="${SETTINGS.storeLogo?'display:none;':''}">${ICONS.image}</div>
+          <small id="logoLabel">${SETTINGS.storeLogo?'Click to change logo':'Click to upload a store logo (optional)'}</small>
+          <input type="file" id="logoInput" accept="image/*">
+        </div>
+        ${SETTINGS.storeLogo ? `<button class="btn btn-outline btn-sm mb-16" id="removeLogoBtn">Remove Logo</button>` : ''}
         <div class="field-row"><label>Store Name</label><input type="text" id="setStoreName" value="${escapeHtml(SETTINGS.storeName)}"></div>
+        <div class="field-row"><label>Store Address / Location</label><input type="text" id="setStoreAddress" value="${escapeHtml(SETTINGS.storeAddress)}" placeholder="e.g. Bantama, Kumasi"></div>
         <div class="field-row"><label>Currency Code</label><input type="text" id="setCurrency" value="${escapeHtml(SETTINGS.currency)}" maxlength="6"></div>
         <div class="field-row"><label>Low Stock Threshold</label><input type="number" id="setLowStock" min="0" value="${SETTINGS.lowStockThreshold}"></div>
         <div class="field-row"><label>Receipt Footer Message</label><input type="text" id="setFooter" value="${escapeHtml(SETTINGS.receiptFooter)}"></div>
         <button class="btn btn-primary" id="saveStoreSettings">Save Changes</button>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">📞 Contact Numbers</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:12px;">These show on every printed/shared receipt. Add as many as you need.</p>
+        <div id="contactsList"></div>
+        <button class="btn btn-outline btn-sm mt-8" id="addContactBtn">+ Add Contact Number</button>
+        <div class="divider"></div>
+        <button class="btn btn-primary" id="saveContactsBtn">Save Contacts</button>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🧑‍💼 Cashiers / Staff</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:12px;">Add each person who serves customers. Their name is picked at checkout and shown on the receipt as "Served by".</p>
+        <div id="cashiersList"></div>
+        <button class="btn btn-outline btn-sm mt-8" id="addCashierBtn">+ Add Cashier</button>
+        <div class="divider"></div>
+        <button class="btn btn-primary" id="saveCashiersBtn">Save Cashiers</button>
       </div>
 
       <div class="card" style="padding:20px;">
@@ -2577,12 +2712,53 @@ function renderSettingsView(){
         <button class="btn btn-primary" id="saveMsgTemplates">Save Templates</button>
       </div>
 
-      <div class="card" style="padding:20px;">
-        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">Security</h3>
-        <div class="field-row"><label>Current Password</label><input type="password" id="curPw" placeholder="••••••••"></div>
-        <div class="field-row"><label>New Password</label><input type="password" id="newPw" placeholder="••••••••"></div>
-        <div class="field-row"><label>Confirm New Password</label><input type="password" id="confPw" placeholder="••••••••"></div>
-        <button class="btn btn-dark" id="changePwBtn">Update Password</button>
+      <div class="card" style="padding:20px;grid-column:1/-1;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🔐 Security — Separate Passwords</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Each action below can use its own password. All start the same until you change them — set different ones so, for example, a cashier can log in and message customers but can't delete records or change prices.</p>
+        <div class="form-grid" style="grid-template-columns:repeat(4,1fr);">
+          ${['admin|App Login','delete|Delete Actions','price|Price Changes','message|Customer Messaging'].map(pair=>{
+            const [key,label] = pair.split('|');
+            const field = key+'Password';
+            return `
+            <div>
+              <h4 style="font-size:13px;margin-bottom:8px;">${label}</h4>
+              <div class="field-row"><label>Current</label><input type="password" id="cur_${field}" placeholder="••••••••"></div>
+              <div class="field-row"><label>New</label><input type="password" id="new_${field}" placeholder="••••••••"></div>
+              <div class="field-row"><label>Confirm</label><input type="password" id="conf_${field}" placeholder="••••••••"></div>
+              <button class="btn btn-dark btn-sm w-full" data-pwfield="${field}">Update</button>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="card" style="padding:20px;grid-column:1/-1;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">☁️ Cloud Sync (Supabase)</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Keep this device's data backed up and shared with other devices/counters. The app always works fully offline — sync just quietly catches up whenever you're online.</p>
+        <div class="form-grid">
+          <div class="field-row"><label>Supabase Project URL</label><input type="text" id="setSyncUrl" value="${escapeHtml(SYNC.url)}" placeholder="https://xxxx.supabase.co"></div>
+          <div class="field-row"><label>Supabase Anon Public Key</label><input type="text" id="setSyncKey" value="${escapeHtml(SYNC.anonKey)}" placeholder="ey..."></div>
+          <div class="field-row"><label>Products Table Name</label><input type="text" id="setSyncProductsTable" value="${escapeHtml(SYNC.productsTable)}"></div>
+          <div class="field-row"><label>Sales Table Name</label><input type="text" id="setSyncSalesTable" value="${escapeHtml(SYNC.salesTable)}"></div>
+          <div class="field-row"><label>Customers Table Name</label><input type="text" id="setSyncCustomersTable" value="${escapeHtml(SYNC.customersTable)}"></div>
+          <div class="field-row">
+            <label>Auto-sync Every (seconds)</label>
+            <input type="number" id="setSyncInterval" min="20" value="${SYNC.syncIntervalSec}">
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:14px;">
+          <input type="checkbox" id="setSyncAuto" ${SYNC.autoSync?'checked':''}> Enable automatic background sync
+        </label>
+        <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px;">
+          <button class="btn btn-primary btn-sm" id="saveSyncSettingsBtn">Save Sync Settings</button>
+          <button class="btn btn-outline btn-sm" id="syncNowBtn">Sync Now</button>
+        </div>
+        <div class="flex items-center" style="margin-bottom:10px;">
+          <span class="sync-status-dot" id="syncStatusDot"></span>
+          <span id="syncStatusText" class="text-muted" style="font-size:12.5px;">${SYNC.lastSync ? 'Last synced ' + fmtDate(SYNC.lastSync) : 'Not synced yet'}</span>
+        </div>
+        <div class="divider"></div>
+        <h4 style="font-size:13px;margin-bottom:8px;">Recent Sync Activity</h4>
+        <div class="history-list" id="syncHistoryList"></div>
       </div>
 
       <div class="card" style="padding:20px;grid-column:1/-1;">
@@ -2605,8 +2781,90 @@ function renderSettingsView(){
     </div>
   `;
 
+  renderSyncHistoryList();
+
+  /* ---- Logo upload ---- */
+  let pendingLogo = SETTINGS.storeLogo || '';
+  document.getElementById('logoInput').onchange = (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 1024*1024){ toast('Logo too large (max 1MB)', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      pendingLogo = ev.target.result;
+      SETTINGS.storeLogo = pendingLogo;
+      saveSettings();
+      renderShell(); switchView('settings');
+      toast('Logo updated', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+  const removeLogoBtn = document.getElementById('removeLogoBtn');
+  if(removeLogoBtn) removeLogoBtn.onclick = () => {
+    SETTINGS.storeLogo = '';
+    saveSettings();
+    renderShell(); switchView('settings');
+    toast('Logo removed', 'success');
+  };
+
+  /* ---- Store contacts manager ---- */
+  let workingContacts = (SETTINGS.storeContacts||[]).slice();
+  if(!workingContacts.length) workingContacts = [''];
+  function renderContactsList(){
+    const wrap = document.getElementById('contactsList');
+    wrap.innerHTML = workingContacts.map((val,i)=>`
+      <div class="flex gap-8" style="margin-bottom:8px;">
+        <input type="text" class="contactInput" data-i="${i}" value="${escapeHtml(val)}" placeholder="e.g. 024xxxxxxx" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);">
+        <button class="btn btn-outline btn-icon" data-removecontact="${i}">✕</button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.contactInput').forEach(inp=>{
+      inp.oninput = (e)=>{ workingContacts[Number(e.target.dataset.i)] = e.target.value; };
+    });
+    wrap.querySelectorAll('[data-removecontact]').forEach(btn=>{
+      btn.onclick = ()=>{ workingContacts.splice(Number(btn.dataset.removecontact),1); if(!workingContacts.length) workingContacts=['']; renderContactsList(); };
+    });
+  }
+  renderContactsList();
+  document.getElementById('addContactBtn').onclick = () => { workingContacts.push(''); renderContactsList(); };
+  document.getElementById('saveContactsBtn').onclick = () => {
+    SETTINGS.storeContacts = workingContacts.map(c=>c.trim()).filter(Boolean);
+    saveSettings();
+    toast('Contact numbers saved', 'success');
+  };
+
+  /* ---- Cashiers manager ---- */
+  let workingCashiers = (SETTINGS.cashiers||[]).map(c=>({...c}));
+  function renderCashiersList(){
+    const wrap = document.getElementById('cashiersList');
+    if(!workingCashiers.length){
+      wrap.innerHTML = `<p class="text-muted" style="font-size:12.5px;">No cashiers added yet.</p>`;
+      return;
+    }
+    wrap.innerHTML = workingCashiers.map((cs,i)=>`
+      <div class="flex gap-8" style="margin-bottom:8px;">
+        <input type="text" class="cashierInput" data-i="${i}" value="${escapeHtml(cs.name)}" placeholder="Cashier name" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);">
+        <button class="btn btn-outline btn-icon" data-removecashier="${i}">✕</button>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.cashierInput').forEach(inp=>{
+      inp.oninput = (e)=>{ workingCashiers[Number(e.target.dataset.i)].name = e.target.value; };
+    });
+    wrap.querySelectorAll('[data-removecashier]').forEach(btn=>{
+      btn.onclick = ()=>{ workingCashiers.splice(Number(btn.dataset.removecashier),1); renderCashiersList(); };
+    });
+  }
+  renderCashiersList();
+  document.getElementById('addCashierBtn').onclick = () => { workingCashiers.push({id: uid('CSH-'), name:''}); renderCashiersList(); };
+  document.getElementById('saveCashiersBtn').onclick = () => {
+    SETTINGS.cashiers = workingCashiers.filter(c=>c.name.trim()).map(c=>({id:c.id, name:c.name.trim()}));
+    saveSettings();
+    toast('Cashiers saved', 'success');
+  };
+
   document.getElementById('saveStoreSettings').onclick = () => {
     SETTINGS.storeName = document.getElementById('setStoreName').value.trim() || 'Gliffits Mart';
+    SETTINGS.storeAddress = document.getElementById('setStoreAddress').value.trim();
     SETTINGS.currency = document.getElementById('setCurrency').value.trim() || 'GHS';
     SETTINGS.lowStockThreshold = parseInt(document.getElementById('setLowStock').value,10) || 0;
     SETTINGS.receiptFooter = document.getElementById('setFooter').value.trim();
@@ -2629,18 +2887,36 @@ function renderSettingsView(){
     toast('Message templates saved', 'success');
   };
 
-  document.getElementById('changePwBtn').onclick = () => {
-    const cur = document.getElementById('curPw').value;
-    const nw = document.getElementById('newPw').value;
-    const conf = document.getElementById('confPw').value;
-    if(cur !== SETTINGS.adminPassword){ toast('Current password is incorrect', 'error'); return; }
-    if(!nw || nw.length<4){ toast('New password must be at least 4 characters', 'error'); return; }
-    if(nw !== conf){ toast('New passwords do not match', 'error'); return; }
-    SETTINGS.adminPassword = nw;
-    saveSettings();
-    toast('Password updated successfully', 'success');
-    ['curPw','newPw','confPw'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('[data-pwfield]').forEach(btn=>{
+    btn.onclick = () => {
+      const field = btn.dataset.pwfield;
+      const cur = document.getElementById('cur_'+field).value;
+      const nw = document.getElementById('new_'+field).value;
+      const conf = document.getElementById('conf_'+field).value;
+      if(cur !== SETTINGS[field]){ toast('Current password is incorrect', 'error'); return; }
+      if(!nw || nw.length<4){ toast('New password must be at least 4 characters', 'error'); return; }
+      if(nw !== conf){ toast('New passwords do not match', 'error'); return; }
+      SETTINGS[field] = nw;
+      saveSettings();
+      toast('Password updated successfully', 'success');
+      ['cur_','new_','conf_'].forEach(pfx=>document.getElementById(pfx+field).value='');
+    };
+  });
+
+  document.getElementById('saveSyncSettingsBtn').onclick = () => {
+    SYNC.url = document.getElementById('setSyncUrl').value.trim();
+    SYNC.anonKey = document.getElementById('setSyncKey').value.trim();
+    SYNC.productsTable = document.getElementById('setSyncProductsTable').value.trim() || 'products';
+    SYNC.salesTable = document.getElementById('setSyncSalesTable').value.trim() || 'sales';
+    SYNC.customersTable = document.getElementById('setSyncCustomersTable').value.trim() || 'customers';
+    SYNC.syncIntervalSec = Math.max(20, parseInt(document.getElementById('setSyncInterval').value,10) || 60);
+    SYNC.autoSync = document.getElementById('setSyncAuto').checked;
+    saveSync();
+    startAutoSyncLoop();
+    toast('Sync settings saved', 'success');
+    if(isSyncConfigured()) runSync(true);
   };
+  document.getElementById('syncNowBtn').onclick = () => runSync(true);
 
   document.getElementById('exportFullJsonBtn').onclick = exportFullBackupJson;
   document.getElementById('importFullJsonBtn').onclick = () => document.getElementById('importFullJsonInput').click();
@@ -2648,24 +2924,26 @@ function renderSettingsView(){
   document.getElementById('exportExcelBtn').onclick = exportFullExcel;
 
   document.getElementById('wipeSalesBtn').onclick = () => {
-    confirmDialog('This will permanently delete all sales history. Continue?', () => {
-      SALES = [];
-      saveSales();
-      toast('Sales history cleared', 'success');
-      renderSettingsView();
+    requestPasswordFor('deletePassword', 'Delete Password Required', 'Enter the delete password to clear sales history', () => {
+      confirmDialog('This will permanently delete all sales history. Continue?', () => {
+        SALES = [];
+        saveSales();
+        toast('Sales history cleared', 'success');
+        renderSettingsView();
+      });
     });
   };
 
   document.getElementById('wipeAllBtn').onclick = () => {
-    confirmDialog('This will permanently delete ALL data — products, stock, sales history and customers — and cannot be undone. Continue?', () => {
-      requestAdminPassword(() => {
+    requestPasswordFor('deletePassword', 'Delete Password Required', 'Enter the delete password to wipe all data', () => {
+      confirmDialog('This will permanently delete ALL data — products, stock, sales history and customers — and cannot be undone. Continue?', () => {
         PRODUCTS.forEach(p=>queueDelete('products', p.id));
         CUSTOMERS.forEach(c=>queueDelete('customers', c.id));
         PRODUCTS = [];
         SALES = [];
         CUSTOMERS = [];
         selectedCustomerIds = new Set();
-        SETTINGS = { ...DEFAULT_SETTINGS, storeName: SETTINGS.storeName, adminPassword: SETTINGS.adminPassword, storeAddress: SETTINGS.storeAddress, storeContacts: SETTINGS.storeContacts };
+        SETTINGS = { ...DEFAULT_SETTINGS, storeName: SETTINGS.storeName, adminPassword: SETTINGS.adminPassword, deletePassword: SETTINGS.deletePassword, pricePassword: SETTINGS.pricePassword, messagePassword: SETTINGS.messagePassword, storeAddress: SETTINGS.storeAddress, storeContacts: SETTINGS.storeContacts, storeLogo: SETTINGS.storeLogo, cashiers: SETTINGS.cashiers };
         saveProducts(); saveSales(); saveCustomers(); saveSettings();
         toast('All data cleared', 'success');
         renderShell();
@@ -2708,7 +2986,7 @@ function handleImportFullBackup(e){
         if(Array.isArray(data.sales)) SALES = data.sales;
         if(Array.isArray(data.customers)) CUSTOMERS = data.customers;
         if(data.settings){
-          SETTINGS = { ...DEFAULT_SETTINGS, ...data.settings, adminPassword: SETTINGS.adminPassword };
+          SETTINGS = { ...DEFAULT_SETTINGS, ...data.settings, adminPassword: SETTINGS.adminPassword, deletePassword: SETTINGS.deletePassword, pricePassword: SETTINGS.pricePassword, messagePassword: SETTINGS.messagePassword };
         }
         PRODUCTS.forEach(p=>{ if(!Array.isArray(p.history)) p.history = []; });
         CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); });
@@ -2740,7 +3018,7 @@ function exportFullExcel(){
 
   const salesSheet = SALES.map(s=>({
     'Receipt #': s.id, 'Date': fmtDate(s.timestamp), 'Customer': s.customerName,
-    'Phone': s.customerPhone||'', 'Payment Method': s.paymentMethod,
+    'Phone': s.customerPhone||'', 'Cashier': s.cashierName||'', 'Payment Method': s.paymentMethod,
     'Items': s.items.map(i=>`${i.name} x${i.qty}`).join(' | '),
     'Subtotal': s.subtotal, 'Discount': s.discount, 'Total': s.total,
     'Tendered': s.amountTendered, 'Change': s.change
@@ -2758,6 +3036,8 @@ function exportFullExcel(){
   const totalRevenue = SALES.reduce((s,x)=>s+x.total,0);
   const summarySheet = [
     { Metric: 'Store Name', Value: SETTINGS.storeName },
+    { Metric: 'Store Address', Value: SETTINGS.storeAddress || '' },
+    { Metric: 'Contact Numbers', Value: (SETTINGS.storeContacts||[]).join(', ') },
     { Metric: 'Exported On', Value: fmtDate(new Date().toISOString()) },
     { Metric: 'Total Products', Value: PRODUCTS.length },
     { Metric: 'Total Transactions', Value: SALES.length },
@@ -2790,6 +3070,11 @@ function startApp(){
   const low = PRODUCTS.filter(p=>p.qty<=SETTINGS.lowStockThreshold);
   if(low.length){
     setTimeout(()=> toast(`${low.length} product(s) are low or out of stock`, 'error'), 900);
+  }
+
+  if(isSyncConfigured()){
+    startAutoSyncLoop();
+    setTimeout(()=>runSync(false), 1500);
   }
 }
 
