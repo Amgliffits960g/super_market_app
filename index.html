@@ -671,10 +671,11 @@ tbody tr:last-child td{ border-bottom:none; }
    ============================================================ */
 #print-area{ display:none; }
 @media print{
+  html, body{ margin:0 !important; padding:0 !important; height:auto !important; min-height:0 !important; background:#fff !important; }
   body *{ visibility:hidden; }
-  #print-area{ display:block !important; visibility:visible; }
+  #print-area{ display:block !important; visibility:visible; position:absolute; top:0; left:0; margin:0 !important; padding:0 !important; width:auto; }
   #print-area, #print-area *{ visibility:visible; }
-  #print-area{ position:absolute; top:0; left:0; width:100%; }
+  #print-area .receipt{ margin:0 !important; }
   .modal-overlay{ position:absolute; background:none; backdrop-filter:none; }
 }
 
@@ -756,7 +757,9 @@ const DEFAULT_SETTINGS = {
   receiptFooter: 'Thank you for shopping with us!',
   theme: 'light',
   sidebarCollapsed: false,
-  printerType: 'standard',
+  printerType: 'thermal80',
+  directPrintEnabled: false,
+  printerBaudRate: 9600,
   whatsappTemplate: 'Hi {name}, thanks for shopping at {store}! Your receipt {receiptId}: total {total}. We appreciate you!',
   smsTemplate: 'Hi {name}, thanks for shopping at {store}! Receipt {receiptId}, total {total}.',
   offerWhatsappTemplate: 'Hi {name}, {store} has something special for you: {message}',
@@ -1753,7 +1756,7 @@ function openReceiptModal(sale){
         ${sale.customerPhone ? `
         <button class="btn btn-success btn-sm" id="waReceiptBtn">${ICONS.whatsapp} WhatsApp</button>
         <button class="btn btn-outline btn-sm" id="smsReceiptBtn">${ICONS.sms} SMS</button>` : ''}
-        <button class="btn btn-outline" id="printReceiptBtn">${ICONS.print} Print</button>
+        <button class="btn btn-outline" id="printReceiptBtn">${ICONS.print} ${SETTINGS.directPrintEnabled && directPrintSupported() ? 'Print (Direct)' : 'Print'}</button>
         <button class="btn btn-primary btn-block" id="newSaleBtn">New Sale</button>
       </div>
     </div>
@@ -1773,17 +1776,165 @@ function setPrintPageStyle(){
   let styleEl = document.getElementById('dynamicPrintStyle');
   if(!styleEl){ styleEl = document.createElement('style'); styleEl.id = 'dynamicPrintStyle'; document.head.appendChild(styleEl); }
   let size = 'auto';
-  if(SETTINGS.printerType === 'thermal58') size = '58mm auto';
-  else if(SETTINGS.printerType === 'thermal80') size = '80mm auto';
-  styleEl.textContent = `@media print{ @page{ size:${size}; margin:${size==='auto'?'12mm':'2mm'}; } }`;
+  let margin = '10mm';
+  if(SETTINGS.printerType === 'thermal58'){ size = '58mm auto'; margin = '0'; }
+  else if(SETTINGS.printerType === 'thermal80'){ size = '80mm auto'; margin = '0'; }
+  styleEl.textContent = `@media print{ @page{ size:${size}; margin:${margin}; } }`;
 }
 
 function printReceipt(sale){
+  if(SETTINGS.directPrintEnabled && 'serial' in navigator){
+    printReceiptDirect(sale);
+    return;
+  }
   setPrintPageStyle();
   const area = document.getElementById('print-area');
   area.innerHTML = buildReceiptHtml(sale);
   window.print();
   setTimeout(()=>{ area.innerHTML = ''; }, 500);
+}
+
+/* ============================================================
+   DIRECT THERMAL PRINTING — ESC/POS over Web Serial (USB/COM)
+   Bypasses the OS/browser print dialog entirely: we send raw
+   printer commands, including the paper-cut command, so the
+   printer feeds only exactly as much paper as the receipt needs
+   and cuts automatically. Requires Chrome or Edge on desktop,
+   served over https or localhost (not available from a plain
+   local file, and not available on mobile).
+   ============================================================ */
+let thermalPort = null;
+
+function directPrintSupported(){
+  return typeof navigator !== 'undefined' && 'serial' in navigator;
+}
+
+async function connectThermalPrinter(silent){
+  if(!directPrintSupported()){
+    if(!silent) toast('Direct printing needs Chrome or Edge on a desktop computer, served over https/localhost', 'error');
+    return false;
+  }
+  try{
+    const known = await navigator.serial.getPorts();
+    thermalPort = known[0] || (silent ? null : await navigator.serial.requestPort());
+    if(!thermalPort) return false;
+    if(!thermalPort.readable && !thermalPort.writable){
+      await thermalPort.open({ baudRate: Number(SETTINGS.printerBaudRate) || 9600 });
+    }
+    navigator.serial.addEventListener('disconnect', (e)=>{
+      if(e.target === thermalPort) thermalPort = null;
+    });
+    if(!silent) toast('Thermal printer connected', 'success');
+    return true;
+  }catch(e){
+    if(!silent) toast('Could not connect to printer: ' + e.message, 'error');
+    thermalPort = null;
+    return false;
+  }
+}
+
+async function sendRawToPrinter(bytes){
+  if(!thermalPort){
+    const ok = await connectThermalPrinter(false);
+    if(!ok) return false;
+  }
+  try{
+    if(!thermalPort.writable){
+      await thermalPort.open({ baudRate: Number(SETTINGS.printerBaudRate) || 9600 });
+    }
+    const writer = thermalPort.writable.getWriter();
+    await writer.write(bytes);
+    writer.releaseLock();
+    return true;
+  }catch(e){
+    toast('Print failed: ' + e.message, 'error');
+    thermalPort = null;
+    return false;
+  }
+}
+
+/* Build raw ESC/POS bytes for a sale receipt, sized to the paper width,
+   ending in a feed + full paper cut so nothing is wasted. */
+function escposReceiptBytes(sale){
+  const width = SETTINGS.printerType === 'thermal58' ? 32 : 42;
+  const enc = new TextEncoder();
+  const bytes = [];
+  const raw = (...arr) => arr.forEach(b=>bytes.push(b));
+  const text = (str) => { bytes.push(...enc.encode(str)); };
+  const line = (str='') => { text(str); bytes.push(0x0A); };
+  const center = (on) => raw(0x1B,0x61, on?1:0);
+  const bold = (on) => raw(0x1B,0x45, on?1:0);
+  const divider = () => line('-'.repeat(width));
+  const wrap = (str) => {
+    str = String(str);
+    const out = [];
+    while(str.length > width){ out.push(str.slice(0,width)); str = str.slice(width); }
+    out.push(str);
+    return out;
+  };
+  const padRow = (left,right) => {
+    left = left||''; right = right||'';
+    const space = Math.max(width - left.length - right.length, 1);
+    return left + ' '.repeat(space) + right;
+  };
+
+  raw(0x1B,0x40); // init
+  center(true);
+  if(SETTINGS.storeLogo){
+    // Logo images aren't rasterized in this lightweight text-mode path;
+    // the store name is printed bold/large instead.
+  }
+  bold(true);
+  line(SETTINGS.storeName.toUpperCase());
+  bold(false);
+  if(SETTINGS.storeAddress) wrap(SETTINGS.storeAddress).forEach(line);
+  const contacts = (SETTINGS.storeContacts||[]).filter(Boolean);
+  if(contacts.length) line('Tel: ' + contacts.join(' / '));
+  center(false);
+  divider();
+  line('Receipt #: ' + sale.id);
+  line('Date: ' + fmtDate(sale.timestamp));
+  line('Customer: ' + sale.customerName);
+  line('Payment: ' + sale.paymentMethod);
+  if(sale.cashierName) line('Served by: ' + sale.cashierName);
+  divider();
+  sale.items.forEach(it=>{
+    wrap(it.name).forEach(line);
+    line(padRow(`${it.qty} x ${fmtMoney(it.price)}`, fmtMoney(it.lineTotal)));
+  });
+  divider();
+  line(padRow('Subtotal', fmtMoney(sale.subtotal)));
+  line(padRow('Discount', '-' + fmtMoney(sale.discount)));
+  bold(true);
+  line(padRow('TOTAL', fmtMoney(sale.total)));
+  bold(false);
+  line(padRow('Tendered', fmtMoney(sale.amountTendered)));
+  line(padRow('Change', fmtMoney(sale.change)));
+  divider();
+  center(true);
+  wrap(SETTINGS.receiptFooter).forEach(line);
+  line('Powered by Gliffits Tech Hub POS');
+  line('');
+  line(sale.id);
+  center(false);
+  line(''); line(''); line('');
+  raw(0x1D,0x56,0x00); // full cut — feeds only what was printed, then cuts
+  return new Uint8Array(bytes);
+}
+
+async function printReceiptDirect(sale){
+  const bytes = escposReceiptBytes(sale);
+  const ok = await sendRawToPrinter(bytes);
+  if(ok) toast('Sent to thermal printer', 'success');
+}
+
+async function testThermalPrinter(){
+  const ok = await connectThermalPrinter(false);
+  if(!ok) return;
+  const enc = new TextEncoder();
+  const bytes = [0x1B,0x40, ...enc.encode('Printer connected OK\n'), ...enc.encode(SETTINGS.storeName+'\n'), 0x0A,0x0A,0x0A, 0x1D,0x56,0x00];
+  const sent = await sendRawToPrinter(new Uint8Array(bytes));
+  if(sent) toast('Test slip sent — check the printer', 'success');
 }
 
 /* ---------------- CONFIRM DIALOG ---------------- */
@@ -2697,11 +2848,22 @@ function renderSettingsView(){
           <select id="setPrinterType">
             <option value="standard" ${SETTINGS.printerType==='standard'?'selected':''}>Standard / A4 Printer</option>
             <option value="thermal58" ${SETTINGS.printerType==='thermal58'?'selected':''}>Thermal Printer — 58mm</option>
-            <option value="thermal80" ${SETTINGS.printerType==='thermal80'?'selected':''}>Thermal Printer — 80mm</option>
+            <option value="thermal80" ${SETTINGS.printerType==='thermal80'?'selected':''}>Thermal Printer — 80mm (e.g. XP-T80A)</option>
           </select>
         </div>
-        <p class="text-muted" style="font-size:12px;margin-bottom:12px;">Choose your printer type so receipts print at the correct paper width. Thermal printers use a narrower, condensed receipt layout automatically.</p>
-        <button class="btn btn-primary" id="savePrinterSettings">Save Printer Setting</button>
+        <p class="text-muted" style="font-size:12px;margin-bottom:12px;">If a thermal receipt still prints a long blank tail with the browser dialog below, it's the Windows printer driver's paper-size setting — open the XP-T80A's printer Properties → Preferences → Paper Size, and choose its "Roll/Receipt 80mm (auto/continuous)" option instead of a fixed page size like A4.</p>
+        <div class="divider"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="setDirectPrint" ${SETTINGS.directPrintEnabled?'checked':''}> Print directly to USB/Serial (skips the print window, cuts automatically)
+        </label>
+        <p class="text-muted" style="font-size:12px;margin-bottom:12px;">${directPrintSupported() ? 'Supported in this browser. The first connection asks you to pick the printer once — after that, printing sends straight to the printer with no dialog.' : 'Not available in this browser/window — direct printing needs Chrome or Edge on a desktop computer, opened over https or localhost (not a plain local file). The app will keep using the print dialog above until then.'}</p>
+        <div class="field-row"><label>Baud Rate</label><input type="number" id="setBaudRate" value="${SETTINGS.printerBaudRate}" min="1200"></div>
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" id="connectPrinterBtn" ${directPrintSupported()?'':'disabled'}>Connect Printer</button>
+          <button class="btn btn-outline btn-sm" id="testPrinterBtn" ${directPrintSupported()?'':'disabled'}>Print Test Slip</button>
+        </div>
+        <div class="divider"></div>
+        <button class="btn btn-primary" id="savePrinterSettings">Save Printer Settings</button>
       </div>
 
       <div class="card" style="padding:20px;">
@@ -2876,9 +3038,13 @@ function renderSettingsView(){
 
   document.getElementById('savePrinterSettings').onclick = () => {
     SETTINGS.printerType = document.getElementById('setPrinterType').value;
+    SETTINGS.directPrintEnabled = document.getElementById('setDirectPrint').checked;
+    SETTINGS.printerBaudRate = parseInt(document.getElementById('setBaudRate').value,10) || 9600;
     saveSettings();
-    toast('Printer setting saved', 'success');
+    toast('Printer settings saved', 'success');
   };
+  document.getElementById('connectPrinterBtn').onclick = () => connectThermalPrinter(false);
+  document.getElementById('testPrinterBtn').onclick = () => testThermalPrinter();
 
   document.getElementById('saveMsgTemplates').onclick = () => {
     SETTINGS.whatsappTemplate = document.getElementById('setWaTpl').value;
