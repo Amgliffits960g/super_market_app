@@ -1783,10 +1783,13 @@ function setPrintPageStyle(){
 }
 
 function printReceipt(sale){
-  if(SETTINGS.directPrintEnabled && 'serial' in navigator){
+  // We forced it to check ONLY if the browser supports serial printing, ignoring the settings toggle!
+  if('serial' in navigator){
     printReceiptDirect(sale);
     return;
   }
+  
+  // This fallback will only run if someone tries to use a browser that doesn't support Web Serial
   setPrintPageStyle();
   const area = document.getElementById('print-area');
   area.innerHTML = buildReceiptHtml(sale);
@@ -1803,10 +1806,14 @@ function printReceipt(sale){
    served over https or localhost (not available from a plain
    local file, and not available on mobile).
    ============================================================ */
-let thermalPort = null;
+let thermalUSBDevice = null;
 
 function directPrintSupported(){
   return typeof navigator !== 'undefined' && 'serial' in navigator;
+}
+
+function directPrintSupported(){
+  return typeof navigator !== 'undefined' && 'usb' in navigator;
 }
 
 async function connectThermalPrinter(silent){
@@ -1815,40 +1822,54 @@ async function connectThermalPrinter(silent){
     return false;
   }
   try{
-    const known = await navigator.serial.getPorts();
-    thermalPort = known[0] || (silent ? null : await navigator.serial.requestPort());
-    if(!thermalPort) return false;
-    if(!thermalPort.readable && !thermalPort.writable){
-      await thermalPort.open({ baudRate: Number(SETTINGS.printerBaudRate) || 9600 });
+    const known = await navigator.usb.getDevices();
+    // Look for already paired USB devices, or ask the user to pair one
+    thermalUSBDevice = known[0] || (silent ? null : await navigator.usb.requestDevice({ filters: [] }));
+    if(!thermalUSBDevice) return false;
+    
+    // Open connection and claim the printing interface
+    if(!thermalUSBDevice.opened){
+      await thermalUSBDevice.open();
+      await thermalUSBDevice.selectConfiguration(1);
+      await thermalUSBDevice.claimInterface(0);
     }
-    navigator.serial.addEventListener('disconnect', (e)=>{
-      if(e.target === thermalPort) thermalPort = null;
+    
+    navigator.usb.addEventListener('disconnect', (e)=>{
+      if(e.device === thermalUSBDevice) thermalUSBDevice = null;
     });
-    if(!silent) toast('Thermal printer connected', 'success');
+    
+    if(!silent) toast('Thermal printer connected via USB', 'success');
     return true;
   }catch(e){
     if(!silent) toast('Could not connect to printer: ' + e.message, 'error');
-    thermalPort = null;
+    thermalUSBDevice = null;
     return false;
   }
 }
 
 async function sendRawToPrinter(bytes){
-  if(!thermalPort){
+  if(!thermalUSBDevice){
     const ok = await connectThermalPrinter(false);
     if(!ok) return false;
   }
   try{
-    if(!thermalPort.writable){
-      await thermalPort.open({ baudRate: Number(SETTINGS.printerBaudRate) || 9600 });
+    if(!thermalUSBDevice.opened){
+      await thermalUSBDevice.open();
+      await thermalUSBDevice.selectConfiguration(1);
+      await thermalUSBDevice.claimInterface(0);
     }
-    const writer = thermalPort.writable.getWriter();
-    await writer.write(bytes);
-    writer.releaseLock();
+    
+    // Xprinters usually receive data on Endpoint 1 or Endpoint 2.
+    // We try Endpoint 1 first; if it fails, we try Endpoint 2.
+    try {
+      await thermalUSBDevice.transferOut(1, bytes);
+    } catch(err) {
+      await thermalUSBDevice.transferOut(2, bytes);
+    }
     return true;
   }catch(e){
     toast('Print failed: ' + e.message, 'error');
-    thermalPort = null;
+    thermalUSBDevice = null;
     return false;
   }
 }
@@ -1917,8 +1938,15 @@ function escposReceiptBytes(sale){
   line('');
   line(sale.id);
   center(false);
-  line(''); line(''); line('');
-  raw(0x1D,0x56,0x00); // full cut — feeds only what was printed, then cuts
+  
+  // Feed 4 blank lines to push the receipt past the thermal printhead
+  line(''); line(''); line(''); line('');
+
+  // ESC/POS Cut Command (Function B): GS V 66 n
+  // Hex: 0x1D, 0x56, 0x42, 0x00
+  // Feeds to the cutter position and performs a clean auto-cut.
+  raw(0x1D, 0x56, 0x42, 0x00); 
+
   return new Uint8Array(bytes);
 }
 
@@ -1932,7 +1960,13 @@ async function testThermalPrinter(){
   const ok = await connectThermalPrinter(false);
   if(!ok) return;
   const enc = new TextEncoder();
-  const bytes = [0x1B,0x40, ...enc.encode('Printer connected OK\n'), ...enc.encode(SETTINGS.storeName+'\n'), 0x0A,0x0A,0x0A, 0x1D,0x56,0x00];
+  const bytes = [
+    0x1B, 0x40, 
+    ...enc.encode('Printer connected OK\n'), 
+    ...enc.encode(SETTINGS.storeName+'\n'), 
+    0x0A, 0x0A, 0x0A, 0x0A, // Feed safe space
+    0x1D, 0x56, 0x42, 0x00  // Clean feed and cut
+  ];
   const sent = await sendRawToPrinter(new Uint8Array(bytes));
   if(sent) toast('Test slip sent — check the printer', 'success');
 }
