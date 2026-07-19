@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -447,6 +446,58 @@ a{ color:inherit; text-decoration:none; }
 @keyframes flashOut{ 0%{opacity:1;} 70%{opacity:1;} 100%{opacity:0;} }
 @keyframes cardPop{ from{ opacity:0; transform: scale(0.92);} to{opacity:1; transform:scale(1);} }
 
+/* ---- Product view-mode switcher (Large/Small icons, List, Content, Titles) ---- */
+.view-switch{
+  display:flex; gap:3px; background:var(--card); border:1.5px solid var(--border); border-radius:10px; padding:4px;
+  flex-shrink:0;
+}
+.view-switch-btn{
+  width:32px; height:32px; border-radius:7px; font-size:14px; color:var(--muted);
+  display:flex; align-items:center; justify-content:center; transition: all .15s ease; flex-shrink:0;
+}
+.view-switch-btn:hover{ background:var(--orange-light); color:var(--orange-dark); }
+.view-switch-btn.active{ background:var(--ink); color:#fff; }
+
+/* ---- Grid layout per view mode ---- */
+.product-grid.view-mode-large{ display:grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap:14px; }
+.product-grid.view-mode-small{ display:grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap:10px; }
+.product-grid.view-mode-list,
+.product-grid.view-mode-content,
+.product-grid.view-mode-titles{ display:flex; flex-direction:column; gap:8px; }
+
+/* ---- Card layout per view mode (list / content / titles are row-based) ---- */
+.product-card.mode-small .thumb{ height:74px; }
+.product-card.mode-small .pname{ font-size:12px; min-height:auto; -webkit-line-clamp:1; }
+.product-card.mode-small .pprice{ font-size:13px; }
+.product-card.mode-small .info{ padding:8px 9px 9px; }
+
+.product-card.mode-list,
+.product-card.mode-content,
+.product-card.mode-titles{
+  display:flex; align-items:center; gap:12px; padding:10px 14px; animation:none;
+}
+.product-card.mode-list .thumb,
+.product-card.mode-content .thumb{
+  position:relative; flex-shrink:0; border-radius:8px; overflow:hidden;
+}
+.product-card.mode-list .thumb{ width:44px; height:44px; }
+.product-card.mode-content .thumb{ width:60px; height:60px; }
+.product-card.mode-list .info,
+.product-card.mode-content .info,
+.product-card.mode-titles .info{
+  padding:0; flex:1; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.product-card.mode-list .pname,
+.product-card.mode-content .pname,
+.product-card.mode-titles .pname{
+  min-height:auto; -webkit-line-clamp:1; margin-bottom:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.product-card.mode-content .pcat{ margin-top:1px; }
+.product-card.mode-titles .thumb{ display:none; }
+.product-card.mode-list .stock-tag,
+.product-card.mode-content .stock-tag,
+.product-card.mode-titles .stock-tag{ position:static; white-space:nowrap; }
+
 .empty-state{ text-align:center; padding: 60px 20px; color:var(--muted); }
 .empty-state .ico{ font-size:46px; margin-bottom:12px; opacity:0.35; }
 .empty-state h3{ font-family:var(--font-display); color:var(--text); margin-bottom:6px; }
@@ -457,11 +508,23 @@ a{ color:inherit; text-decoration:none; }
 .cart-panel{
   width:380px; flex-shrink:0; background:var(--card); border-radius: var(--radius);
   border:1px solid var(--border); box-shadow: var(--shadow-lg);
-  display:flex; flex-direction:column; position: sticky; top: calc(var(--topbar-h) + 14px);
+  display:flex; flex-direction:column;
+  position: fixed; top: calc(var(--topbar-h) + 14px); right: 22px;
   height: calc(100vh - var(--topbar-h) - 30px);
   max-height: calc(100vh - var(--topbar-h) - 30px);
   transition: transform .32s ease;
   z-index: 25;
+}
+/* Cart stays fixed on screen and is never moved by page scroll on desktop */
+@media (min-width: 1181px){
+  .pos-main{ margin-right: 398px; }
+}
+/* Smaller laptop screens: narrower cart panel, still fixed & static-feeling */
+@media (min-width: 1181px) and (max-width: 1440px){
+  .cart-panel{ width: 320px; right: 16px; }
+  .pos-main{ margin-right: 336px; }
+  .product-grid.view-mode-large{ grid-template-columns: repeat(auto-fill, minmax(142px, 1fr)); }
+  .product-grid.view-mode-small{ grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
 }
 .cart-head{
   padding:16px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
@@ -718,6 +781,7 @@ tbody tr:last-child td{ border-bottom:none; }
   .table-toolbar{ flex-direction:column; align-items:stretch; }
   .table-toolbar .right-tools{ justify-content:stretch; }
   .table-toolbar .right-tools .btn{ flex:1; }
+  .view-switch{ flex-wrap:wrap; }
 }
 </style>
 </head>
@@ -758,6 +822,7 @@ const DEFAULT_SETTINGS = {
   receiptFooter: 'Thank you for shopping with us!',
   theme: 'light',
   sidebarCollapsed: false,
+  productViewMode: 'large',
   printerType: 'thermal80',
   directPrintEnabled: false,
   printerBaudRate: 9600,
@@ -1334,16 +1399,30 @@ function getCategories(){
   return ['All', ...Array.from(set).sort()];
 }
 
+const PRODUCT_VIEW_MODES = [
+  {key:'large', label:'Large icons', glyph:'▦'},
+  {key:'small', label:'Small icons', glyph:'▪'},
+  {key:'list', label:'List', glyph:'≡'},
+  {key:'content', label:'Content', glyph:'▤'},
+  {key:'titles', label:'Titles', glyph:'▭'}
+];
+
 function renderPosView(){
   const el = document.getElementById('viewPos');
   const cats = getCategories();
+  const currentMode = SETTINGS.productViewMode || 'large';
   el.innerHTML = `
     <div class="section-head">
       <div>
         <h1>Sell Products</h1>
         <p>Tap a product to add it to the cart</p>
       </div>
-      <button class="btn btn-outline btn-sm" id="refreshStockBtn">↻ Refresh</button>
+      <div class="flex gap-8 items-center">
+        <div class="view-switch" id="viewSwitch">
+          ${PRODUCT_VIEW_MODES.map(vm=>`<button class="view-switch-btn ${currentMode===vm.key?'active':''}" data-mode="${vm.key}" title="${vm.label} view">${vm.glyph}</button>`).join('')}
+        </div>
+        <button class="btn btn-outline btn-sm" id="refreshStockBtn">↻ Refresh</button>
+      </div>
     </div>
     <div class="pos-layout">
       <div class="pos-main">
@@ -1359,13 +1438,86 @@ function renderPosView(){
   document.querySelectorAll('#chipRow .chip').forEach(c=>{
     c.onclick = () => { activeCategory = c.dataset.cat; renderPosView(); };
   });
+  document.querySelectorAll('#viewSwitch .view-switch-btn').forEach(btn=>{
+    btn.onclick = () => {
+      SETTINGS.productViewMode = btn.dataset.mode;
+      saveSettings();
+      document.querySelectorAll('#viewSwitch .view-switch-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===SETTINGS.productViewMode));
+      renderProductGrid();
+    };
+  });
   renderProductGrid();
   renderCartPanel();
+}
+
+function productCardHtml(p, mode, i){
+  const stockClass = p.qty<=0 ? 'out' : (p.qty<=SETTINGS.lowStockThreshold ? 'low' : '');
+  const stockLabel = p.qty<=0 ? 'OUT OF STOCK' : (p.qty<=SETTINGS.lowStockThreshold ? `LOW · ${p.qty}` : `${p.qty} IN STOCK`);
+  const thumb = p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : `<span class="ph">${ICONS.box}</span>`;
+
+  if(mode === 'titles'){
+    return `
+    <div class="product-card mode-titles" data-id="${p.id}">
+      <div class="info">
+        <div class="pname">${escapeHtml(p.name)}</div>
+        <span class="stock-tag ${stockClass}">${stockLabel}</span>
+        <div class="pprice">${fmtMoney(p.price)}</div>
+      </div>
+    </div>`;
+  }
+  if(mode === 'list'){
+    return `
+    <div class="product-card mode-list" data-id="${p.id}">
+      <div class="thumb">${thumb}</div>
+      <div class="info">
+        <div>
+          <div class="pname">${escapeHtml(p.name)}</div>
+          <div class="pcat">${escapeHtml(p.category||'Uncategorized')}</div>
+        </div>
+        <div class="flex items-center gap-8">
+          <span class="stock-tag ${stockClass}">${stockLabel}</span>
+          <div class="pprice">${fmtMoney(p.price)}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+  if(mode === 'content'){
+    return `
+    <div class="product-card mode-content" data-id="${p.id}">
+      <div class="thumb">${thumb}</div>
+      <div class="info">
+        <div>
+          <div class="pname">${escapeHtml(p.name)}</div>
+          <div class="pcat">${escapeHtml(p.category||'Uncategorized')} · ${p.id}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="pprice">${fmtMoney(p.price)}</div>
+          <span class="stock-tag ${stockClass}">${stockLabel}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+  // large & small share the same card shape; small gets a compact modifier class
+  return `
+    <div class="product-card ${mode==='small'?'mode-small':''}" data-id="${p.id}" style="animation-delay:${Math.min(i*0.02,0.3)}s">
+      <div class="thumb">
+        ${thumb}
+        <span class="stock-tag ${stockClass}">${stockLabel}</span>
+        <div class="add-flash">Added ✓</div>
+      </div>
+      <div class="info">
+        <div class="pname">${escapeHtml(p.name)}</div>
+        <div class="pprice">${fmtMoney(p.price)}</div>
+        <div class="pcat">${escapeHtml(p.category||'Uncategorized')}</div>
+      </div>
+    </div>`;
 }
 
 function renderProductGrid(){
   const grid = document.getElementById('productGrid');
   if(!grid) return;
+  const mode = SETTINGS.productViewMode || 'large';
+  grid.className = 'product-grid view-mode-' + mode;
   let list = PRODUCTS.slice();
   if(activeCategory !== 'All') list = list.filter(p => (p.category||'Uncategorized') === activeCategory);
   if(productSearchTerm){
@@ -1377,23 +1529,7 @@ function renderProductGrid(){
     </div>`;
     return;
   }
-  grid.innerHTML = list.map((p,i)=>{
-    const stockClass = p.qty<=0 ? 'out' : (p.qty<=SETTINGS.lowStockThreshold ? 'low' : '');
-    const stockLabel = p.qty<=0 ? 'OUT OF STOCK' : (p.qty<=SETTINGS.lowStockThreshold ? `LOW · ${p.qty}` : `${p.qty} IN STOCK`);
-    return `
-    <div class="product-card" data-id="${p.id}" style="animation-delay:${Math.min(i*0.02,0.3)}s">
-      <div class="thumb">
-        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : `<span class="ph">${ICONS.box}</span>`}
-        <span class="stock-tag ${stockClass}">${stockLabel}</span>
-        <div class="add-flash">Added ✓</div>
-      </div>
-      <div class="info">
-        <div class="pname">${escapeHtml(p.name)}</div>
-        <div class="pprice">${fmtMoney(p.price)}</div>
-        <div class="pcat">${escapeHtml(p.category||'Uncategorized')}</div>
-      </div>
-    </div>`;
-  }).join('');
+  grid.innerHTML = list.map((p,i)=>productCardHtml(p, mode, i)).join('');
   grid.querySelectorAll('.product-card').forEach(card=>{
     card.onclick = () => addToCart(card.dataset.id, card);
   });
@@ -1411,6 +1547,15 @@ function addToCart(productId, cardEl){
   if(cardEl){ cardEl.classList.remove('flash'); void cardEl.offsetWidth; cardEl.classList.add('flash'); }
   renderCartPanel();
   updateTopBadges();
+  // Auto-clear the product search bar once a product has been chosen
+  if(productSearchTerm){
+    setTimeout(()=>{
+      productSearchTerm = '';
+      const gs = document.getElementById('globalSearch');
+      if(gs) gs.value = '';
+      renderProductGrid();
+    }, 650);
+  }
 }
 
 function changeCartQty(productId, delta){
@@ -1438,6 +1583,19 @@ function clearCart(){
   updateTopBadges();
 }
 
+function refreshCart(){
+  let adjusted = false;
+  CART = CART.map(c=>{
+    const p = PRODUCTS.find(x=>x.id===c.productId);
+    if(!p || p.qty<=0){ adjusted = true; return null; }
+    if(c.qty > p.qty){ c.qty = p.qty; adjusted = true; }
+    return c;
+  }).filter(Boolean);
+  renderCartPanel();
+  updateTopBadges();
+  toast(adjusted ? 'Cart refreshed — quantities updated to match current stock' : 'Cart refreshed', 'info');
+}
+
 function cartLines(){
   return CART.map(c=>{
     const p = PRODUCTS.find(x=>x.id===c.productId);
@@ -1456,7 +1614,10 @@ function renderCartPanel(){
   panel.innerHTML = `
    <div class="cart-head">
   <h3>${ICONS.cart} Current Sale <span class="cart-count">${lines.reduce((s,l)=>s+l.qty,0)}</span></h3>
-  ${lines.length ? `<button class="btn-ghost btn-sm" id="clearCartBtn" style="color:var(--danger);font-weight:700;font-size:12px;">Clear</button>` : ''}
+  <div class="flex gap-8">
+    <button class="btn-ghost btn-sm" id="refreshCartBtn" title="Refresh cart against current stock" style="font-weight:700;font-size:12px;">↻ Refresh</button>
+    ${lines.length ? `<button class="btn-ghost btn-sm" id="clearCartBtn" style="color:var(--danger);font-weight:700;font-size:12px;">Clear</button>` : ''}
+  </div>
 </div>
 <div class="cart-items" id="cartItems">
   ${lines.length ? lines.map(l=>`
@@ -1544,6 +1705,8 @@ function renderCartPanel(){
 
   const clearBtn = document.getElementById('clearCartBtn');
   if(clearBtn) clearBtn.onclick = () => { if(confirm('Clear the current cart?')) clearCart(); };
+  const refreshCartBtn = document.getElementById('refreshCartBtn');
+  if(refreshCartBtn) refreshCartBtn.onclick = refreshCart;
 
   document.querySelectorAll('#cartItems .cart-line').forEach(row=>{
     const id = row.dataset.id;
@@ -2125,6 +2288,8 @@ function renderProductsTable(){
           PRODUCTS = PRODUCTS.filter(p=>p.id!==id);
           queueDelete('products', id);
           saveProducts();
+          productsTableSearch = '';
+          const pts = document.getElementById('productTableSearch'); if(pts) pts.value = '';
           renderProductsTable();
           toast('Product deleted', 'success');
         });
@@ -2232,6 +2397,8 @@ function openProductModal(productId){
       }
       saveProducts();
       saveSettings();
+      productsTableSearch = '';
+      const pts = document.getElementById('productTableSearch'); if(pts) pts.value = '';
       renderProductsTable();
       close();
     };
@@ -2348,6 +2515,8 @@ function renderCustomersTable(){
           selectedCustomerIds.delete(id);
           queueDelete('customers', id);
           saveCustomers();
+          customersTableSearch = '';
+          const cts = document.getElementById('customerTableSearch'); if(cts) cts.value = '';
           renderCustomersTable();
           toast('Customer deleted', 'success');
         });
@@ -2401,6 +2570,8 @@ function openCustomerModal(customerId){
       toast('Customer added', 'success');
     }
     saveCustomers();
+    customersTableSearch = '';
+    const cts = document.getElementById('customerTableSearch'); if(cts) cts.value = '';
     renderCustomersTable();
     close();
   };
@@ -2476,6 +2647,10 @@ function openBulkMessageModal(){
     });
     const label = channel === 'both' ? 'WhatsApp and SMS' : (channel === 'whatsapp' ? 'WhatsApp' : 'SMS');
     toast(`Opening ${label} for ${targets.length} customer(s)`, 'success');
+    selectedCustomerIds = new Set();
+    customersTableSearch = '';
+    const cts = document.getElementById('customerTableSearch'); if(cts) cts.value = '';
+    renderCustomersTable();
     close();
   };
 }
@@ -2570,6 +2745,11 @@ function renderSalesTable(){
     if(btn) btn.onclick = () => {
       const sale = SALES.find(s=>s.id===id);
       if(sale) openReceiptModal(sale);
+      if(historyFilter.q){
+        historyFilter.q = '';
+        const fq = document.getElementById('filterQ'); if(fq) fq.value = '';
+        renderSalesTable();
+      }
     };
   });
 }
