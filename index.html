@@ -728,7 +728,43 @@ tbody tr:last-child td{ border-bottom:none; }
 
 .low-stock-list{ display:flex; flex-direction:column; gap:8px; }
 .low-stock-item{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg); border-radius:8px; font-size:12.5px; }
+
+/* ============================================================
+   MEDIA — BACKGROUND MUSIC & VIDEO
+   ============================================================ */
+.media-track-row{ transition: background .15s ease; }
+.media-track-row:hover{ background: var(--bg); border-radius:8px; }
+.media-track-row.playing{ background: var(--orange-light); border-radius:8px; }
+.media-track-row:last-child{ border-bottom:none !important; }
 .hist-input{ padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; background:var(--card); color:var(--text); }
+
+/* ============================================================
+   LOADING SCREEN (shown on startup while gathering local data)
+   ============================================================ */
+#loadingScreen{
+  position:fixed; inset:0; z-index:6000; display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(circle at 20% 15%, #2A2E38 0%, #14161C 60%, #0A0B0E 100%);
+  padding:20px;
+}
+.loading-card{
+  width:100%; max-width:340px; text-align:center;
+  animation: modalIn .4s cubic-bezier(.2,.9,.3,1.2);
+}
+.loading-mark{
+  width:64px; height:64px; border-radius:16px; margin:0 auto 18px;
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
+  font-weight:800; color:#fff; font-size:28px; box-shadow: 0 10px 26px rgba(246,139,30,0.45);
+  animation: loadingPulse 1.6s ease-in-out infinite;
+}
+@keyframes loadingPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+.loading-title{ font-family:var(--font-display); font-weight:700; font-size:24px; color:#fff; margin-bottom:6px; letter-spacing:0.2px; }
+.loading-title span{ color:var(--orange); }
+.loading-tagline{ font-size:12.5px; color:#9AA0AF; margin-bottom:28px; }
+.loading-bar{ width:100%; height:8px; border-radius:20px; background:rgba(255,255,255,0.1); overflow:hidden; margin-bottom:12px; }
+.loading-fill{ height:100%; width:0%; border-radius:20px; background: linear-gradient(90deg, var(--orange), var(--orange-dark)); transition: width .35s ease; }
+.loading-status{ font-size:12.5px; color:#B7BBC7; font-weight:600; min-height:16px; }
+.loading-pct{ font-family:var(--font-display); font-size:12px; color:#6E7382; margin-top:6px; letter-spacing:0.5px; }
 
 /* ============================================================
    PRINT
@@ -768,6 +804,8 @@ tbody tr:last-child td{ border-bottom:none; }
   .form-grid{ grid-template-columns:1fr; }
   .sidebar-scrim{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:190; }
   .sidebar-scrim.show{ display:block; }
+  .view-switch{ padding:3px; gap:2px; }
+  .view-switch-btn{ width:28px; height:28px; font-size:12px; }
 }
 
 @media (max-width: 560px){
@@ -781,7 +819,8 @@ tbody tr:last-child td{ border-bottom:none; }
   .table-toolbar{ flex-direction:column; align-items:stretch; }
   .table-toolbar .right-tools{ justify-content:stretch; }
   .table-toolbar .right-tools .btn{ flex:1; }
-  .view-switch{ flex-wrap:wrap; }
+  /* Topbar is too tight on small phones for the view-switch alongside search + icon buttons */
+  .view-switch{ display:none; }
 }
 </style>
 </head>
@@ -789,6 +828,7 @@ tbody tr:last-child td{ border-bottom:none; }
 <div id="app"></div>
 <div id="toast-stack"></div>
 <div id="print-area"></div>
+<audio id="bgAudioPlayer" style="display:none"></audio>
 
 <script>
 /* ============================================================
@@ -1228,9 +1268,11 @@ const ICONS = {
   search:`<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>`,
   cart:`<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.4l2.4 12.2a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6l1.5-7.7H6.2"/></svg>`,
   bell:`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+  power:`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>`,
   box:`📦`, warn:`⚠️`, check:`✓`, edit:`✎`, trash:`🗑`, image:`🖼`, print:`🖨`, download:`⬇`, upload:`⬆`,
   lock:`🔒`, money:'💵', card:'💳', momo:'📱', whatsapp:'💬', sms:'✉️',
-  customers:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+  customers:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  media:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`
 };
 
 /* ---------------- ROOT LAYOUT ---------------- */
@@ -1247,6 +1289,7 @@ function renderShell(){
     <nav class="sidebar-nav" id="sidebarNav">
       ${navItem('pos', ICONS.pos, 'Sell / POS')}
       ${navItem('dashboard', ICONS.dashboard, 'Dashboard')}
+      ${navItem('media', ICONS.media, 'Media')}
       <div class="nav-section-label">Manage</div>
       ${navItem('products', ICONS.products, 'Products', true)}
       ${navItem('customers', ICONS.customers, 'Customers', true)}
@@ -1272,6 +1315,7 @@ function renderShell(){
         <input type="text" id="globalSearch" placeholder="Search products by name or ID...">
       </div>
       <div class="topbar-actions">
+        <div class="view-switch" id="viewSwitch"></div>
         <div class="clock" id="clock"></div>
         <button class="icon-btn theme-toggle" id="themeToggleBtn" title="Toggle light/dark theme">
           <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -1285,11 +1329,15 @@ function renderShell(){
           ${ICONS.cart}
           <span class="count hidden" id="cartTopCount"></span>
         </button>
+        <button class="icon-btn" id="exitAppBtn" title="Close app">
+          ${ICONS.power}
+        </button>
       </div>
     </header>
 
     <div id="viewPos" class="view"></div>
     <div id="viewDashboard" class="view"></div>
+    <div id="viewMedia" class="view"></div>
     <div id="viewProducts" class="view"></div>
     <div id="viewCustomers" class="view"></div>
     <div id="viewHistory" class="view"></div>
@@ -1316,11 +1364,13 @@ function renderShell(){
     saveSettings();
   };
   document.getElementById('cartTopBtn').onclick = () => { switchView('pos'); };
+  document.getElementById('exitAppBtn').onclick = () => requestAppExit();
   document.getElementById('notifBtn').onclick = () => { switchView('reports'); };
   document.getElementById('globalSearch').oninput = debounce(e=>{
     productSearchTerm = e.target.value.trim().toLowerCase();
     if(currentView==='pos') renderPosView();
   }, 150);
+  renderViewSwitch();
 
   document.querySelectorAll('.nav-item').forEach(el=>{
     el.onclick = () => {
@@ -1368,12 +1418,13 @@ function switchView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
   const map = {
-    pos:'viewPos', dashboard:'viewDashboard', products:'viewProducts', customers:'viewCustomers',
+    pos:'viewPos', dashboard:'viewDashboard', media:'viewMedia', products:'viewProducts', customers:'viewCustomers',
     history:'viewHistory', reports:'viewReports', settings:'viewSettings'
   };
   document.getElementById(map[view]).classList.add('active');
   if(view==='pos') renderPosView();
   if(view==='dashboard') renderDashboardView();
+  if(view==='media') renderMediaView();
   if(view==='products') renderProductsView();
   if(view==='customers') renderCustomersView();
   if(view==='history') renderHistoryView();
@@ -1407,21 +1458,39 @@ const PRODUCT_VIEW_MODES = [
   {key:'titles', label:'Titles', glyph:'▭'}
 ];
 
+/* View-switch now lives in the topbar (next to clock/theme/cart/notifications)
+   so it's always reachable no matter which screen is open. */
+function renderViewSwitch(){
+  const wrap = document.getElementById('viewSwitch');
+  if(!wrap) return;
+  const currentMode = SETTINGS.productViewMode || 'large';
+  wrap.innerHTML = PRODUCT_VIEW_MODES.map(vm=>
+    `<button class="view-switch-btn ${currentMode===vm.key?'active':''}" data-mode="${vm.key}" title="${vm.label} view">${vm.glyph}</button>`
+  ).join('');
+  wrap.querySelectorAll('.view-switch-btn').forEach(btn=>{
+    btn.onclick = () => {
+      SETTINGS.productViewMode = btn.dataset.mode;
+      saveSettings();
+      wrap.querySelectorAll('.view-switch-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===SETTINGS.productViewMode));
+      if(currentView==='pos') renderProductGrid();
+    };
+  });
+}
+function syncViewSwitchActiveState(){
+  const wrap = document.getElementById('viewSwitch');
+  if(!wrap) return;
+  const currentMode = SETTINGS.productViewMode || 'large';
+  wrap.querySelectorAll('.view-switch-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===currentMode));
+}
+
 function renderPosView(){
   const el = document.getElementById('viewPos');
   const cats = getCategories();
-  const currentMode = SETTINGS.productViewMode || 'large';
   el.innerHTML = `
     <div class="section-head">
       <div>
         <h1>Sell Products</h1>
         <p>Tap a product to add it to the cart</p>
-      </div>
-      <div class="flex gap-8 items-center">
-        <div class="view-switch" id="viewSwitch">
-          ${PRODUCT_VIEW_MODES.map(vm=>`<button class="view-switch-btn ${currentMode===vm.key?'active':''}" data-mode="${vm.key}" title="${vm.label} view">${vm.glyph}</button>`).join('')}
-        </div>
-        <button class="btn btn-outline btn-sm" id="refreshStockBtn">↻ Refresh</button>
       </div>
     </div>
     <div class="pos-layout">
@@ -1434,18 +1503,10 @@ function renderPosView(){
       <aside class="cart-panel" id="cartPanel"></aside>
     </div>
   `;
-  document.getElementById('refreshStockBtn').onclick = () => { renderPosView(); toast('Stock refreshed', 'info'); };
   document.querySelectorAll('#chipRow .chip').forEach(c=>{
     c.onclick = () => { activeCategory = c.dataset.cat; renderPosView(); };
   });
-  document.querySelectorAll('#viewSwitch .view-switch-btn').forEach(btn=>{
-    btn.onclick = () => {
-      SETTINGS.productViewMode = btn.dataset.mode;
-      saveSettings();
-      document.querySelectorAll('#viewSwitch .view-switch-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===SETTINGS.productViewMode));
-      renderProductGrid();
-    };
-  });
+  syncViewSwitchActiveState();
   renderProductGrid();
   renderCartPanel();
 }
@@ -2822,6 +2883,544 @@ function handleImportJson(e){
 }
 
 /* ============================================================
+   MEDIA — BACKGROUND MUSIC & VIDEO (local only — not synced to the cloud)
+   Music keeps playing across every screen because the <audio>
+   element lives outside #app in the static page body, so it is
+   never touched by view switches or shell re-renders.
+
+   File LOCATIONS are remembered across closing/reopening this app
+   using the File System Access API (Chrome/Edge): we store a
+   FileSystemFileHandle per track in IndexedDB, then re-open the
+   same files next time instead of asking you to re-pick them.
+   Browsers require your permission to be re-confirmed sometimes —
+   when that happens a "Reconnect Files" button appears.
+   In browsers without this API (e.g. Firefox, Safari) files are
+   picked the old way and can't be remembered between sessions.
+   ============================================================ */
+let MEDIA = {
+  tracks: [],        // [{id, name, url, handle?}] — url is a local blob: URL, valid only for this tab/session
+  currentIndex: -1,
+  shuffle: false,
+  repeat: false,
+  volume: 0.8,
+  pendingHandles: []  // tracks whose stored handle needs permission re-granted
+};
+let MEDIA_VIDEO = { name: '', url: '', handle: null, pendingHandle: null };
+
+const K_MEDIA_PREFS = 'gth_pos_media_prefs';
+const MEDIA_DB_NAME = 'gth_pos_media_db';
+const MEDIA_DB_TRACKS_STORE = 'trackHandles';
+const MEDIA_DB_VIDEO_STORE = 'videoHandle';
+
+function fsAccessSupported(){
+  return typeof window.showOpenFilePicker === 'function' && typeof window.showDirectoryPicker === 'function';
+}
+
+/* ---- Tiny IndexedDB helpers (stores FileSystemHandles so files can be reopened next session) ---- */
+let mediaDbPromise = null;
+function openMediaDB(){
+  if(mediaDbPromise) return mediaDbPromise;
+  mediaDbPromise = new Promise((resolve)=>{
+    if(!('indexedDB' in window)){ resolve(null); return; }
+    const req = indexedDB.open(MEDIA_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if(!db.objectStoreNames.contains(MEDIA_DB_TRACKS_STORE)) db.createObjectStore(MEDIA_DB_TRACKS_STORE, {keyPath:'id'});
+      if(!db.objectStoreNames.contains(MEDIA_DB_VIDEO_STORE)) db.createObjectStore(MEDIA_DB_VIDEO_STORE, {keyPath:'id'});
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+  return mediaDbPromise;
+}
+async function mediaDbPutTrack(record){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_TRACKS_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_TRACKS_STORE).put(record);
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function mediaDbDeleteTrack(id){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_TRACKS_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_TRACKS_STORE).delete(id);
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function mediaDbGetAllTracks(){
+  const db = await openMediaDB(); if(!db) return [];
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_TRACKS_STORE, 'readonly');
+    const req = tx.objectStore(MEDIA_DB_TRACKS_STORE).getAll();
+    req.onsuccess = () => resolve(req.result || []); req.onerror = () => resolve([]);
+  });
+}
+async function mediaDbClearTracks(){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_TRACKS_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_TRACKS_STORE).clear();
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function mediaDbPutVideo(record){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_VIDEO_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_VIDEO_STORE).put(record);
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function mediaDbGetVideo(){
+  const db = await openMediaDB(); if(!db) return null;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_VIDEO_STORE, 'readonly');
+    const req = tx.objectStore(MEDIA_DB_VIDEO_STORE).get('video');
+    req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null);
+  });
+}
+async function persistMediaOrder(){
+  for(let i=0;i<MEDIA.tracks.length;i++){
+    const t = MEDIA.tracks[i];
+    if(t.handle){ try{ await mediaDbPutTrack({ id:t.id, name:t.name, handle:t.handle, order:i }); }catch(e){} }
+  }
+}
+function saveMediaPrefs(){
+  try{
+    const currentId = mediaCurrentTrack() ? mediaCurrentTrack().id : null;
+    localStorage.setItem(K_MEDIA_PREFS, JSON.stringify({ shuffle: MEDIA.shuffle, repeat: MEDIA.repeat, volume: MEDIA.volume, currentId }));
+  }catch(e){}
+}
+function loadMediaPrefs(){
+  try{ const raw = localStorage.getItem(K_MEDIA_PREFS); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+
+/* Recursively collect audio file handles from a picked folder */
+async function walkDirectoryForAudio(dirHandle, results){
+  for await (const [name, handle] of dirHandle.entries()){
+    if(handle.kind === 'file'){
+      if(/\.(mp3|wav|ogg|m4a|flac|aac|opus|webm)$/i.test(name)) results.push({ name, handle });
+    } else if(handle.kind === 'directory'){
+      await walkDirectoryForAudio(handle, results);
+    }
+  }
+}
+
+/* Restore the playlist, video, and preferences on startup */
+async function restoreMediaLibrary(){
+  try{
+    const records = await mediaDbGetAllTracks();
+    records.sort((a,b)=>(a.order||0)-(b.order||0));
+    const pending = [];
+    for(const rec of records){
+      try{
+        const perm = await rec.handle.queryPermission({ mode:'read' });
+        if(perm === 'granted'){
+          const file = await rec.handle.getFile();
+          MEDIA.tracks.push({ id: rec.id, name: rec.name, url: URL.createObjectURL(file), handle: rec.handle });
+        } else {
+          pending.push(rec);
+        }
+      }catch(e){ pending.push(rec); }
+    }
+    MEDIA.pendingHandles = pending;
+  }catch(e){}
+
+  const prefs = loadMediaPrefs();
+  if(prefs){
+    MEDIA.shuffle = !!prefs.shuffle;
+    MEDIA.repeat = !!prefs.repeat;
+    MEDIA.volume = typeof prefs.volume === 'number' ? prefs.volume : 0.8;
+    if(prefs.currentId){
+      const idx = MEDIA.tracks.findIndex(t=>t.id===prefs.currentId);
+      MEDIA.currentIndex = idx>=0 ? idx : (MEDIA.tracks.length ? 0 : -1);
+    } else if(MEDIA.tracks.length){
+      MEDIA.currentIndex = 0;
+    }
+  } else if(MEDIA.tracks.length){
+    MEDIA.currentIndex = 0;
+  }
+  initBgAudioEvents();
+  const audio = getBgAudio();
+  if(audio) audio.volume = MEDIA.volume;
+
+  try{
+    const vrec = await mediaDbGetVideo();
+    if(vrec && vrec.handle){
+      const perm = await vrec.handle.queryPermission({ mode:'read' });
+      if(perm === 'granted'){
+        const file = await vrec.handle.getFile();
+        MEDIA_VIDEO = { name: vrec.name, url: URL.createObjectURL(file), handle: vrec.handle, pendingHandle: null };
+      } else {
+        MEDIA_VIDEO.pendingHandle = vrec;
+      }
+    }
+  }catch(e){}
+
+  if(currentView === 'media') renderMediaView();
+}
+
+function getBgAudio(){ return document.getElementById('bgAudioPlayer'); }
+function mediaCurrentTrack(){ return MEDIA.currentIndex>=0 ? MEDIA.tracks[MEDIA.currentIndex] : null; }
+
+function initBgAudioEvents(){
+  const audio = getBgAudio();
+  if(!audio || audio.dataset.wired) return;
+  audio.dataset.wired = '1';
+  audio.volume = MEDIA.volume;
+  audio.addEventListener('ended', () => mediaPlayNext(true));
+  audio.addEventListener('timeupdate', renderMediaProgressIfVisible);
+  audio.addEventListener('play', renderMediaPlayStateIfVisible);
+  audio.addEventListener('pause', renderMediaPlayStateIfVisible);
+}
+
+/* File-picker entry points: use the File System Access API (remembers file
+   locations) when the browser supports it, otherwise fall back to a plain
+   <input type="file"> (works everywhere, but can't be remembered). */
+async function mediaPickFiles(){
+  if(fsAccessSupported()){
+    try{
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        types: [{ description:'Audio files', accept:{'audio/*':['.mp3','.wav','.ogg','.m4a','.flac','.aac','.opus']} }]
+      });
+      await mediaAddFromHandles(handles.map(h=>({handle:h})));
+    }catch(e){ /* user cancelled the picker */ }
+  } else {
+    document.getElementById('mediaFilesInput').click();
+  }
+}
+async function mediaPickFolder(){
+  if(fsAccessSupported()){
+    try{
+      const dirHandle = await window.showDirectoryPicker();
+      const found = [];
+      await walkDirectoryForAudio(dirHandle, found);
+      if(!found.length){ toast('No audio files found in that folder', 'error'); return; }
+      await mediaAddFromHandles(found);
+    }catch(e){ /* user cancelled the picker */ }
+  } else {
+    document.getElementById('mediaFolderInput').click();
+  }
+}
+async function mediaAddFromHandles(items){
+  let added = 0;
+  for(const item of items){
+    try{
+      const file = await item.handle.getFile();
+      if(!file.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac|aac|opus)$/i.test(file.name)) continue;
+      const id = uid('TRK-');
+      const name = (item.name || file.name).replace(/\.[^/.]+$/, '');
+      MEDIA.tracks.push({ id, name, url: URL.createObjectURL(file), handle: item.handle });
+      await mediaDbPutTrack({ id, name, handle: item.handle, order: MEDIA.tracks.length-1 });
+      added++;
+    }catch(e){ /* skip a file that couldn't be opened */ }
+  }
+  if(!added){ toast('No audio files could be added', 'error'); return; }
+  if(MEDIA.currentIndex === -1 && MEDIA.tracks.length){ MEDIA.currentIndex = 0; }
+  saveMediaPrefs();
+  toast(`Added ${added} track(s) — their file locations are remembered for next time`, 'success');
+  renderMediaView();
+}
+async function mediaReconnectPending(){
+  const stillPending = [];
+  for(const rec of (MEDIA.pendingHandles||[])){
+    try{
+      const perm = await rec.handle.requestPermission({ mode:'read' });
+      if(perm === 'granted'){
+        const file = await rec.handle.getFile();
+        MEDIA.tracks.push({ id: rec.id, name: rec.name, url: URL.createObjectURL(file), handle: rec.handle });
+      } else { stillPending.push(rec); }
+    }catch(e){ stillPending.push(rec); }
+  }
+  MEDIA.pendingHandles = stillPending;
+  if(MEDIA.currentIndex === -1 && MEDIA.tracks.length) MEDIA.currentIndex = 0;
+  toast(stillPending.length ? `Reconnected some tracks — ${stillPending.length} still need access` : 'All tracks reconnected', stillPending.length?'info':'success');
+  renderMediaView();
+}
+
+/* Fallback path for browsers without the File System Access API — files can't be remembered */
+function mediaAddFiles(fileList){
+  const files = Array.from(fileList).filter(f=>f.type.startsWith('audio/'));
+  if(!files.length){ toast('No audio files found in your selection', 'error'); return; }
+  files.forEach(f=>{
+    MEDIA.tracks.push({ id: uid('TRK-'), name: f.name.replace(/\.[^/.]+$/, ''), url: URL.createObjectURL(f) });
+  });
+  if(MEDIA.currentIndex === -1 && MEDIA.tracks.length){ MEDIA.currentIndex = 0; }
+  saveMediaPrefs();
+  toast(`Added ${files.length} track(s) — this browser can't remember file locations, so you'll need to re-add them next time`, 'success');
+  renderMediaView();
+}
+
+function mediaRemoveTrack(id){
+  const idx = MEDIA.tracks.findIndex(t=>t.id===id);
+  if(idx===-1) return;
+  const wasCurrent = idx === MEDIA.currentIndex;
+  MEDIA.tracks.splice(idx,1);
+  mediaDbDeleteTrack(id);
+  if(wasCurrent){
+    const audio = getBgAudio();
+    if(audio){ audio.pause(); audio.removeAttribute('src'); }
+    MEDIA.currentIndex = MEDIA.tracks.length ? Math.min(idx, MEDIA.tracks.length-1) : -1;
+  } else if(MEDIA.currentIndex > idx){
+    MEDIA.currentIndex--;
+  }
+  persistMediaOrder();
+  saveMediaPrefs();
+  renderMediaView();
+}
+
+function mediaMoveTrack(id, dir){
+  const idx = MEDIA.tracks.findIndex(t=>t.id===id);
+  const newIdx = idx + dir;
+  if(idx===-1 || newIdx<0 || newIdx>=MEDIA.tracks.length) return;
+  const currentId = mediaCurrentTrack() ? mediaCurrentTrack().id : null;
+  const [item] = MEDIA.tracks.splice(idx,1);
+  MEDIA.tracks.splice(newIdx,0,item);
+  if(currentId){ MEDIA.currentIndex = MEDIA.tracks.findIndex(t=>t.id===currentId); }
+  persistMediaOrder();
+  renderMediaView();
+}
+
+function mediaPlayTrack(index){
+  if(index<0 || index>=MEDIA.tracks.length) return;
+  MEDIA.currentIndex = index;
+  initBgAudioEvents();
+  const audio = getBgAudio();
+  audio.src = MEDIA.tracks[index].url;
+  audio.play().catch(()=>{ toast('Tap play again — your browser blocked autoplay until you interact with the page', 'info'); });
+  saveMediaPrefs();
+  renderMediaView();
+}
+
+function mediaTogglePlayPause(){
+  const audio = getBgAudio();
+  if(!audio) return;
+  if(!mediaCurrentTrack()){
+    if(MEDIA.tracks.length) mediaPlayTrack(0);
+    return;
+  }
+  if(audio.paused){ audio.play().catch(()=>{}); } else { audio.pause(); }
+  renderMediaView();
+}
+
+function mediaPlayNext(auto){
+  if(!MEDIA.tracks.length) return;
+  let nextIndex;
+  if(MEDIA.shuffle){
+    if(MEDIA.tracks.length===1){ nextIndex = 0; }
+    else{ do{ nextIndex = Math.floor(Math.random()*MEDIA.tracks.length); } while(nextIndex===MEDIA.currentIndex); }
+  } else {
+    nextIndex = MEDIA.currentIndex + 1;
+    if(nextIndex >= MEDIA.tracks.length){
+      if(MEDIA.repeat){ nextIndex = 0; } else { renderMediaView(); return; }
+    }
+  }
+  mediaPlayTrack(nextIndex);
+}
+
+function mediaPlayPrev(){
+  if(!MEDIA.tracks.length) return;
+  let prevIndex = MEDIA.currentIndex - 1;
+  if(prevIndex < 0) prevIndex = MEDIA.repeat ? MEDIA.tracks.length-1 : 0;
+  mediaPlayTrack(prevIndex);
+}
+
+function mediaSetVolume(v){
+  MEDIA.volume = v;
+  const audio = getBgAudio();
+  if(audio) audio.volume = v;
+  saveMediaPrefs();
+}
+
+function mediaFmtTime(sec){
+  if(!isFinite(sec) || sec<0) sec = 0;
+  const m = Math.floor(sec/60);
+  const s = Math.floor(sec%60);
+  return m + ':' + String(s).padStart(2,'0');
+}
+
+function renderMediaProgressIfVisible(){
+  if(currentView !== 'media') return;
+  const audio = getBgAudio();
+  const seek = document.getElementById('mediaSeek');
+  const cur = document.getElementById('mediaCurTime');
+  const dur = document.getElementById('mediaDurTime');
+  if(seek && audio && isFinite(audio.duration) && audio.duration>0){
+    seek.max = 1000;
+    seek.value = (audio.currentTime/audio.duration)*1000;
+  }
+  if(cur && audio) cur.textContent = mediaFmtTime(audio.currentTime);
+  if(dur && audio) dur.textContent = mediaFmtTime(audio.duration);
+}
+
+function renderMediaPlayStateIfVisible(){
+  if(currentView !== 'media') return;
+  const audio = getBgAudio();
+  const btn = document.getElementById('mediaPlayPauseBtn');
+  if(btn && audio) btn.innerHTML = audio.paused ? '▶' : '⏸';
+  const curId = mediaCurrentTrack() ? mediaCurrentTrack().id : null;
+  document.querySelectorAll('.media-track-row').forEach(row=>{
+    row.classList.toggle('playing', row.dataset.id === curId && audio && !audio.paused);
+    const marker = row.querySelector('.media-track-marker');
+    if(marker){
+      const idx = MEDIA.tracks.findIndex(t=>t.id===row.dataset.id);
+      marker.textContent = row.dataset.id===curId ? (audio && !audio.paused ? '▶' : '⏸') : String(idx+1);
+    }
+  });
+}
+
+function renderMediaView(){
+  const el = document.getElementById('viewMedia');
+  if(!el) return;
+  initBgAudioEvents();
+  const audio = getBgAudio();
+  const current = mediaCurrentTrack();
+  const fsSupported = fsAccessSupported();
+  el.innerHTML = `
+    <div class="section-head">
+      <div><h1>Media</h1><p>Play background music for your shop, or a video — entirely optional, and kept local to this device</p></div>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1.3fr 1fr;">
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎵 Background Music</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Pick individual songs or an entire folder from this computer.${fsSupported ? ' Their file locations are remembered, so the playlist reloads automatically next time you open this app.' : ' This browser can\'t remember file locations between sessions — you\'ll need to re-add files after closing.'} Nothing here is uploaded or synced to the cloud.</p>
+        <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px;">
+          <button class="btn btn-outline btn-sm" id="mediaAddFilesBtn">${ICONS.upload} Add Music Files</button>
+          <button class="btn btn-outline btn-sm" id="mediaAddFolderBtn">${ICONS.upload} Add Folder</button>
+          <input type="file" id="mediaFilesInput" accept="audio/*" multiple class="hidden">
+          <input type="file" id="mediaFolderInput" webkitdirectory directory multiple class="hidden">
+          ${MEDIA.tracks.length ? `<button class="btn btn-outline btn-sm" id="mediaClearBtn" style="color:var(--danger);">Clear Playlist</button>` : ''}
+        </div>
+
+        ${MEDIA.pendingHandles && MEDIA.pendingHandles.length ? `
+        <div class="card" style="padding:12px 14px;background:var(--orange-light);border-color:var(--orange);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <span style="font-size:12.5px;font-weight:600;">${MEDIA.pendingHandles.length} previously added track(s) need permission to reopen.</span>
+          <button class="btn btn-primary btn-sm" id="mediaReconnectBtn">Reconnect Files</button>
+        </div>` : ''}
+
+        <div class="card" style="padding:14px 16px;background:var(--bg);margin-bottom:16px;">
+          <div class="text-muted" style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Now Playing</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:10px;">${current ? escapeHtml(current.name) : 'Nothing selected yet'}</div>
+          <input type="range" id="mediaSeek" min="0" max="1000" value="0" style="width:100%;accent-color:var(--orange);margin-bottom:6px;">
+          <div class="flex" style="justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;">
+            <span id="mediaCurTime">0:00</span><span id="mediaDurTime">0:00</span>
+          </div>
+          <div class="flex items-center gap-8" style="justify-content:center;margin-bottom:14px;">
+            <button class="btn-icon btn-outline" id="mediaPrevBtn" title="Previous">⏮</button>
+            <button class="btn-icon btn-primary" id="mediaPlayPauseBtn" style="width:46px;height:46px;font-size:18px;" title="Play/Pause">${audio && !audio.paused ? '⏸' : '▶'}</button>
+            <button class="btn-icon btn-outline" id="mediaNextBtn" title="Next">⏭</button>
+          </div>
+          <div class="flex items-center gap-8" style="justify-content:center;flex-wrap:wrap;">
+            <button class="chip ${MEDIA.shuffle?'active':''}" id="mediaShuffleBtn" style="padding:6px 14px;font-size:11.5px;">🔀 Shuffle</button>
+            <button class="chip ${MEDIA.repeat?'active':''}" id="mediaRepeatBtn" style="padding:6px 14px;font-size:11.5px;">🔁 Repeat</button>
+            <span class="flex items-center gap-8" style="font-size:11.5px;color:var(--muted);">🔉<input type="range" id="mediaVolume" min="0" max="1" step="0.05" value="${MEDIA.volume}" style="width:90px;accent-color:var(--orange);"></span>
+          </div>
+        </div>
+
+        <div id="mediaPlaylist"></div>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎬 Video</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Pick a video to play on this screen. Background music pauses automatically while a video is playing.</p>
+        <button class="btn btn-outline btn-sm mb-16" id="mediaVideoBtn">${ICONS.upload} Choose Video</button>
+        <input type="file" id="mediaVideoInput" accept="video/*" class="hidden">
+        ${MEDIA_VIDEO.pendingHandle ? `
+        <div class="card" style="padding:12px 14px;background:var(--orange-light);border-color:var(--orange);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <span style="font-size:12.5px;font-weight:600;">"${escapeHtml(MEDIA_VIDEO.pendingHandle.name)}" needs permission to reopen.</span>
+          <button class="btn btn-primary btn-sm" id="mediaVideoReconnectBtn">Reconnect</button>
+        </div>` : ''}
+        ${MEDIA_VIDEO.url ? `
+          <div class="text-muted" style="font-size:12px;margin-bottom:8px;">${escapeHtml(MEDIA_VIDEO.name)}</div>
+          <video id="mediaVideoPlayer" controls style="width:100%;border-radius:10px;background:#000;" src="${MEDIA_VIDEO.url}"></video>
+        ` : `<div class="empty-state"><div class="ico">🎬</div><h3>No video chosen</h3><p>Pick a video file to play it here.</p></div>`}
+      </div>
+    </div>
+  `;
+
+  renderMediaPlaylist();
+
+  document.getElementById('mediaAddFilesBtn').onclick = () => mediaPickFiles();
+  document.getElementById('mediaAddFolderBtn').onclick = () => mediaPickFolder();
+  document.getElementById('mediaFilesInput').onchange = (e) => { if(e.target.files.length) mediaAddFiles(e.target.files); e.target.value=''; };
+  document.getElementById('mediaFolderInput').onchange = (e) => { if(e.target.files.length) mediaAddFiles(e.target.files); e.target.value=''; };
+  const clearBtn = document.getElementById('mediaClearBtn');
+  if(clearBtn) clearBtn.onclick = () => {
+    confirmDialog('Clear the whole music playlist? Playback will stop and remembered file locations will be forgotten.', () => {
+      const a = getBgAudio(); if(a){ a.pause(); a.removeAttribute('src'); }
+      MEDIA.tracks = []; MEDIA.currentIndex = -1; MEDIA.pendingHandles = [];
+      mediaDbClearTracks();
+      try{ localStorage.removeItem(K_MEDIA_PREFS); }catch(e){}
+      renderMediaView();
+    });
+  };
+  const reconnectBtn = document.getElementById('mediaReconnectBtn');
+  if(reconnectBtn) reconnectBtn.onclick = mediaReconnectPending;
+
+  document.getElementById('mediaPlayPauseBtn').onclick = mediaTogglePlayPause;
+  document.getElementById('mediaPrevBtn').onclick = mediaPlayPrev;
+  document.getElementById('mediaNextBtn').onclick = () => mediaPlayNext(false);
+  document.getElementById('mediaShuffleBtn').onclick = () => { MEDIA.shuffle = !MEDIA.shuffle; saveMediaPrefs(); renderMediaView(); };
+  document.getElementById('mediaRepeatBtn').onclick = () => { MEDIA.repeat = !MEDIA.repeat; saveMediaPrefs(); renderMediaView(); };
+  document.getElementById('mediaVolume').oninput = (e) => mediaSetVolume(parseFloat(e.target.value));
+  document.getElementById('mediaSeek').oninput = (e) => {
+    const a = getBgAudio();
+    if(a && isFinite(a.duration) && a.duration>0){ a.currentTime = (e.target.value/1000)*a.duration; }
+  };
+
+  document.getElementById('mediaVideoBtn').onclick = () => mediaPickVideo();
+  document.getElementById('mediaVideoInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(MEDIA_VIDEO.url) URL.revokeObjectURL(MEDIA_VIDEO.url);
+    MEDIA_VIDEO = { name: file.name, url: URL.createObjectURL(file), handle: null, pendingHandle: null };
+    renderMediaView();
+  };
+  const videoReconnectBtn = document.getElementById('mediaVideoReconnectBtn');
+  if(videoReconnectBtn) videoReconnectBtn.onclick = () => mediaReconnectVideo();
+  const videoPlayer = document.getElementById('mediaVideoPlayer');
+  if(videoPlayer){
+    videoPlayer.onplay = () => { const a = getBgAudio(); if(a && !a.paused) a.pause(); };
+  }
+
+  renderMediaProgressIfVisible();
+  renderMediaPlayStateIfVisible();
+}
+
+function renderMediaPlaylist(){
+  const wrap = document.getElementById('mediaPlaylist');
+  if(!wrap) return;
+  if(!MEDIA.tracks.length){
+    wrap.innerHTML = `<div class="empty-state" style="padding:30px 10px;"><div class="ico">🎵</div><h3>No tracks yet</h3><p>Add music files or a whole folder to build a playlist.</p></div>`;
+    return;
+  }
+  const audio = getBgAudio();
+  wrap.innerHTML = MEDIA.tracks.map((t,i)=>`
+    <div class="media-track-row ${i===MEDIA.currentIndex && audio && !audio.paused ? 'playing':''}" data-id="${t.id}" style="display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px dashed var(--border);cursor:pointer;">
+      <span class="media-track-marker" style="width:20px;text-align:center;font-size:12px;color:var(--muted);">${i===MEDIA.currentIndex ? (audio && !audio.paused ? '▶' : '⏸') : (i+1)}</span>
+      <span style="flex:1;min-width:0;font-size:13px;font-weight:${i===MEDIA.currentIndex?'700':'500'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.name)}</span>
+      <button class="btn-icon btn-ghost" data-act="up" title="Move up" style="width:26px;height:26px;">↑</button>
+      <button class="btn-icon btn-ghost" data-act="down" title="Move down" style="width:26px;height:26px;">↓</button>
+      <button class="btn-icon btn-ghost" data-act="remove" title="Remove" style="width:26px;height:26px;color:var(--danger);">✕</button>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.media-track-row').forEach(row=>{
+    const id = row.dataset.id;
+    row.addEventListener('click', (e)=>{
+      if(e.target.closest('button')) return;
+      const idx = MEDIA.tracks.findIndex(t=>t.id===id);
+      mediaPlayTrack(idx);
+    });
+    row.querySelector('[data-act="up"]').onclick = (e)=>{ e.stopPropagation(); mediaMoveTrack(id,-1); };
+    row.querySelector('[data-act="down"]').onclick = (e)=>{ e.stopPropagation(); mediaMoveTrack(id,1); };
+    row.querySelector('[data-act="remove"]').onclick = (e)=>{ e.stopPropagation(); mediaRemoveTrack(id); };
+  });
+}
+
+/* ============================================================
    DASHBOARD VIEW
    ============================================================ */
 function renderDashboardView(){
@@ -3435,11 +4034,115 @@ function exportFullExcel(){
 }
 
 /* ============================================================
+   APP EXIT CONFIRMATION
+   A dedicated in-app "power" button asks for confirmation before
+   closing. Browsers can't fully intercept the OS window-close (X)
+   button with a custom dialog, so we also wire the standard
+   beforeunload prompt as a fallback for that case — it shows the
+   browser's own "Leave site?" confirmation.
+   ============================================================ */
+let intentionalExit = false;
+window.addEventListener('beforeunload', (e)=>{
+  if(intentionalExit) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+function requestAppExit(){
+  ensureModalRoot();
+  const root = document.getElementById('modalRoot');
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-overlay show';
+  wrap.innerHTML = `
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-body">
+        <div class="gate-box" style="padding-top:0;">
+          <div class="gate-ico" style="background:linear-gradient(135deg, var(--danger), var(--danger-dark));">⏻</div>
+          <h3>Close Gliffits Mart POS?</h3>
+          <p>Your products, sales and customers are already saved. Any items still in the current cart will be lost.</p>
+        </div>
+      </div>
+      <div class="modal-foot" style="justify-content:center;">
+        <button class="btn btn-outline" id="exitCancelBtn">Stay Open</button>
+        <button class="btn btn-danger" id="exitConfirmBtn">Yes, Close App</button>
+      </div>
+    </div>
+  `;
+  root.appendChild(wrap);
+  wrap.querySelector('#exitCancelBtn').onclick = () => wrap.remove();
+  wrap.onclick = (e)=>{ if(e.target===wrap) wrap.remove(); };
+  wrap.querySelector('#exitConfirmBtn').onclick = () => {
+    intentionalExit = true;
+    wrap.remove();
+    window.close();
+    setTimeout(()=>{
+      // window.close() only works for tabs/windows opened by a script;
+      // if we're still here, the browser blocked it — lock the app instead.
+      intentionalExit = false;
+      toast('You can now close this browser tab or window', 'info');
+      showLockGate();
+    }, 350);
+  };
+}
+
+/* ============================================================
    INIT / BOOTSTRAP
    ============================================================ */
-function init(){
+function wait(ms){ return new Promise(resolve=>setTimeout(resolve, ms)); }
+
+function showLoadingScreen(){
+  const el = document.createElement('div');
+  el.id = 'loadingScreen';
+  el.innerHTML = `
+    <div class="loading-card">
+      <div class="loading-mark">G</div>
+      <div class="loading-title">Gliffits<span>Mart</span></div>
+      <div class="loading-tagline">Offline-first Point of Sale — getting your counter ready</div>
+      <div class="loading-bar"><div class="loading-fill" id="loadingFill"></div></div>
+      <div class="loading-status" id="loadingStatus">Starting up…</div>
+      <div class="loading-pct" id="loadingPct">0%</div>
+    </div>
+  `;
+  document.body.appendChild(el);
+}
+function setLoadingProgress(pct, label){
+  const fill = document.getElementById('loadingFill');
+  const status = document.getElementById('loadingStatus');
+  const pctEl = document.getElementById('loadingPct');
+  if(fill) fill.style.width = pct + '%';
+  if(status && label) status.textContent = label;
+  if(pctEl) pctEl.textContent = Math.round(pct) + '%';
+}
+function hideLoadingScreen(){
+  const el = document.getElementById('loadingScreen');
+  if(!el) return;
+  el.style.transition = 'opacity .35s ease';
+  el.style.opacity = '0';
+  setTimeout(()=>el.remove(), 350);
+}
+
+async function runLoadingSequence(){
   loadState();
-  showLockGate();
+  setLoadingProgress(10, 'Loading store settings…');
+  await wait(200);
+  setLoadingProgress(30, 'Restoring products & stock…');
+  await wait(220);
+  setLoadingProgress(50, 'Loading sales history & customers…');
+  await wait(200);
+  setLoadingProgress(68, 'Reconnecting saved music & video…');
+  try{ await restoreMediaLibrary(); }catch(e){ /* media restore is best-effort */ }
+  setLoadingProgress(90, 'Preparing the counter…');
+  await wait(260);
+  setLoadingProgress(100, 'Ready!');
+  await wait(250);
+}
+
+function init(){
+  showLoadingScreen();
+  runLoadingSequence().then(()=>{
+    hideLoadingScreen();
+    setTimeout(()=> showLockGate(), 200);
+  });
 }
 
 function startApp(){
