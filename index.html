@@ -42,6 +42,7 @@
   --sidebar-w: 220px;
   --sidebar-w-collapsed: 76px;
   --topbar-h: 68px;
+  --zf: 1;   /* ← ADD THIS — current zoom factor, e.g. 0.7 for 70% */
 }
 
 [data-theme="dark"]{
@@ -94,6 +95,268 @@ input[type="checkbox"], input[type="radio"]{ accent-color: var(--orange); width:
 [data-theme="dark"] .chan-choice label{ border-color:var(--border); color:var(--text); }
 [data-theme="dark"] .chan-choice label:has(input:checked){ background: var(--orange-light); border-color:var(--orange); }
 
+/* ============================================================
+   EXTRA THEMES (advanced settings) — each sets the same CSS
+   variable palette used above, so every existing component
+   (cards, tables, modals, chips, etc.) re-skins automatically.
+   ============================================================ */
+/* ==========================================
+   THEME VARIABLES
+   ========================================== */
+[data-theme="midnight"]{
+  --orange:#7C9CFF; --orange-dark:#5C7CF0; --orange-light:#1B2036;
+  --charcoal:#E9EBF5; --bg:#0B0D14; --card:#12141E; --text:#EDEFF7;
+  --muted:#8B90A8; --border:#242840; --success:#37D67A; --success-dark:#22A85C;
+  --danger:#FF6B6B; --danger-dark:#E24C4C; --info:#5AA9FF;
+  color-scheme: dark;
+}
+[data-theme="forest"]{
+  --orange:#3FA66B; --orange-dark:#2F8556; --orange-light:#E4F3E9;
+  --charcoal:#1B2420; --bg:#F1F6F2; --card:#FFFFFF; --text:#16211A;
+  --muted:#5E7568; --border:#D9E5DC; --success:#2FA35B; --success-dark:#1F7F44;
+  --danger:#D6543F; --danger-dark:#B4402D; --info:#2F80ED;
+  color-scheme: light;
+}
+[data-theme="ocean"]{
+  --orange:#1FB6C9; --orange-dark:#1494A5; --orange-light:#DEF7FA;
+  --charcoal:#0F2A33; --bg:#F0FAFB; --card:#FFFFFF; --text:#0C2229;
+  --muted:#5C7C84; --border:#D6EBEE; --success:#22B573; --success-dark:#178F58;
+  --danger:#E1493A; --danger-dark:#C43226; --info:#2F80ED;
+  color-scheme: light;
+}
+[data-theme="grape"]{
+  --orange:#A56CF2; --orange-dark:#8A4DE0; --orange-light:#241735;
+  --charcoal:#EDE6F7; --bg:#120D1C; --card:#1B1430; --text:#F1ECFB;
+  --muted:#9A8FBB; --border:#2E2450; --success:#3FD68A; --success-dark:#28AC6B;
+  --danger:#FF6B81; --danger-dark:#E3536A; --info:#6FA8FF;
+  color-scheme: dark;
+}
+[data-theme="sand"]{
+  --orange:#C97A3C; --orange-dark:#A85F27; --orange-light:#FBEDDD;
+  --charcoal:#2B2015; --bg:#FAF4EC; --card:#FFFFFF; --text:#2B2015;
+  --muted:#8A7A65; --border:#EADFCD; --success:#3E9C5F; --success-dark:#2E7B47;
+  --danger:#C64B3A; --danger-dark:#A33A2C; --info:#3B7DD8;
+  color-scheme: light;
+}
+[data-theme="slate"]{
+  --orange:#E0A22C; --orange-dark:#C18718; --orange-light:#2B2A22;
+  --charcoal:#E7E8EC; --bg:#1A1C22; --card:#22252D; --text:#EDEEF3;
+  --muted:#9096A6; --border:#31353F; --success:#4CC38A; --success-dark:#33A06D;
+  --danger:#E1493A; --danger-dark:#C43226; --info:#5B9CF6;
+  color-scheme: dark;
+}
+[data-theme="rose"]{
+  --orange:#E0577F; --orange-dark:#C23F65; --orange-light:#FBE7ED;
+  --charcoal:#3A1F26; --bg:#FFF6F8; --card:#FFFFFF; --text:#33181E;
+  --muted:#8C6670; --border:#F3DCE2; --success:#2FA35B; --success-dark:#1F7F44;
+  --danger:#D6543F; --danger-dark:#B4402D; --info:#2F80ED;
+  color-scheme: light;
+}
+[data-theme="mint"]{
+  --orange:#1FA97C; --orange-dark:#158863; --orange-light:#DFF6EC;
+  --charcoal:#123227; --bg:#F2FBF7; --card:#FFFFFF; --text:#0F291F;
+  --muted:#5E8578; --border:#D6EEE3; --success:#22B573; --success-dark:#178F58;
+  --danger:#E1493A; --danger-dark:#C43226; --info:#2F80ED;
+  color-scheme: light;
+}
+[data-theme="sunset"]{
+  --orange:#F0603B; --orange-dark:#D2492A; --orange-light:#FFEAE1;
+  --charcoal:#3A1D14; --bg:#FFF7F2; --card:#FFFFFF; --text:#341C12;
+  --muted:#8C6C5C; --border:#F5DED2; --success:#3E9C5F; --success-dark:#2E7B47;
+  --danger:#C64B3A; --danger-dark:#A33A2C; --info:#3B7DD8;
+  color-scheme: light;
+}
+[data-theme="storm"]{
+  --orange:#6FA8DC; --orange-dark:#4C87BE; --orange-light:#1B2733;
+  --charcoal:#E4E9EF; --bg:#0D131A; --card:#161E27; --text:#EAEEF3;
+  --muted:#8B97A6; --border:#26313D; --success:#37D67A; --success-dark:#22A85C;
+  --danger:#FF6B81; --danger-dark:#E24C4C; --info:#5AA9FF;
+  color-scheme: dark;
+}
+[data-theme="espresso"]{
+  --orange:#D99A5B; --orange-dark:#BC7C3D; --orange-light:#2B2119;
+  --charcoal:#EFE6DC; --bg:#1C1712; --card:#26201A; --text:#F1EAE1;
+  --muted:#A0937F; --border:#3A3128; --success:#4CC38A; --success-dark:#33A06D;
+  --danger:#E1685A; --danger-dark:#C24C3F; --info:#5B9CF6;
+  color-scheme: dark;
+}
+
+/* ==========================================
+   THEME OVERRIDES & COMPONENT STYLES
+   ========================================== */
+[data-theme="midnight"] select,
+[data-theme="grape"] select,
+[data-theme="slate"] select,
+[data-theme="storm"] select,
+[data-theme="espresso"] select {
+  background: #12141A;
+  color: var(--text);
+}
+
+[data-theme="midnight"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="grape"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="slate"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="storm"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="espresso"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+[data-theme="midnight"] body,
+[data-theme="forest"] body,
+[data-theme="ocean"] body,
+[data-theme="grape"] body,
+[data-theme="sand"] body,
+[data-theme="slate"] body,
+[data-theme="rose"] body,
+[data-theme="mint"] body,
+[data-theme="sunset"] body,
+[data-theme="storm"] body,
+[data-theme="espresso"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="midnight"] .sidebar,
+[data-theme="grape"] .sidebar,
+[data-theme="slate"] .sidebar,
+[data-theme="storm"] .sidebar,
+[data-theme="espresso"] .sidebar {
+  background: linear-gradient(180deg, #0F1015 0%, #08090C 100%);
+}
+
+[data-theme="midnight"] .card, [data-theme="midnight"] .table-wrap, [data-theme="midnight"] .cart-panel, [data-theme="midnight"] .modal, [data-theme="midnight"] .chip, [data-theme="midnight"] .product-card, [data-theme="midnight"] .stat-card,
+[data-theme="forest"] .card, [data-theme="forest"] .table-wrap, [data-theme="forest"] .cart-panel, [data-theme="forest"] .modal, [data-theme="forest"] .chip, [data-theme="forest"] .product-card, [data-theme="forest"] .stat-card,
+[data-theme="ocean"] .card, [data-theme="ocean"] .table-wrap, [data-theme="ocean"] .cart-panel, [data-theme="ocean"] .modal, [data-theme="ocean"] .chip, [data-theme="ocean"] .product-card, [data-theme="ocean"] .stat-card,
+[data-theme="grape"] .card, [data-theme="grape"] .table-wrap, [data-theme="grape"] .cart-panel, [data-theme="grape"] .modal, [data-theme="grape"] .chip, [data-theme="grape"] .product-card, [data-theme="grape"] .stat-card,
+[data-theme="sand"] .card, [data-theme="sand"] .table-wrap, [data-theme="sand"] .cart-panel, [data-theme="sand"] .modal, [data-theme="sand"] .chip, [data-theme="sand"] .product-card, [data-theme="sand"] .stat-card,
+[data-theme="slate"] .card, [data-theme="slate"] .table-wrap, [data-theme="slate"] .cart-panel, [data-theme="slate"] .modal, [data-theme="slate"] .chip, [data-theme="slate"] .product-card, [data-theme="slate"] .stat-card,
+[data-theme="rose"] .card, [data-theme="rose"] .table-wrap, [data-theme="rose"] .cart-panel, [data-theme="rose"] .modal, [data-theme="rose"] .chip, [data-theme="rose"] .product-card, [data-theme="rose"] .stat-card,
+[data-theme="mint"] .card, [data-theme="mint"] .table-wrap, [data-theme="mint"] .cart-panel, [data-theme="mint"] .modal, [data-theme="mint"] .chip, [data-theme="mint"] .product-card, [data-theme="mint"] .stat-card,
+[data-theme="sunset"] .card, [data-theme="sunset"] .table-wrap, [data-theme="sunset"] .cart-panel, [data-theme="sunset"] .modal, [data-theme="sunset"] .chip, [data-theme="sunset"] .product-card, [data-theme="sunset"] .stat-card,
+[data-theme="storm"] .card, [data-theme="storm"] .table-wrap, [data-theme="storm"] .cart-panel, [data-theme="storm"] .modal, [data-theme="storm"] .chip, [data-theme="storm"] .product-card, [data-theme="storm"] .stat-card,
+[data-theme="espresso"] .card, [data-theme="espresso"] .table-wrap, [data-theme="espresso"] .cart-panel, [data-theme="espresso"] .modal, [data-theme="espresso"] .chip, [data-theme="espresso"] .product-card, [data-theme="espresso"] .stat-card {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme="midnight"] .topbar, [data-theme="forest"] .topbar, [data-theme="ocean"] .topbar, [data-theme="grape"] .topbar, [data-theme="sand"] .topbar, [data-theme="slate"] .topbar, [data-theme="rose"] .topbar, [data-theme="mint"] .topbar, [data-theme="sunset"] .topbar, [data-theme="storm"] .topbar, [data-theme="espresso"] .topbar {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+[data-theme="midnight"] .search-wrap input, [data-theme="midnight"] .field-row input, [data-theme="midnight"] .field-row select, [data-theme="midnight"] .field-row textarea, [data-theme="midnight"] .hist-input,
+[data-theme="grape"] .search-wrap input, [data-theme="grape"] .field-row input, [data-theme="grape"] .field-row select, [data-theme="grape"] .field-row textarea, [data-theme="grape"] .hist-input,
+[data-theme="slate"] .search-wrap input, [data-theme="slate"] .field-row input, [data-theme="slate"] .field-row select, [data-theme="slate"] .field-row textarea, [data-theme="slate"] .hist-input,
+[data-theme="storm"] .search-wrap input, [data-theme="storm"] .field-row input, [data-theme="storm"] .field-row select, [data-theme="storm"] .field-row textarea, [data-theme="storm"] .hist-input,
+[data-theme="espresso"] .search-wrap input, [data-theme="espresso"] .field-row input, [data-theme="espresso"] .field-row select, [data-theme="espresso"] .field-row textarea, [data-theme="espresso"] .hist-input {
+  background: #0E1018;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="midnight"] .icon-btn,
+[data-theme="grape"] .icon-btn,
+[data-theme="slate"] .icon-btn,
+[data-theme="storm"] .icon-btn,
+[data-theme="espresso"] .icon-btn {
+  background: #1D2030;
+  color: #EDEEF2;
+}
+
+[data-theme="midnight"] thead th,
+[data-theme="grape"] thead th,
+[data-theme="slate"] thead th,
+[data-theme="storm"] thead th,
+[data-theme="espresso"] thead th {
+  background: #171A24;
+}
+
+[data-theme="midnight"] tbody tr:hover, [data-theme="forest"] tbody tr:hover, [data-theme="ocean"] tbody tr:hover, [data-theme="grape"] tbody tr:hover, [data-theme="sand"] tbody tr:hover, [data-theme="slate"] tbody tr:hover, [data-theme="rose"] tbody tr:hover, [data-theme="mint"] tbody tr:hover, [data-theme="sunset"] tbody tr:hover, [data-theme="storm"] tbody tr:hover, [data-theme="espresso"] tbody tr:hover {
+  background: var(--orange-light);
+}
+
+[data-theme="midnight"] .pid-tag,
+[data-theme="grape"] .pid-tag,
+[data-theme="slate"] .pid-tag,
+[data-theme="storm"] .pid-tag,
+[data-theme="espresso"] .pid-tag {
+  background: #1D2030;
+}
+
+[data-theme="midnight"] .img-drop,
+[data-theme="grape"] .img-drop,
+[data-theme="slate"] .img-drop,
+[data-theme="storm"] .img-drop,
+[data-theme="espresso"] .img-drop {
+  background: #171A24;
+}
+
+[data-theme="midnight"] .low-stock-item,
+[data-theme="grape"] .low-stock-item,
+[data-theme="slate"] .low-stock-item,
+[data-theme="storm"] .low-stock-item,
+[data-theme="espresso"] .low-stock-item {
+  background: #171A24;
+}
+
+[data-theme="forest"] .low-stock-item, [data-theme="ocean"] .low-stock-item, [data-theme="sand"] .low-stock-item, [data-theme="rose"] .low-stock-item, [data-theme="mint"] .low-stock-item, [data-theme="sunset"] .low-stock-item {
+  background: var(--bg);
+}
+
+[data-theme="midnight"] .product-card .thumb,
+[data-theme="grape"] .product-card .thumb,
+[data-theme="slate"] .product-card .thumb,
+[data-theme="storm"] .product-card .thumb,
+[data-theme="espresso"] .product-card .thumb {
+  background: #171A24;
+}
+
+[data-theme="midnight"] .btn-outline, [data-theme="forest"] .btn-outline, [data-theme="ocean"] .btn-outline, [data-theme="grape"] .btn-outline, [data-theme="sand"] .btn-outline, [data-theme="slate"] .btn-outline, [data-theme="rose"] .btn-outline, [data-theme="mint"] .btn-outline, [data-theme="sunset"] .btn-outline, [data-theme="storm"] .btn-outline, [data-theme="espresso"] .btn-outline {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="midnight"] .chip.active, [data-theme="forest"] .chip.active, [data-theme="ocean"] .chip.active, [data-theme="grape"] .chip.active, [data-theme="sand"] .chip.active, [data-theme="slate"] .chip.active, [data-theme="rose"] .chip.active, [data-theme="mint"] .chip.active, [data-theme="sunset"] .chip.active, [data-theme="storm"] .chip.active, [data-theme="espresso"] .chip.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+[data-theme="midnight"] .pay-methods button.active, [data-theme="forest"] .pay-methods button.active, [data-theme="ocean"] .pay-methods button.active, [data-theme="grape"] .pay-methods button.active, [data-theme="sand"] .pay-methods button.active, [data-theme="slate"] .pay-methods button.active, [data-theme="rose"] .pay-methods button.active, [data-theme="mint"] .pay-methods button.active, [data-theme="sunset"] .pay-methods button.active, [data-theme="storm"] .pay-methods button.active, [data-theme="espresso"] .pay-methods button.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+[data-theme="midnight"] .toast,
+[data-theme="grape"] .toast,
+[data-theme="slate"] .toast,
+[data-theme="storm"] .toast,
+[data-theme="espresso"] .toast {
+  color: #fff;
+}
+
+[data-theme="midnight"] .gate-box input, [data-theme="midnight"] .lock-card input,
+[data-theme="grape"] .gate-box input, [data-theme="grape"] .lock-card input,
+[data-theme="slate"] .gate-box input, [data-theme="slate"] .lock-card input,
+[data-theme="storm"] .gate-box input, [data-theme="storm"] .lock-card input,
+[data-theme="espresso"] .gate-box input, [data-theme="espresso"] .lock-card input {
+  background: #0E1018;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="midnight"] .chan-choice label, [data-theme="grape"] .chan-choice label, [data-theme="slate"] .chan-choice label, [data-theme="storm"] .chan-choice label, [data-theme="espresso"] .chan-choice label {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme="midnight"] .chan-choice label:has(input:checked), [data-theme="grape"] .chan-choice label:has(input:checked), [data-theme="slate"] .chan-choice label:has(input:checked), [data-theme="storm"] .chan-choice label:has(input:checked), [data-theme="espresso"] .chan-choice label:has(input:checked) {
+  background: var(--orange-light);
+  border-color: var(--orange);
+}
 *{ box-sizing: border-box; margin:0; padding:0; }
 html,body{ height:100%; }
 body{
@@ -312,6 +575,18 @@ a{ color:inherit; text-decoration:none; }
 .clock{ font-size:12.5px; color:var(--muted); text-align:right; line-height:1.3; display:none; }
 .clock b{ display:block; color:var(--text); font-size:13.5px; font-family:var(--font-display); }
 
+/* ---- Topbar mini media transport (shown while music/video is active) ---- */
+.topbar-media{
+  display:none; align-items:center; gap:6px; background:var(--bg); border-radius:20px; padding:5px 6px 5px 12px;
+  max-width:220px;
+}
+.topbar-media.show{ display:flex; }
+.topbar-media .tm-name{ font-size:11.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100px; }
+.topbar-media button{ width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--card); font-size:12px; flex-shrink:0; transition: background .15s ease; }
+.topbar-media button:hover{ background:var(--orange-light); color:var(--orange-dark); }
+.topbar-media .tm-play{ background:var(--orange); color:#fff; }
+.topbar-media .tm-play:hover{ background:var(--orange-dark); color:#fff; }
+
 /* ---- Main content ---- */
 .main-wrap{ margin-left: var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-width:0; }
 .view{ display:none; padding: 22px; flex:1; animation: viewIn .35s ease; }
@@ -510,8 +785,8 @@ a{ color:inherit; text-decoration:none; }
   border:1px solid var(--border); box-shadow: var(--shadow-lg);
   display:flex; flex-direction:column;
   position: fixed; top: calc(var(--topbar-h) + 14px); right: 22px;
-  height: calc(100vh - var(--topbar-h) - 30px);
-  max-height: calc(100vh - var(--topbar-h) - 30px);
+  height: calc((100vh - var(--topbar-h) - 30px) / var(--zf));
+  max-height: calc((100vh - var(--topbar-h) - 30px) / var(--zf));
   transition: transform .32s ease;
   z-index: 25;
 }
@@ -597,7 +872,7 @@ a{ color:inherit; text-decoration:none; }
 /* ============================================================
    TABLES
    ============================================================ */
-.table-wrap{ overflow:auto; max-height: 62vh; border-radius: var(--radius); border:1px solid var(--border); background:var(--card); }
+.table-wrap{ overflow:auto; max-height: calc(62vh / var(--zf)); border-radius: var(--radius); border:1px solid var(--border); background:var(--card); }
 table{ width:100%; border-collapse:collapse; font-size:13px; min-width:640px;}
 thead th{
   position: sticky; top: 0; z-index: 5;
@@ -634,7 +909,7 @@ tbody tr:last-child td{ border-bottom:none; }
 .modal-overlay.show{ display:flex; }
 @keyframes overlayIn{ from{ opacity:0;} to{opacity:1;} }
 .modal{
-  background:var(--card); color:var(--text); border-radius:16px; width:100%; max-width:460px; max-height:88vh; overflow-y:auto;
+  background:var(--card); color:var(--text); border-radius:16px; width:100%; max-width:460px; max-height: calc(88vh / var(--zf)); overflow-y:auto;
   box-shadow: var(--shadow-lg); animation: modalIn .3s cubic-bezier(.2,.9,.3,1.2);
 }
 .modal.modal-lg{ max-width:640px; }
@@ -699,6 +974,19 @@ tbody tr:last-child td{ border-bottom:none; }
 .toast.hide{ animation: toastOut .3s ease forwards; }
 @keyframes toastOut{ to{ opacity:0; transform: translateX(40px); } }
 
+/* ---- Media "now" notification (transient, shown for ~3s on track/video change) ---- */
+#mediaNotify{
+  position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-12px);
+  background:var(--ink); color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; font-weight:600;
+  box-shadow: var(--shadow-lg); z-index:3500; display:flex; align-items:center; gap:10px;
+  opacity:0; pointer-events:none; transition: opacity .3s ease, transform .3s ease;
+  max-width:320px;
+}
+#mediaNotify.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+#mediaNotify .mn-ico{ font-size:18px; flex-shrink:0; }
+#mediaNotify .mn-text b{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:.4px; opacity:.75; font-weight:700; }
+#mediaNotify .mn-text span{ display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:250px; }
+
 /* ============================================================
    LOGIN / PASSWORD GATE
    ============================================================ */
@@ -738,6 +1026,69 @@ tbody tr:last-child td{ border-bottom:none; }
 .media-track-row:last-child{ border-bottom:none !important; }
 .hist-input{ padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; background:var(--card); color:var(--text); }
 
+/* Static (non-scrolling) player card: the surrounding page/column can
+   scroll (e.g. a long playlist) while the transport controls stay put. */
+.media-player-card{ position:sticky; top: calc(var(--topbar-h) + 14px); }
+.media-player-card-video{ position:static !important; top:auto !important; }
+.media-playlist-scroll{ overflow-y:auto; }
+.media-playlist-scroll::-webkit-scrollbar{ width:10px; }
+.media-playlist-scroll::-webkit-scrollbar-thumb{ background:var(--border); border-radius:8px; }
+.media-playlist-scroll::-webkit-scrollbar-thumb:hover{ background:var(--orange); }
+
+/* ---- Media view: fixed to the viewport, only playlists/players scroll ---- */
+#viewMedia.active{
+  padding: 16px 22px;
+}
+#viewMedia .media-player-card{ position: static; }
+#viewMedia .media-playlist-scroll{
+  max-height: calc(40vh / var(--zf));
+  overflow-y: auto;
+}
+#viewMedia .video-player-wrap{ max-height: calc(38vh / var(--zf)); }
+
+body.media-narrow #viewMedia .form-grid{
+  grid-template-columns: 1fr !important;
+}
+
+/* ---- Custom video player with timeline, fullscreen & resize ---- */
+.video-player-wrap{ position:relative; background:#000; border-radius:10px; overflow:hidden; resize:both; min-width:220px; min-height:140px; max-width:100%; }
+.video-player-wrap video{ width:100%; height:100%; display:block; background:#000; }
+.video-controls{
+  position:absolute; left:0; right:0; bottom:0; padding:8px 10px 10px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.75), rgba(0,0,0,0));
+  display:flex; flex-direction:column; gap:6px; opacity:0; transition:opacity .2s ease;
+}
+.video-player-wrap:hover .video-controls, .video-player-wrap.controls-visible .video-controls{ opacity:1; }
+.video-seek{ width:100%; accent-color:var(--orange); cursor:pointer; }
+.video-controls-row{ display:flex; align-items:center; gap:8px; }
+.video-controls-row button{ width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,0.15); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.video-controls-row button:hover{ background:rgba(255,255,255,0.28); }
+.video-time{ color:#fff; font-size:11px; font-family:var(--font-mono); flex-shrink:0; }
+.video-controls-row .spacer{ flex:1; }
+
+/* ---- Floating mini/PiP player: draggable, minimizable, persists across views ---- */
+#floatingMediaPlayer{
+  position:fixed; z-index:4000; width:300px; background:var(--card); border-radius:14px;
+  box-shadow: var(--shadow-lg); border:1px solid var(--border); overflow:hidden;
+  display:none;
+}
+#floatingMediaPlayer.show{ display:block; }
+#floatingMediaPlayer.minimized{ width:auto; }
+#floatingMediaPlayer .fmp-drag{
+  cursor:grab; padding:8px 10px; display:flex; align-items:center; gap:8px; background:var(--bg);
+  font-size:11.5px; font-weight:700;
+}
+#floatingMediaPlayer .fmp-drag:active{ cursor:grabbing; }
+#floatingMediaPlayer .fmp-drag span{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#floatingMediaPlayer .fmp-drag button{ width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); }
+#floatingMediaPlayer .fmp-drag button:hover{ background:var(--orange-light); color:var(--orange-dark); }
+#floatingMediaPlayer .fmp-body{ padding:10px; }
+#floatingMediaPlayer.minimized .fmp-body{ display:none; }
+#floatingMediaPlayer video{ width:100%; border-radius:8px; background:#000; max-height:170px; }
+#floatingMediaPlayer .fmp-transport{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:8px; }
+#floatingMediaPlayer .fmp-transport button{ width:32px; height:32px; border-radius:50%; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:13px; }
+#floatingMediaPlayer .fmp-transport button.fmp-play{ background:var(--orange); color:#fff; width:38px; height:38px; }
+
 /* ============================================================
    LOADING SCREEN (shown on startup while gathering local data)
    ============================================================ */
@@ -771,7 +1122,7 @@ tbody tr:last-child td{ border-bottom:none; }
    ============================================================ */
 #print-area{ display:none; }
 @media print{
-  html, body{ margin:0 !important; padding:0 !important; height:auto !important; min-height:0 !important; background:#fff !important; }
+  html, body{ margin:0 !important; padding:0 !important; height:auto !important; min-height:0 !important; background:#fff !important; color:#000 !important; }
   body *{ visibility:hidden; }
   #print-area{ display:block !important; visibility:visible; position:absolute; top:0; left:0; margin:0 !important; padding:0 !important; width:auto; }
   #print-area, #print-area *{ visibility:visible; }
@@ -806,6 +1157,7 @@ tbody tr:last-child td{ border-bottom:none; }
   .sidebar-scrim.show{ display:block; }
   .view-switch{ padding:3px; gap:2px; }
   .view-switch-btn{ width:28px; height:28px; font-size:12px; }
+  .topbar-media{ display:none !important; }
 }
 
 @media (max-width: 560px){
@@ -822,13 +1174,156 @@ tbody tr:last-child td{ border-bottom:none; }
   /* Topbar is too tight on small phones for the view-switch alongside search + icon buttons */
   .view-switch{ display:none; }
 }
+@media (max-width: 1366px) and (min-width: 1181px){
+  .stat-grid{ grid-template-columns: repeat(4,1fr); gap:12px; }
+  .product-grid.view-mode-large{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .product-grid.view-mode-small{ grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+  .cart-panel{ width: 300px; right:14px; }
+  .pos-main{ margin-right: 316px; }
+}
+@media (max-height: 820px){
+  :root{ --topbar-h: 60px; }
+  .stat-card{ padding: 12px 14px; }
+  .table-wrap{ max-height: 54vh; }
+}
+@media (max-height: 720px){
+  .stat-card .stat-info b{ font-size:18px; }
+  .table-wrap{ max-height: 46vh; }
+  .modal{ max-height:82vh; }
+}
+@media (max-width: 900px) and (max-height: 620px){
+  .stat-grid{ grid-template-columns: repeat(4,1fr); gap:8px; }
+  .stat-card{ flex-direction:column; align-items:flex-start; gap:6px; padding:10px 12px; }
+}
+
+/* ============================================================
+   HELP / HOW IT WORKS
+   ============================================================ */
+.help-wrap{ display:flex; gap:22px; align-items:flex-start; }
+.help-toc{
+  width:220px; flex-shrink:0; position:sticky; top: calc(var(--topbar-h) + 84px); z-index:5;
+  background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px; max-height: calc((100vh - var(--topbar-h) - 104px) / var(--zf)); overflow-y:auto;
+}
+.help-toc a{ display:block; padding:8px 10px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:2px; }
+.help-toc a:hover{ background:var(--orange-light); color:var(--orange-dark); }
+.help-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:18px; }
+.help-section{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; scroll-margin-top: calc(var(--topbar-h) + 84px); }
+.help-section h2{ font-family:var(--font-display); font-size:17px; display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.help-section h2 .num{ width:26px; height:26px; border-radius:8px; background:var(--orange); color:#fff; font-size:12.5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.help-section p{ font-size:13px; color:var(--text); line-height:1.6; margin-bottom:10px; }
+.help-section p.muted{ color:var(--muted); font-size:12.5px; }
+.help-section ul{ margin: 6px 0 14px 0; padding-left:0; }
+.help-section li{ font-size:13px; line-height:1.7; padding-left:20px; position:relative; margin-bottom:4px; }
+.help-section li::before{ content:'›'; position:absolute; left:2px; color:var(--orange); font-weight:800; }
+.help-flow{ display:flex; align-items:center; flex-wrap:wrap; gap:0; margin:14px 0; }
+.help-flow .fbox{
+  background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 14px;
+  font-size:12px; font-weight:700; text-align:center; min-width:110px;
+}
+.help-flow .farrow{ color:var(--orange-dark); font-size:18px; font-weight:800; padding:0 8px; }
+.help-badge-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.help-badge{ font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; background:var(--orange-light); color:var(--orange-dark); }
+@media (max-width: 900px){
+  .help-wrap{ flex-direction:column; }
+  .help-toc{ width:100%; position:static; max-height:none; }
+}
+
+/* ============================================================
+   STOCK ANALYSIS — TABLE VIEW (tall, fills the page)
+   ============================================================ */
+#viewStockAnalysis .table-wrap{
+  max-height: calc(70vh / var(--zf));
+}
+#viewStockAnalysis table{
+  border-collapse: separate;
+  border-spacing: 0;
+}
+@media (max-width: 860px){
+  #viewStockAnalysis .table-wrap{ max-height:60vh; }
+}
+
+/* Thumbnail size in table rows follows the global view-mode switch */
+.cell-prod .thumb-sz{ border-radius:7px; background:var(--bg); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; opacity:0.5; }
+.cell-prod .thumb-sz img{ width:100%; height:100%; object-fit:cover; }
+.cell-prod.tvm-large .thumb-sz{ width:52px; height:52px; }
+.cell-prod.tvm-content .thumb-sz{ width:44px; height:44px; }
+.cell-prod.tvm-small .thumb-sz{ width:30px; height:30px; }
+.cell-prod.tvm-list .thumb-sz{ width:36px; height:36px; }
+.cell-prod.tvm-titles .thumb-sz{ display:none; }
+
+/* ============================================================
+   CART PANEL — REDESIGN
+   ============================================================ */
+.cart-head{ background: linear-gradient(135deg, var(--ink), var(--charcoal-2)); border-bottom:none; }
+.cart-head h3{ color:#fff; }
+.cart-head #refreshCartBtn{ color:#D8DAE2; }
+.cart-head #clearCartBtn{ color:#FFC9C2 !important; }
+
+.pay-methods{ gap:10px; }
+.pay-methods button{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:12px 6px; border-radius:12px; font-size:11.5px; }
+.pay-methods button .pm-ico{ font-size:18px; }
+
+.totals-box{ background:var(--bg); border-radius:0 0 var(--radius) var(--radius); }
+.tot-row.discount-row.zero{ display:none; }
+.tot-row.grand{ background:var(--orange-light); padding:12px 14px; border-radius:10px; border-top:none; margin-top:10px; }
+.tot-row.grand span:last-child{ color:var(--orange-dark); font-size:18px; }
+
+.cart-actions #checkoutBtn{ font-size:14px; padding:14px 16px; }
+.cart-empty{ padding:50px 10px; }
+.cart-empty .ce-ico{ font-size:44px; margin-bottom:10px; opacity:0.3; }
+.toggle-details{ background:var(--bg); border-radius:10px; margin:0 14px 8px; width:calc(100% - 28px); border-top:none; }
+
+
+/* ============================================================
+   SEARCH ICON — NICER LOOK (applies everywhere .search-wrap is used)
+   ============================================================ */
+.search-wrap .icon{
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+  color:var(--muted); opacity:0.85; pointer-events:none; transition: color .18s ease;
+}
+.search-wrap .icon svg{ width:16px; height:16px; display:block; }
+.search-wrap:focus-within .icon{ color:var(--orange-dark); opacity:1; }
+.search-wrap:focus-within input{ border-color:var(--orange); box-shadow:0 0 0 4px rgba(246,139,30,0.12); }
+
+/* ============================================================
+   AUDIT TIMELINE MODAL — REDESIGN + GUARANTEED STICKY HEADER
+   The modal itself no longer scrolls — only the table body does —
+   so the header row can never scroll away.
+   ============================================================ */
+.modal-overlay.show .modal.modal-audit{ display:flex !important; flex-direction:column !important; max-height:85vh !important; height:85vh !important; overflow:hidden !important; }
+.modal-audit .modal-body{ display:flex !important; flex-direction:column !important; flex:1; min-height:0; overflow:hidden !important; padding-bottom:14px; }
+.audit-stats{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; flex:0 0 auto; }
+.audit-stat{ display:flex; flex-direction:column; gap:2px; padding:10px 16px; border-radius:10px; background:var(--bg); border:1.5px solid var(--border); font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+.audit-stat b{ font-family:var(--font-display); font-size:16px; color:var(--text); text-transform:none; letter-spacing:0; }
+.audit-stat.stock{ border-color:var(--info); }
+.audit-stat.sell{ border-color:var(--success); }
+.audit-stat.cost{ border-color:var(--warning); }
+.audit-table-wrap{ flex:1 1 auto; min-height:0; overflow:auto !important; border-radius:var(--radius); border:1px solid var(--border); }
+.audit-table-wrap table{ width:100%; border-collapse:separate; border-spacing:0; font-size:12.5px; }
+.audit-table-wrap thead{ position:sticky; top:0; z-index:6; }
+.audit-table-wrap thead th{ position:sticky !important; top:0 !important; z-index:6; background:var(--bg); text-align:left; padding:11px 14px; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); border-bottom:1px solid var(--border); white-space:nowrap; }
+[data-theme="dark"] .audit-table-wrap thead th{ background:#171921; }
+.audit-table-wrap tbody td{ padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+.audit-table-wrap tbody tr:last-child td{ border-bottom:none; }
+.audit-table-wrap tbody tr:hover{ background:var(--orange-light); }
+.audit-row-type{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.3px; white-space:nowrap; }
+.audit-row-type.sale{ background:rgba(29,185,84,0.12); color:var(--success-dark); }
+.audit-row-type.refill{ background:rgba(47,128,237,0.12); color:var(--info); }
+.audit-row-type.price{ background:rgba(245,166,35,0.15); color:#946200; }
+.audit-detail-sub{ font-size:11px; color:var(--muted); margin-top:3px; }
+.audit-amount{ font-family:var(--font-mono); font-weight:700; white-space:nowrap; }
+.audit-date{ font-size:12px; color:var(--muted); white-space:nowrap; }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="toast-stack"></div>
+<div id="mediaNotify"></div>
 <div id="print-area"></div>
 <audio id="bgAudioPlayer" style="display:none"></audio>
+<div id="floatingMediaPlayer"></div>
 
 <script>
 /* ============================================================
@@ -846,15 +1341,16 @@ const K_UNLOCKED  = 'gth_pos_session_unlocked';
 
 /* ---------------- DEFAULT SETTINGS ---------------- */
 const DEFAULT_SETTINGS = {
+  menuVisibility: { customers: true, media: true, products: true, priceEdit: true },
   storeName: 'Gliffits Mart',
   storeAddress: '',
   storeContacts: [],
   storeLogo: '',
   currency: 'GHS',
   adminPassword: 'admin123',
-  deletePassword: 'admin123',
-  pricePassword: 'admin123',
-  messagePassword: 'admin123',
+  deletePassword: 'delete123',
+  pricePassword: 'price123',
+  messagePassword: 'message123',
   cashiers: [],
   activeCashierId: '',
   nextProductSeq: 1,
@@ -866,6 +1362,7 @@ const DEFAULT_SETTINGS = {
   printerType: 'thermal80',
   directPrintEnabled: false,
   printerBaudRate: 9600,
+  appZoom: 100,   /* ← ADD THIS LINE */
   whatsappTemplate: 'Hi {name}, thanks for shopping at {store}! Your receipt {receiptId}: total {total}. We appreciate you!',
   smsTemplate: 'Hi {name}, thanks for shopping at {store}! Receipt {receiptId}, total {total}.',
   offerWhatsappTemplate: 'Hi {name}, {store} has something special for you: {message}',
@@ -942,17 +1439,30 @@ function loadState(){
     SYNC = { ...DEFAULT_SYNC };
   }
   if(!PRODUCTS.length){ PRODUCTS = seedProducts(); saveProducts(); }
-  PRODUCTS.forEach(p=>{ if(!Array.isArray(p.history)) p.history = []; if(!p.lastUpdated) p.lastUpdated = p.dateAdded || new Date().toISOString(); });
+  PRODUCTS.forEach(p=>{
+    if(!Array.isArray(p.history)) p.history = [];
+    if(!p.lastUpdated) p.lastUpdated = p.dateAdded || new Date().toISOString();
+    
+    // ---- NEW: cost price + FIFO batches backfill ----
+    if(p.costPrice === undefined) p.costPrice = null;
+    if(!Array.isArray(p.batches)) {
+      p.batches = p.qty > 0
+        ? [{ id: uid('BAT-'), qty: p.qty, remainingQty: p.qty, price: p.price, costPrice: p.costPrice || null, dateAdded: p.dateAdded || new Date().toISOString() }]
+        : [];
+    }
+    // ---- END NEW ----
+  });
   CUSTOMERS.forEach(c=>{ if(!c.id) c.id = uid('CUS-'); if(!c.lastUpdated) c.lastUpdated = c.dateAdded || new Date().toISOString(); });
   SALES.forEach(s=>{ if(!s.lastUpdated) s.lastUpdated = s.timestamp; });
   if(!Array.isArray(SETTINGS.storeContacts)) SETTINGS.storeContacts = SETTINGS.storeContacts ? [SETTINGS.storeContacts] : [];
-  if(!SETTINGS.deletePassword) SETTINGS.deletePassword = SETTINGS.adminPassword;
-  if(!SETTINGS.pricePassword) SETTINGS.pricePassword = SETTINGS.adminPassword;
-  if(!SETTINGS.messagePassword) SETTINGS.messagePassword = SETTINGS.adminPassword;
+  if(!SETTINGS.deletePassword) SETTINGS.deletePassword = DEFAULT_SETTINGS.deletePassword;
+  if(!SETTINGS.pricePassword) SETTINGS.pricePassword = DEFAULT_SETTINGS.pricePassword;
+  if(!SETTINGS.messagePassword) SETTINGS.messagePassword = DEFAULT_SETTINGS.messagePassword;
   if(!Array.isArray(SETTINGS.cashiers)) SETTINGS.cashiers = [];
   loadDeletedQueue();
   saveSettings();
-  applyTheme(SETTINGS.theme === 'dark');
+  applyTheme(SETTINGS.theme || 'light');
+  applyZoom(SETTINGS.appZoom || 100, true); // true = don't re-save, just apply what's stored
 }
 function saveProducts(){ localStorage.setItem(K_PRODUCTS, JSON.stringify(PRODUCTS)); scheduleSync(); }
 function saveSales(){ localStorage.setItem(K_SALES, JSON.stringify(SALES)); scheduleSync(); }
@@ -960,9 +1470,54 @@ function saveSettings(){ localStorage.setItem(K_SETTINGS, JSON.stringify(SETTING
 function saveCustomers(){ localStorage.setItem(K_CUSTOMERS, JSON.stringify(CUSTOMERS)); scheduleSync(); }
 function saveSync(){ localStorage.setItem(K_SYNC, JSON.stringify(SYNC)); }
 
-function applyTheme(isDark){
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  SETTINGS.theme = isDark ? 'dark' : 'light';
+/* Every theme this app ships with. 'light' and 'dark' are the original
+   quick-toggle themes; the rest are additional palettes offered under
+   Settings > Advanced so people can pick a look they prefer. */
+const THEME_LIST = [
+  {key:'light', label:'Classic Light', dark:false},
+  {key:'dark', label:'Classic Dark', dark:true},
+  {key:'midnight', label:'Midnight Blue', dark:true},
+  {key:'forest', label:'Forest', dark:false},
+  {key:'ocean', label:'Ocean', dark:false},
+  {key:'grape', label:'Grape', dark:true},
+  {key:'sand', label:'Sand', dark:false},
+  {key:'slate', label:'Slate', dark:true},
+  {key:'rose', label:'Rose', dark:false},
+  {key:'mint', label:'Mint', dark:false},
+  {key:'sunset', label:'Sunset', dark:false},
+  {key:'storm', label:'Storm', dark:true},
+  {key:'espresso', label:'Espresso', dark:true}
+];
+
+function applyTheme(themeKey){
+  const known = THEME_LIST.some(t=>t.key===themeKey);
+  const key = known ? themeKey : (themeKey==='dark' ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', key);
+  SETTINGS.theme = key;
+}
+/* ============================================================
+   APP ZOOM — scales the whole interface for different screens.
+   Uses the CSS `zoom` property on the root element, which is
+   exactly how the browser's own zoom works — so layout, fixed
+   panels (cart, sidebar), and modals all scale together without
+   breaking. Persisted in SETTINGS.appZoom.
+   ============================================================ */
+function applyZoom(value, skipSave){
+  let v = parseInt(value, 10);
+  if(isNaN(v)) v = 100;
+  v = Math.max(50, Math.min(150, v));
+  document.documentElement.style.zoom = (v / 100);
+  document.documentElement.style.setProperty('--zf', v / 100);
+  SETTINGS.appZoom = v;
+  if(!skipSave) saveSettings();
+  updateMediaLayoutMode(); // ← add this
+  return v;
+}
+
+function updateMediaLayoutMode(){
+  const w = window.innerWidth;
+  document.body.classList.toggle('media-compact', w <= 860);
+  document.body.classList.toggle('media-narrow', w > 860 && w <= 1180);
 }
 
 function seedProducts(){
@@ -989,6 +1544,42 @@ function nextProductId(){
   const id = 'GTH-' + String(SETTINGS.nextProductSeq || 1).padStart(4,'0');
   SETTINGS.nextProductSeq = (SETTINGS.nextProductSeq || 1) + 1;
   return id;
+}
+
+/* Consumes `qty` units from a product's oldest batches first.
+   Returns { batchesUsed:[{batchId,qty,price,costPrice}], totalCost, totalRevenue } or null if insufficient stock. */
+function consumeStockFIFO(product, qty){
+  if(!Array.isArray(product.batches)) product.batches = [];
+  const available = product.batches.reduce((s,b)=>s+b.remainingQty,0);
+  if(available < qty) return null;
+
+  let remaining = qty;
+  const batchesUsed = [];
+  let totalCost = 0, totalRevenue = 0;
+
+  // Oldest first — batches are appended in creation order, so sort by dateAdded to be safe
+  const ordered = product.batches
+    .filter(b=>b.remainingQty>0)
+    .sort((a,b)=> new Date(a.dateAdded) - new Date(b.dateAdded));
+
+  for(const batch of ordered){
+    if(remaining<=0) break;
+    const take = Math.min(batch.remainingQty, remaining);
+    batch.remainingQty -= take;
+    remaining -= take;
+    batchesUsed.push({ batchId: batch.id, qty: take, price: batch.price, costPrice: batch.costPrice });
+    totalRevenue += take * batch.price;
+    if(batch.costPrice != null) totalCost += take * batch.costPrice;
+  }
+  // Drop fully-exhausted batches from the active list (keep them in history via SaleItem log instead)
+  product.batches = product.batches.filter(b=>b.remainingQty>0);
+  return { batchesUsed, totalCost, totalRevenue };
+}
+
+function addStockBatch(product, addedQty, price, costPrice){
+  const batch = { id: uid('BAT-'), qty: addedQty, remainingQty: addedQty, price, costPrice: costPrice ?? null, dateAdded: new Date().toISOString() };
+  product.batches.push(batch);
+  return batch;
 }
 
 /* ---------------- UTILITIES ---------------- */
@@ -1025,6 +1616,23 @@ function normalizePhone(phone){
   if(p.startsWith('0')) p = '233' + p.slice(1); // Ghana default country code
   if(p.startsWith('+')) p = p.slice(1);
   return p;
+}
+function upsertCustomerFromPhone(name, phone){
+  const trimmedPhone = (phone||'').trim();
+  if(!trimmedPhone) return;
+  const norm = normalizePhone(trimmedPhone);
+  const existing = CUSTOMERS.find(c => c.phone && normalizePhone(c.phone) === norm);
+  if(existing) return; // already saved — don't overwrite what's there
+  CUSTOMERS.push({
+    id: uid('CUS-'),
+    name: (name||'').trim() || 'Customer',
+    phone: trimmedPhone,
+    location: '',
+    notes: 'Added automatically from a sale',
+    dateAdded: new Date().toISOString(),
+    lastUpdated: new Date().toISOString()
+  });
+  saveCustomers();
 }
 
 /* ============================================================
@@ -1066,14 +1674,20 @@ function productToRow(p){
   return {
     id: p.id, name: p.name, price: p.price, category: p.category || 'Uncategorized',
     qty: p.qty, image: p.image || '', date_added: p.dateAdded || null,
-    last_updated: p.lastUpdated || p.dateAdded || new Date().toISOString()
+    last_updated: p.lastUpdated || p.dateAdded || new Date().toISOString(),
+    cost_price: p.costPrice ?? null,      // NEW
+    batches: p.batches || [],             // NEW
+    history: p.history || []              // NEW
   };
 }
 function rowToProduct(r){
   return {
     id: r.id, name: r.name, price: Number(r.price)||0, category: r.category || 'Uncategorized',
     qty: Number(r.qty)||0, image: r.image || '', dateAdded: r.date_added || r.last_updated,
-    lastUpdated: r.last_updated, history: []
+    lastUpdated: r.last_updated,
+    costPrice: r.cost_price ?? null,      // NEW
+    batches: r.batches || [],             // NEW
+    history: r.history || []              // NEW
   };
 }
 function customerToRow(c){
@@ -1257,6 +1871,17 @@ function toast(msg, type='info', icon){
   setTimeout(()=>{ el.classList.add('hide'); setTimeout(()=>el.remove(), 320); }, 2800);
 }
 
+/* ---- Transient "Now Playing" notification for track/video changes ---- */
+let mediaNotifyTimer = null;
+function showMediaNotify(kind, name){
+  const el = document.getElementById('mediaNotify');
+  if(!el) return;
+  el.innerHTML = `<span class="mn-ico">${kind==='video' ? '🎬' : '🎵'}</span><span class="mn-text"><b>Now Playing</b><span>${escapeHtml(name)}</span></span>`;
+  el.classList.add('show');
+  clearTimeout(mediaNotifyTimer);
+  mediaNotifyTimer = setTimeout(()=>{ el.classList.remove('show'); }, 3000);
+}
+
 /* ---------------- ICONS (inline SVG, no external deps) ---------------- */
 const ICONS = {
   dashboard:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>`,
@@ -1271,8 +1896,10 @@ const ICONS = {
   power:`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>`,
   box:`📦`, warn:`⚠️`, check:`✓`, edit:`✎`, trash:`🗑`, image:`🖼`, print:`🖨`, download:`⬇`, upload:`⬆`,
   lock:`🔒`, money:'💵', card:'💳', momo:'📱', whatsapp:'💬', sms:'✉️',
+  stockAnalysis: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line><path d="M3 3l6 6 4-4 8 8"></path></svg>`,
   customers:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  media:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`
+  media:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  help:`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg>`
 };
 
 /* ---------------- ROOT LAYOUT ---------------- */
@@ -1286,17 +1913,19 @@ function renderShell(){
       <div class="name">${escapeHtml(SETTINGS.storeName)} <small>Point of Sale</small></div>
       <button class="sidebar-close" id="sidebarCloseBtn">✕</button>
     </div>
-    <nav class="sidebar-nav" id="sidebarNav">
+<nav class="sidebar-nav" id="sidebarNav">
       ${navItem('pos', ICONS.pos, 'Sell / POS')}
       ${navItem('dashboard', ICONS.dashboard, 'Dashboard')}
-      ${navItem('media', ICONS.media, 'Media')}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).media ? navItem('media', ICONS.media, 'Media') : ''}
       <div class="nav-section-label">Manage</div>
-      ${navItem('products', ICONS.products, 'Products', true)}
-      ${navItem('customers', ICONS.customers, 'Customers', true)}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).products ? navItem('products', ICONS.products, 'Products', true) : ''}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).customers ? navItem('customers', ICONS.customers, 'Customers', true) : ''}
       ${navItem('history', ICONS.history, 'Sales History')}
       ${navItem('reports', ICONS.reports, 'Reports')}
-      <div class="nav-section-label">System</div>
+      ${navItem('stockAnalysis', ICONS.stockAnalysis, 'Stock Analysis', true)}
+<div class="nav-section-label">System</div>
       ${navItem('settings', ICONS.settings, 'Settings', true)}
+      ${navItem('help', ICONS.help, 'Help / How It Works')}
     </nav>
     <div class="sidebar-foot">
       <b>${escapeHtml(SETTINGS.storeName)}</b> POS · v1.1<br>Built for offline & online use
@@ -1313,6 +1942,12 @@ function renderShell(){
       <div class="search-wrap" id="globalSearchWrap">
         <span class="icon">${ICONS.search}</span>
         <input type="text" id="globalSearch" placeholder="Search products by name or ID...">
+      </div>
+      <div class="topbar-media" id="topbarMedia">
+        <button class="tm-prev" id="tmPrevBtn" title="Previous">⏮</button>
+        <button class="tm-play" id="tmPlayBtn" title="Play/Pause">▶</button>
+        <button class="tm-next" id="tmNextBtn" title="Next">⏭</button>
+        <span class="tm-name" id="tmName"></span>
       </div>
       <div class="topbar-actions">
         <div class="view-switch" id="viewSwitch"></div>
@@ -1342,7 +1977,9 @@ function renderShell(){
     <div id="viewCustomers" class="view"></div>
     <div id="viewHistory" class="view"></div>
     <div id="viewReports" class="view"></div>
+    <div id="viewStockAnalysis" class="view"></div>
     <div id="viewSettings" class="view"></div>
+    <div id="viewHelp" class="view"></div>
   </div>
   `;
 
@@ -1360,7 +1997,7 @@ function renderShell(){
   };
   document.getElementById('themeToggleBtn').onclick = () => {
     const isDark = document.documentElement.getAttribute('data-theme') !== 'dark';
-    applyTheme(isDark);
+    applyTheme(isDark ? 'dark' : 'light');
     saveSettings();
   };
   document.getElementById('cartTopBtn').onclick = () => { switchView('pos'); };
@@ -1387,6 +2024,8 @@ function renderShell(){
 
   startClock();
   updateTopBadges();
+  wireTopbarMediaControls();
+  renderTopbarMedia();
 }
 
 function navItem(view, icon, label, gated){
@@ -1417,9 +2056,9 @@ function switchView(view){
   currentView = view;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
-  const map = {
+const map = {
     pos:'viewPos', dashboard:'viewDashboard', media:'viewMedia', products:'viewProducts', customers:'viewCustomers',
-    history:'viewHistory', reports:'viewReports', settings:'viewSettings'
+    history:'viewHistory', reports:'viewReports', settings:'viewSettings', help:'viewHelp', stockAnalysis:'viewStockAnalysis'
   };
   document.getElementById(map[view]).classList.add('active');
   if(view==='pos') renderPosView();
@@ -1430,6 +2069,196 @@ function switchView(view){
   if(view==='history') renderHistoryView();
   if(view==='reports') renderReportsView();
   if(view==='settings') renderSettingsView();
+  if(view==='help') renderHelpView();
+  if(view==='stockAnalysis') renderStockAnalysisView();
+  document.body.classList.toggle('media-view-active', view==='media');
+  // Leaving the Media view: hand playback off to the floating mini player
+  // so music/video keeps going in the background.
+  syncFloatingPlayerVisibility();
+}
+/* ============================================================
+   HELP VIEW — HOW THE APP WORKS
+   ============================================================ */
+function helpFlow(steps){
+  return `<div class="help-flow">${steps.map((s,i)=>
+    `<div class="fbox">${escapeHtml(s)}</div>${i<steps.length-1?'<span class="farrow">→</span>':''}`
+  ).join('')}</div>`;
+}
+function helpFlowSvg(steps){
+  const boxW = 148, boxH = 46, gapX = 46, H = 90;
+  const totalW = steps.length*boxW + (steps.length-1)*gapX;
+  let x = 0;
+  const boxes = steps.map((label,i)=>{
+    const bx = x; x += boxW+gapX;
+    const arrow = i<steps.length-1 ? `<path d="M${bx+boxW+6} ${H/2} L${bx+boxW+gapX-6} ${H/2}" stroke="var(--orange-dark)" stroke-width="2.5" marker-end="url(#helpArrow)"/>` : '';
+    return `
+      <rect x="${bx}" y="${(H-boxH)/2}" width="${boxW}" height="${boxH}" rx="10" fill="var(--card)" stroke="var(--border)" stroke-width="1.5"/>
+      <text x="${bx+boxW/2}" y="${H/2+4}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text)" font-family="Inter, Arial, sans-serif">${escapeHtml(label)}</text>
+      ${arrow}`;
+  }).join('');
+  return `<div style="overflow-x:auto;margin:14px 0;"><svg viewBox="0 0 ${totalW} ${H}" style="min-width:${totalW}px;height:${H}px;">
+    <defs><marker id="helpArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--orange-dark)"/></marker></defs>
+    ${boxes}
+  </svg></div>`;
+}
+
+function renderHelpView(){
+  const el = document.getElementById('viewHelp');
+  el.innerHTML = `
+    <div class="section-head"><div><h1>Help &amp; How It Works</h1><p>A guided walkthrough of every part of ${escapeHtml(SETTINGS.storeName)} POS</p></div></div>
+    <div class="help-wrap">
+      <nav class="help-toc" id="helpToc">
+        <a href="#help-overview">1. Overview</a>
+        <a href="#help-pos">2. Selling (POS)</a>
+        <a href="#help-products">3. Products</a>
+        <a href="#help-customers">4. Customers</a>
+        <a href="#help-history">5. Sales History</a>
+        <a href="#help-dashboard">6. Dashboard &amp; Reports</a>
+        <a href="#help-media">7. Media</a>
+        <a href="#help-settings">8. Settings</a>
+        <a href="#help-security">9. Security &amp; Passwords</a>
+        <a href="#help-sync">10. Backup &amp; Sync</a>
+        <a href="#help-stock-analysis">11. Stock Analysis &amp; Audit Timeline</a>
+      </nav>
+      <div class="help-main">
+
+        <div class="help-section" id="help-overview">
+          <h2><span class="num">1</span> Overview — how it all connects</h2>
+          <p>Everything in this app revolves around one loop: a <b>Product</b> gets sold through the <b>POS screen</b>, which creates a <b>Sale</b>, which reduces <b>Stock</b> and can save a <b>Customer</b>. Every sale then feeds the <b>Dashboard</b> and <b>Reports</b>.</p>
+          ${helpFlowSvg(['Add Product','Sell on POS','Sale recorded','Stock reduced','Dashboard updates'])}
+          <p class="muted">The app works fully offline — everything is stored on this device. Cloud Sync (Settings) is optional, for backing up or sharing data across counters.</p>
+        </div>
+
+        <div class="help-section" id="help-pos">
+          <h2><span class="num">2</span> Selling (POS)</h2>
+          <p>This is your main sell screen. Tap a product card to add it to the cart on the right.</p>
+          <ul>
+            <li><b>Category chips</b> at the top filter the product grid — tap "All" to clear the filter.</li>
+            <li><b>View switcher</b> in the topbar (grid/list icons) changes how products are displayed: Large icons, Small icons, List, Content, or Titles only.</li>
+            <li><b>Search bar</b> in the topbar filters products by name or ID as you type.</li>
+            <li><b>Cart panel</b> — tap +/− to change quantity, or type a number directly. Swipe the ✕ to remove an item.</li>
+            <li><b>Sale Details</b> (expandable) lets you add a discount, customer name/phone, choose a cashier, and pick a payment method.</li>
+            <li>For <b>Cash</b> payments, enter the amount tendered — the change is calculated automatically.</li>
+            <li><b>Complete Sale</b> finalizes the transaction, deducts stock, and opens the receipt.</li>
+          </ul>
+          ${helpFlow(['Tap product','Adjust qty','Add discount / customer','Choose payment','Complete Sale'])}
+          <p>From the receipt popup you can <b>Print</b>, or if the customer's phone number was entered, send the receipt straight to <b>WhatsApp</b> or <b>SMS</b>.</p>
+        </div>
+
+        <div class="help-section" id="help-products">
+          <h2><span class="num">3</span> Products</h2>
+          <p>This is your inventory. Every product has a name, price, category, stock quantity, an auto-generated ID, and an optional photo.</p>
+          <ul>
+            <li><b>+ Add Product</b> opens a form — upload an image (optional, under 2MB), set the price and starting stock.</li>
+            <li><b>Editing the price</b> of an existing product asks for the <b>Price Password</b> (see Security section) — this stops staff from quietly discounting items at will.</li>
+            <li><b>Deleting</b> a product asks for the <b>Delete Password</b> and a confirmation, since it can't be undone.</li>
+            <li>Stock status badges: <span class="badge badge-success">In stock</span> <span class="badge badge-warning">Low stock</span> <span class="badge badge-danger">Out of stock</span> — the low-stock threshold is set in Settings.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" id="help-customers">
+          <h2><span class="num">4</span> Customers</h2>
+          <p>A simple contact book, used for sending receipts and marketing messages via WhatsApp/SMS.</p>
+          <ul>
+            <li>Customers are added automatically whenever a sale includes a phone number.</li>
+            <li>You can also add/edit them manually — name, phone, location, and notes.</li>
+            <li>Select customers with the checkboxes, then <b>Message Selected</b> (or <b>Message ALL</b> in one click) to send an offer, product announcement, or custom message.</li>
+            <li>Messages support <code>{name}</code> and <code>{store}</code> placeholders, filled in per customer.</li>
+            <li>Sending messages requires the <b>Messaging Password</b>.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" id="help-history">
+          <h2><span class="num">5</span> Sales History</h2>
+          <p>Every completed sale is logged here automatically and can never be edited — only viewed.</p>
+          <ul>
+            <li>Filter by date range, or search by receipt number, customer, or item name.</li>
+            <li><b>View Receipt</b> reopens the original receipt for reprinting or resending.</li>
+            <li><b>Export</b> the filtered list as JSON (for backup/import) or PDF (for printing/sharing a report).</li>
+            <li><b>Import Sales JSON</b> merges transactions from a file without duplicating existing ones.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" id="help-dashboard">
+          <h2><span class="num">6</span> Dashboard &amp; Reports</h2>
+          <p><b>Dashboard</b> gives you a quick daily snapshot: today's revenue, transaction count, product count, and stock alerts, plus your top-selling products and most recent transactions.</p>
+          <p><b>Reports</b> goes deeper: pick any date range to see a revenue trend chart, a breakdown of revenue by category, and a full list of stock alerts.</p>
+          ${helpFlow(['Sales happen','Stock & totals update','Dashboard (today)','Reports (any date range)'])}
+        </div>
+
+        <div class="help-section" id="help-media">
+          <h2><span class="num">7</span> Media</h2>
+          <div class="help-badge-row"><span class="help-badge">Local only</span><span class="help-badge">Not synced to the cloud</span></div>
+          <p>Play background music or a video in-store, entirely from files on this computer.</p>
+          <ul>
+            <li><b>Add Music Files / Add Folder</b> builds a playlist. In Chrome/Edge, file locations are remembered — the playlist reloads automatically next time you open the app.</li>
+            <li>Use ⏮ ⏸/▶ ⏭ to control playback, and toggle Shuffle/Repeat/Volume below the Now Playing box.</li>
+            <li>Music keeps playing even while you switch to other screens — it only pauses automatically when a video starts.</li>
+            <li><b>Video</b> works the same way, with its own playlist, a timeline scrubber, speed control, and a fullscreen button. Drag the bottom-right corner of the video to resize it.</li>
+            <li>The Media page itself never scrolls — only the two playlists scroll, so your transport controls always stay visible.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" id="help-settings">
+          <h2><span class="num">8</span> Settings</h2>
+          <p>Everything that configures how the app looks, prints, and behaves lives here:</p>
+          <ul>
+            <li><b>Store Details</b> — name, logo, address, currency, low-stock threshold, receipt footer.</li>
+            <li><b>Contact Numbers</b> — shown on every printed/shared receipt.</li>
+            <li><b>Cashiers</b> — names selectable at checkout, printed as "Served by" on receipts.</li>
+            <li><b>Printer</b> — choose Standard/58mm/80mm, and optionally enable direct USB thermal printing (skips the print dialog and auto-cuts the paper).</li>
+            <li><b>Messaging Templates</b> — the default WhatsApp/SMS text used when sending receipts.</li>
+            <li><b>Menu Visibility</b> — show/hide the Customers, Media, and Products menu items, and lock price editing, from one place.</li>
+            <li><b>Themes</b> — pick from several color palettes beyond the quick light/dark toggle.</li>
+            <li><b>Display Zoom</b> — scale the whole interface 50%–150% to fit different screens; remembered automatically next time you open the app.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" id="help-security">
+          <h2><span class="num">9</span> Security &amp; Passwords</h2>
+          <p>The app uses <b>one login password</b> to open it at all, plus <b>three separate action passwords</b> so you can let staff do their job without giving them full control:</p>
+          <ul>
+            <li><b>App Login</b> — required every time the app is opened.</li>
+            <li><b>Delete Password</b> — required to delete any product or customer, or to clear data.</li>
+            <li><b>Price Password</b> — required to change a product's price.</li>
+            <li><b>Messaging Password</b> — required to send WhatsApp/SMS messages to customers.</li>
+          </ul>
+          <p class="muted">All four start the same by default — change them individually in Settings → Security so each one is different.</p>
+        </div>
+
+        <div class="help-section" id="help-sync">
+          <h2><span class="num">10</span> Backup &amp; Cloud Sync</h2>
+          <ul>
+            <li><b>Export Full Backup (JSON)</b> — saves everything (products with images, sales, customers, settings) to one file, for moving to a new device.</li>
+            <li><b>Import Full Backup</b> — restores from that file, replacing current data.</li>
+            <li><b>Export to Excel</b> — a multi-sheet spreadsheet with Products, Sales, Customers, and a Summary tab.</li>
+            <li><b>Cloud Sync (Supabase)</b> — optional. Once configured with your project URL and key, the app quietly pushes and pulls changes in the background, so multiple counters/devices stay in sync. The app works fully offline even without this set up.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" id="help-stock-analysis">
+          <h2><span class="num">11</span> Stock Analysis &amp; Audit Timeline</h2>
+          <p>Every unit you add to stock is tracked as its own <b>batch</b> (quantity, price, and cost price at the time it was added). When a sale happens, the app consumes the <b>oldest batch first (FIFO)</b> — so profit is calculated against what that specific stock actually cost, not just today's cost price.</p>
+          ${helpFlowSvg(['Add stock (batch)','Sale made','Oldest batch used first','Profit = revenue − cost','Logged to Audit Timeline'])}
+          <ul>
+            <li>Open <b>Stock Analysis</b> from the sidebar to see every product's selling price, cost price, current stock, and how many stock events happened in a chosen date range.</li>
+            <li><b>View Timeline</b> on any product opens its full audit trail — refills, price changes, and sales — each with the batch(es) used and the profit made.</li>
+            <li>Filter by <b>Today / Last 7 days / This month / Custom range</b>, then export the filtered list as JSON, Excel, or PDF — either for all products or for a single product's timeline.</li>
+          </ul>
+          <p class="muted">Cost Price is optional per product. If it's left blank, profit isn't calculated for that batch — everything else still works normally.</p>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  el.querySelectorAll('.help-toc a').forEach(a=>{
+    a.onclick = (e) => {
+      e.preventDefault();
+      const target = document.getElementById(a.getAttribute('href').slice(1));
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+  });
 }
 
 function updateTopBadges(){
@@ -1467,12 +2296,14 @@ function renderViewSwitch(){
   wrap.innerHTML = PRODUCT_VIEW_MODES.map(vm=>
     `<button class="view-switch-btn ${currentMode===vm.key?'active':''}" data-mode="${vm.key}" title="${vm.label} view">${vm.glyph}</button>`
   ).join('');
-  wrap.querySelectorAll('.view-switch-btn').forEach(btn=>{
+wrap.querySelectorAll('.view-switch-btn').forEach(btn=>{
     btn.onclick = () => {
       SETTINGS.productViewMode = btn.dataset.mode;
       saveSettings();
       wrap.querySelectorAll('.view-switch-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===SETTINGS.productViewMode));
       if(currentView==='pos') renderProductGrid();
+      if(currentView==='products') renderProductsTable();
+      if(currentView==='stockAnalysis') renderSaTable();
     };
   });
 }
@@ -1711,7 +2542,7 @@ function renderCartPanel(){
       </div>
       <span class="cl-remove" data-act="remove" title="Remove">✕</span>
     </div>
-  `).join('') : `<div class="cart-empty">🛒<br>Cart is empty<br><small>Tap a product to add it</small></div>`}
+  `).join('') : `<div class="cart-empty"><div class="ce-ico">🛒</div><div style="font-weight:700;font-size:13.5px;margin-bottom:4px;">Cart is empty</div><small class="text-muted">Tap a product to add it</small></div>`}
 </div>
     <button class="toggle-details ${cartDetailsOpen?'open':''}" id="toggleDetailsBtn">
       <span>Sale Details (Discount, Payment)</span><span class="chevron">▾</span>
@@ -1741,9 +2572,9 @@ function renderCartPanel(){
       <div class="field-row">
         <label>Payment Method</label>
         <div class="pay-methods">
-          <button data-pay="Cash" class="${activePayMethod==='Cash'?'active':''}">${ICONS.money} Cash</button>
-          <button data-pay="Mobile Money" class="${activePayMethod==='Mobile Money'?'active':''}">${ICONS.momo} MoMo</button>
-          <button data-pay="Card" class="${activePayMethod==='Card'?'active':''}">${ICONS.card} Card</button>
+          <button data-pay="Cash" class="${activePayMethod==='Cash'?'active':''}"><span class="pm-ico">${ICONS.money}</span><span>Cash</span></button>
+          <button data-pay="Mobile Money" class="${activePayMethod==='Mobile Money'?'active':''}"><span class="pm-ico">${ICONS.momo}</span><span>MoMo</span></button>
+          <button data-pay="Card" class="${activePayMethod==='Card'?'active':''}"><span class="pm-ico">${ICONS.card}</span><span>Card</span></button>
         </div>
       </div>
       <div class="field-row" id="tenderedRow">
@@ -1754,13 +2585,13 @@ function renderCartPanel(){
 
     <div class="totals-box">
       <div class="tot-row"><span>Subtotal</span><span>${fmtMoney(subtotal)}</span></div>
-      <div class="tot-row"><span>Discount</span><span>- ${fmtMoney(window.__discount||0)}</span></div>
+      <div class="tot-row discount-row ${(window.__discount||0)<=0?'zero':''}"><span>Discount</span><span>- ${fmtMoney(window.__discount||0)}</span></div>
       <div class="tot-row grand"><span>Total</span><span>${fmtMoney(Math.max(subtotal-(window.__discount||0),0))}</span></div>
       <div class="tot-row change" id="changeRow" style="display:none;"><span>Change Due</span><span id="changeVal">${fmtMoney(0)}</span></div>
     </div>
     <div class="cart-actions">
       <button class="btn btn-outline" id="holdCartBtn" ${!lines.length?'disabled':''}>Hold</button>
-      <button class="btn btn-primary btn-block" id="checkoutBtn" ${!lines.length?'disabled':''}>Complete Sale</button>
+      <button class="btn btn-primary btn-block" id="checkoutBtn" ${!lines.length?'disabled':''}>${lines.length ? 'Complete Sale · ' + fmtMoney(Math.max(subtotal-(window.__discount||0),0)) : 'Complete Sale'}</button>
     </div>
   `;
 
@@ -1814,8 +2645,13 @@ function refreshTotalsOnly(){
   const total = Math.max(subtotal-discount,0);
   const rows = document.querySelectorAll('.totals-box .tot-row');
   if(rows[0]) rows[0].querySelector('span:last-child').textContent = fmtMoney(subtotal);
-  if(rows[1]) rows[1].querySelector('span:last-child').textContent = '- ' + fmtMoney(discount);
+  if(rows[1]){
+    rows[1].querySelector('span:last-child').textContent = '- ' + fmtMoney(discount);
+    rows[1].classList.toggle('zero', discount<=0);
+  }
   if(rows[2]) rows[2].querySelector('span:last-child').textContent = fmtMoney(total);
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  if(checkoutBtn && !checkoutBtn.disabled) checkoutBtn.textContent = 'Complete Sale · ' + fmtMoney(total);
   const changeRow = document.getElementById('changeRow');
   const changeVal = document.getElementById('changeVal');
   if(activePayMethod==='Cash' && window.__tendered!==undefined && !isNaN(window.__tendered)){
@@ -1853,13 +2689,7 @@ function completeSale(){
     const p = PRODUCTS.find(x=>x.id===l.productId);
     if(!p || p.qty < l.qty){ toast(`Not enough stock for ${l.product.name}`, 'error'); return; }
   }
-  lines.forEach(l=>{
-    const p = PRODUCTS.find(x=>x.id===l.productId);
-    p.qty -= l.qty;
-  });
-  saveProducts();
-
-  const nowIso = new Date().toISOString();
+const nowIso = new Date().toISOString();
   const cashier = SETTINGS.cashiers.find(cs=>cs.id===window.__cashierId);
   const sale = {
     id: uid('TXN-'),
@@ -1872,8 +2702,31 @@ function completeSale(){
     customerPhone: (window.__custPhone||'').trim(),
     cashierName: cashier ? cashier.name : ''
   };
+
+  lines.forEach(l=>{
+    const p = PRODUCTS.find(x=>x.id===l.productId);
+    const result = consumeStockFIFO(p, l.qty);
+    p.qty -= l.qty; // qty stays the single source of truth for stock badges/UI
+    p.lastUpdated = nowIso;
+
+    p.history.push({
+      type: 'sale',
+      timestamp: nowIso,
+      saleId: sale.id,
+      qty: l.qty,
+      batchesUsed: result ? result.batchesUsed : [],
+      unitPriceApplied: l.product.price,
+      discountShare: subtotal>0 ? (discount * (l.lineTotal/subtotal)) : 0,
+      customerName: sale.customerName,
+      remainingStockAfter: p.qty,
+      profit: result ? (result.totalRevenue - result.totalCost) : null // null if any batch had no costPrice
+    });
+  });
+  saveProducts();
+
   SALES.unshift(sale);
   saveSales();
+  upsertCustomerFromPhone(sale.customerName, sale.customerPhone);
 
   lastReceiptSale = sale;
   CART = [];
@@ -2032,10 +2885,6 @@ function printReceipt(sale){
    local file, and not available on mobile).
    ============================================================ */
 let thermalUSBDevice = null;
-
-function directPrintSupported(){
-  return typeof navigator !== 'undefined' && 'serial' in navigator;
-}
 
 function directPrintSupported(){
   return typeof navigator !== 'undefined' && 'usb' in navigator;
@@ -2239,7 +3088,7 @@ function requestPasswordFor(fieldKey, title, subtitle, onSuccess){
           <div class="gate-ico">${ICONS.lock}</div>
           <h3>${escapeHtml(title)}</h3>
           <p>${escapeHtml(subtitle)}</p>
-          <input type="password" id="adminPwInput" class="w-full" placeholder="••••••••" autocomplete="off">
+          <input type="password" id="adminPwInput" class="w-full" placeholder="••••••••" autocomplete="new-password">
           <div class="mt-16">
             <button class="btn btn-primary btn-block" id="adminPwSubmit">Unlock</button>
           </div>
@@ -2307,6 +3156,7 @@ function renderProductsView(){
 function renderProductsTable(){
   const tbody = document.getElementById('productsTbody');
   if(!tbody) return;
+  const tvm = SETTINGS.productViewMode || 'large';
   let list = PRODUCTS.slice().sort((a,b)=> new Date(b.dateAdded)-new Date(a.dateAdded));
   if(productsTableSearch){
     list = list.filter(p => p.name.toLowerCase().includes(productsTableSearch) ||
@@ -2323,7 +3173,7 @@ function renderProductsTable(){
       : `<span class="badge badge-success">In stock</span>`;
     return `
     <tr data-id="${p.id}">
-      <td><div class="cell-prod"><div class="thumb-sm">${p.image?`<img src="${p.image}">`:ICONS.box}</div><span>${escapeHtml(p.name)}</span></div></td>
+<td><div class="cell-prod tvm-${tvm}"><div class="thumb-sz">${p.image?`<img src="${p.image}">`:ICONS.box}</div><span>${escapeHtml(p.name)}</span></div></td>
       <td><span class="pid-tag">${p.id}</span></td>
       <td>${escapeHtml(p.category||'Uncategorized')}</td>
       <td>${fmtMoney(p.price)}</td>
@@ -2388,11 +3238,26 @@ function openProductModal(productId){
           </div>
           <div class="field-row">
             <label>Price (${SETTINGS.currency}) *</label>
-            <input type="number" id="fPrice" min="0" step="0.01" value="${p?p.price:''}" placeholder="0.00">
+            <input type="number" id="fPrice" min="0" step="0.01" value="${p?p.price:''}" placeholder="0.00" ${(SETTINGS.menuVisibility&&SETTINGS.menuVisibility.priceEdit===false)?'disabled':''}>
           </div>
+          ${!p ? `
           <div class="field-row">
             <label>Quantity in Stock *</label>
-            <input type="number" id="fQty" min="0" step="1" value="${p?p.qty:''}" placeholder="0">
+            <input type="number" id="fQty" min="0" step="1" value="" placeholder="0">
+          </div>
+          ` : ''}
+          ${p ? `
+          <div class="field-row full">
+            <label>Current Stock: <b>${p.qty}</b></label>
+            <label style="margin-top:8px;">+ Add Quantity (leave blank to keep current stock)</label>
+            <input type="number" id="fAddQty" min="0" step="1" placeholder="e.g. 16">
+            <div id="refillPreview" class="text-muted" style="font-size:12.5px;margin-top:6px;"></div>
+          </div>
+          ` : ''}
+          <div class="field-row">
+            <label>Cost Price (${SETTINGS.currency}) — optional</label>
+            <input type="number" id="fCostPrice" min="0" step="0.01" value="${p&&p.costPrice!=null?p.costPrice:''}" placeholder="Leave blank if unknown">
+            <div id="costPriceWarning" class="text-muted" style="font-size:11.5px;margin-top:4px;"></div>
           </div>
           <div class="field-row">
             <label>Category</label>
@@ -2429,6 +3294,42 @@ function openProductModal(productId){
     reader.readAsDataURL(file);
   };
 
+  function updateRefillPreview(){
+    const addEl = document.getElementById('fAddQty');
+    const preview = document.getElementById('refillPreview');
+    if(!addEl || !preview || !p) return;
+    const add = parseInt(addEl.value,10) || 0;
+    preview.innerHTML = add>0
+      ? `New total stock: <b>${p.qty} + ${add} = ${p.qty+add}</b>`
+      : `Stock will remain at <b>${p.qty}</b>`;
+  }
+
+  function updatePriceWarnings(){
+    if(!p) return;
+    const newPrice = parseFloat(document.getElementById('fPrice').value);
+    const newCost = parseFloat(document.getElementById('fCostPrice').value);
+    let msg = '';
+    if(!isNaN(newPrice) && newPrice !== p.price){
+      msg += newPrice > p.price
+        ? `⚠️ Selling Price increasing from ${fmtMoney(p.price)} to ${fmtMoney(newPrice)}. `
+        : `⚠️ Selling Price decreasing from ${fmtMoney(p.price)} to ${fmtMoney(newPrice)}. `;
+    }
+    const cpEl = document.getElementById('costPriceWarning');
+    if(cpEl && p.costPrice!=null && !isNaN(newCost) && newCost !== p.costPrice){
+      cpEl.textContent = newCost > p.costPrice
+        ? `⚠️ Cost Price increasing from ${fmtMoney(p.costPrice)} to ${fmtMoney(newCost)}`
+        : `⚠️ Cost Price decreasing from ${fmtMoney(p.costPrice)} to ${fmtMoney(newCost)}`;
+      cpEl.style.color = 'var(--warning)';
+    }
+  }
+
+  const fPriceEl = document.getElementById('fPrice');
+  const fCostPriceEl = document.getElementById('fCostPrice');
+  if(fPriceEl) fPriceEl.oninput = updatePriceWarnings;
+  if(fCostPriceEl) fCostPriceEl.oninput = updatePriceWarnings;
+  const fAddQtyEl = document.getElementById('fAddQty');
+  if(fAddQtyEl) fAddQtyEl.oninput = updateRefillPreview;
+
   const close = () => wrap.remove();
   document.getElementById('pmClose').onclick = close;
   document.getElementById('pmCancel').onclick = close;
@@ -2436,28 +3337,64 @@ function openProductModal(productId){
 
   document.getElementById('pmSave').onclick = () => {
     const name = document.getElementById('fName').value.trim();
-    const price = parseFloat(document.getElementById('fPrice').value);
-    const qty = parseInt(document.getElementById('fQty').value, 10);
+    const priceEditAllowed = !(SETTINGS.menuVisibility && SETTINGS.menuVisibility.priceEdit === false);
+    let price = parseFloat(document.getElementById('fPrice').value);
+    if(p && !priceEditAllowed) price = p.price;
+    const costPriceRaw = document.getElementById('fCostPrice').value;
+    const costPrice = costPriceRaw==='' ? null : parseFloat(costPriceRaw);
     const category = document.getElementById('fCategory').value.trim() || 'Uncategorized';
     if(!name){ toast('Product name is required', 'error'); return; }
     if(isNaN(price) || price < 0){ toast('Enter a valid price', 'error'); return; }
-    if(isNaN(qty) || qty < 0){ toast('Enter a valid stock quantity', 'error'); return; }
+    if(costPrice != null && !isNaN(costPrice) && price <= costPrice){
+      toast('Selling price must be greater than the cost price', 'error');
+      return;
+    }
 
+    const nowIso = new Date().toISOString();
     const priceChanged = p && Number(p.price) !== price;
-    const doSave = () => {
+    const costChanged  = p && p.costPrice !== costPrice;
+
+const doSave = () => {
       if(p){
-        p.name=name; p.price=price; p.qty=qty; p.category=category; p.image=pendingImage;
-        p.lastUpdated = new Date().toISOString();
+        const addQty = parseInt(document.getElementById('fAddQty').value, 10) || 0;
+        const oldQty = p.qty;
+        const newQty = oldQty + addQty;
+        const oldPrice = p.price;
+        const oldCostPrice = p.costPrice;
+
+        p.name = name; p.category = category; p.image = pendingImage;
+        if(priceEditAllowed) p.price = price;
+        p.costPrice = costPrice;
+        p.qty = newQty;
+        p.lastUpdated = nowIso;
+
+        if(!p.history) p.history = [];
+        if(!p.batches) p.batches = [];
+
+        if(addQty > 0){
+          const batch = addStockBatch(p, addQty, price, costPrice);
+          p.history.push({ type:'refill', timestamp: nowIso, addedQty: addQty, oldQty, newQty, price, costPrice, batchId: batch.id });
+        }
+        if(priceChanged){
+          p.history.push({ type:'price_change', timestamp: nowIso, field:'price', oldValue: oldPrice, newValue: price });
+        }
+        if(costChanged){
+          p.history.push({ type:'price_change', timestamp: nowIso, field:'costPrice', oldValue: oldCostPrice, newValue: costPrice });
+        }
         toast('Product updated', 'success');
       } else {
-        PRODUCTS.push({
+        const qty = parseInt(document.getElementById('fQty').value, 10) || 0;
+        const newP = {
           id: nextProductId(), name, price, qty, category, image: pendingImage,
-          dateAdded: new Date().toISOString(), lastUpdated: new Date().toISOString()
-        });
+          costPrice, batches: [], history: [],
+          dateAdded: nowIso, lastUpdated: nowIso
+        };
+        if(qty > 0) addStockBatch(newP, qty, price, costPrice);
+        newP.history.push({ type:'refill', timestamp: nowIso, addedQty: qty, oldQty:0, newQty:qty, price, costPrice, batchId: newP.batches[0]?.id });
+        PRODUCTS.push(newP);
         toast('Product added', 'success');
       }
-      saveProducts();
-      saveSettings();
+      saveProducts(); saveSettings();
       productsTableSearch = '';
       const pts = document.getElementById('productTableSearch'); if(pts) pts.value = '';
       renderProductsTable();
@@ -2465,12 +3402,13 @@ function openProductModal(productId){
     };
 
     if(priceChanged){
-      requestPasswordFor('pricePassword', 'Price Password Required', 'Enter the price password to change this product\'s price', doSave);
+      requestPasswordFor('pricePassword', 'Price Password Required', "Enter the price password to change this product's price", doSave);
     } else {
       doSave();
     }
   };
 }
+
 
 /* ============================================================
    CUSTOMERS VIEW — CRM + WHATSAPP/SMS MESSAGING
@@ -2482,6 +3420,7 @@ function renderCustomersView(){
       <div><h1>Customers</h1><p>Store contacts and message them about receipts, offers &amp; new products</p></div>
       <div class="flex gap-8">
         <button class="btn btn-outline" id="bulkMessageBtn">${ICONS.whatsapp} Message Selected</button>
+        <button class="btn btn-outline" id="bulkMessageAllBtn">${ICONS.whatsapp} Message ALL (One Click)</button>
         <button class="btn btn-primary" id="addCustomerBtn">+ Add Customer</button>
       </div>
     </div>
@@ -2508,6 +3447,11 @@ function renderCustomersView(){
   document.getElementById('bulkMessageBtn').onclick = () => {
     if(!selectedCustomerIds.size){ toast('Select at least one customer first', 'error'); return; }
     requestPasswordFor('messagePassword', 'Messaging Password Required', 'Enter the messaging password to contact customers', openBulkMessageModal);
+  };
+  document.getElementById('bulkMessageAllBtn').onclick = () => {
+    if(!CUSTOMERS.filter(c=>c.phone).length){ toast('No customers with phone numbers saved yet', 'error'); return; }
+    selectedCustomerIds = new Set(CUSTOMERS.filter(c=>c.phone).map(c=>c.id));
+    requestPasswordFor('messagePassword', 'Messaging Password Required', 'Enter the messaging password to contact all customers', openBulkMessageModal);
   };
   document.getElementById('customerTableSearch').oninput = debounce(e=>{
     customersTableSearch = e.target.value.trim().toLowerCase();
@@ -2673,11 +3617,11 @@ function openBulkMessageModal(){
         </div>
         <div class="divider"></div>
         <p class="text-muted" style="font-size:12px;">Sending to ${targets.length} customer(s): ${targets.map(t=>escapeHtml(t.name)).join(', ')}</p>
-        <p class="text-muted" style="font-size:11.5px;margin-top:6px;">Each customer's message opens a moment apart so your browser doesn't block them — allow pop-ups for this site if prompted. "Both" sends WhatsApp and SMS to every selected customer.</p>
+        <p class="text-muted" style="font-size:11.5px;margin-top:6px;">Write your message once and click "Send to All" below — a WhatsApp chat opens for each customer in turn, pre-filled and ready. Allow pop-ups for this site if your browser asks. "Both" sends WhatsApp and SMS to every selected customer.</p>
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline" id="bmCancel">Cancel</button>
-        <button class="btn btn-primary" id="bmSend">Send Messages</button>
+        <button class="btn btn-primary" id="bmSend">Send to All (${targets.length})</button>
       </div>
     </div>
   `;
@@ -2742,17 +3686,22 @@ function renderHistoryView(){
     <div class="section-head">
       <div><h1>Sales History</h1><p>Every transaction is stored automatically</p></div>
     </div>
-    <div class="table-toolbar">
-      <div class="flex gap-8" style="flex-wrap:wrap;">
-        <input type="date" id="filterFrom" class="hist-input" value="${historyFilter.from}">
-        <input type="date" id="filterTo" class="hist-input" value="${historyFilter.to}">
-        <input type="text" id="filterQ" placeholder="Search receipt #, customer, item..." value="${historyFilter.q}" style="min-width:220px;">
+    <div class="table-toolbar" style="flex-direction:column;align-items:stretch;">
+      <div class="flex gap-8 items-center" style="flex-wrap:wrap;justify-content:space-between;">
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+          <input type="date" id="filterFrom" class="hist-input" value="${historyFilter.from}">
+          <input type="date" id="filterTo" class="hist-input" value="${historyFilter.to}">
+        </div>
+        <div class="right-tools">
+          <button class="btn btn-outline btn-sm" id="exportJsonBtn">${ICONS.download} Sales JSON</button>
+          <button class="btn btn-outline btn-sm" id="exportPdfBtn">${ICONS.print} PDF</button>
+          <button class="btn btn-dark btn-sm" id="importJsonBtn">${ICONS.upload} Import Sales JSON</button>
+          <input type="file" id="importJsonInput" accept="application/json" class="hidden">
+        </div>
       </div>
-      <div class="right-tools">
-        <button class="btn btn-outline btn-sm" id="exportJsonBtn">${ICONS.download} Sales JSON</button>
-        <button class="btn btn-outline btn-sm" id="exportPdfBtn">${ICONS.print} PDF</button>
-        <button class="btn btn-dark btn-sm" id="importJsonBtn">${ICONS.upload} Import Sales JSON</button>
-        <input type="file" id="importJsonInput" accept="application/json" class="hidden">
+      <div class="search-wrap" style="max-width:none;width:100%;margin-left:0;margin-top:10px;">
+        <span class="icon">${ICONS.search}</span>
+        <input type="text" id="filterQ" placeholder="Search receipt #, customer, item..." value="${historyFilter.q}">
       </div>
     </div>
     <div class="table-wrap">
@@ -2906,11 +3855,25 @@ let MEDIA = {
   pendingHandles: []  // tracks whose stored handle needs permission re-granted
 };
 let MEDIA_VIDEO = { name: '', url: '', handle: null, pendingHandle: null };
+let MEDIA_VIDEOS = [];         // [{id, name, url, handle}] — the video playlist
+let currentVideoIndex = -1;
+let pendingVideoHandles = [];  // videos whose stored handle needs permission re-granted
+let mediaLastNotifiedTrackId = null;
+let VIDEO_PREFS = { volume: 1, muted: false, speed: 1, shuffle: false, repeat: false };
+const K_VIDEO_PREFS = 'gth_pos_video_prefs';
+function saveVideoPrefs(){ try{ localStorage.setItem(K_VIDEO_PREFS, JSON.stringify(VIDEO_PREFS)); }catch(e){} }
+function loadVideoPrefs(){
+  try{
+    const raw = localStorage.getItem(K_VIDEO_PREFS);
+    if(raw) VIDEO_PREFS = { ...VIDEO_PREFS, ...JSON.parse(raw) };
+  }catch(e){}
+}
 
 const K_MEDIA_PREFS = 'gth_pos_media_prefs';
 const MEDIA_DB_NAME = 'gth_pos_media_db';
 const MEDIA_DB_TRACKS_STORE = 'trackHandles';
 const MEDIA_DB_VIDEO_STORE = 'videoHandle';
+const MEDIA_DB_VIDEOS_STORE = 'videoTracks';
 
 function fsAccessSupported(){
   return typeof window.showOpenFilePicker === 'function' && typeof window.showDirectoryPicker === 'function';
@@ -2922,11 +3885,12 @@ function openMediaDB(){
   if(mediaDbPromise) return mediaDbPromise;
   mediaDbPromise = new Promise((resolve)=>{
     if(!('indexedDB' in window)){ resolve(null); return; }
-    const req = indexedDB.open(MEDIA_DB_NAME, 1);
+const req = indexedDB.open(MEDIA_DB_NAME, 2);
     req.onupgradeneeded = () => {
       const db = req.result;
       if(!db.objectStoreNames.contains(MEDIA_DB_TRACKS_STORE)) db.createObjectStore(MEDIA_DB_TRACKS_STORE, {keyPath:'id'});
       if(!db.objectStoreNames.contains(MEDIA_DB_VIDEO_STORE)) db.createObjectStore(MEDIA_DB_VIDEO_STORE, {keyPath:'id'});
+      if(!db.objectStoreNames.contains(MEDIA_DB_VIDEOS_STORE)) db.createObjectStore(MEDIA_DB_VIDEOS_STORE, {keyPath:'id'});
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => resolve(null);
@@ -2981,6 +3945,49 @@ async function mediaDbGetVideo(){
     req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null);
   });
 }
+async function mediaDbPutVideoTrack(record){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_VIDEOS_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_VIDEOS_STORE).put(record);
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function mediaDbDeleteVideoTrack(id){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_VIDEOS_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_VIDEOS_STORE).delete(id);
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function mediaDbGetAllVideoTracks(){
+  const db = await openMediaDB(); if(!db) return [];
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_VIDEOS_STORE, 'readonly');
+    const req = tx.objectStore(MEDIA_DB_VIDEOS_STORE).getAll();
+    req.onsuccess = () => resolve(req.result || []); req.onerror = () => resolve([]);
+  });
+}
+async function mediaDbClearVideoTracks(){
+  const db = await openMediaDB(); if(!db) return;
+  return new Promise((resolve)=>{
+    const tx = db.transaction(MEDIA_DB_VIDEOS_STORE, 'readwrite');
+    tx.objectStore(MEDIA_DB_VIDEOS_STORE).clear();
+    tx.oncomplete = () => resolve(); tx.onerror = () => resolve();
+  });
+}
+async function persistVideoOrder(){
+  for(let i=0;i<MEDIA_VIDEOS.length;i++){
+    const v = MEDIA_VIDEOS[i];
+    if(v.handle){ try{ await mediaDbPutVideoTrack({ id:v.id, name:v.name, handle:v.handle, order:i }); }catch(e){} }
+  }
+}
+function syncMediaVideoLegacyMirror(){
+  const v = currentVideoIndex>=0 ? MEDIA_VIDEOS[currentVideoIndex] : null;
+  MEDIA_VIDEO = v ? { name: v.name, url: v.url, handle: v.handle, pendingHandle: null }
+                  : { name: '', url: '', handle: null, pendingHandle: pendingVideoHandles[0] || null };
+}
 async function persistMediaOrder(){
   for(let i=0;i<MEDIA.tracks.length;i++){
     const t = MEDIA.tracks[i];
@@ -3007,9 +4014,19 @@ async function walkDirectoryForAudio(dirHandle, results){
     }
   }
 }
+async function walkDirectoryForVideo(dirHandle, results){
+  for await (const [name, handle] of dirHandle.entries()){
+    if(handle.kind === 'file'){
+      if(/\.(mp4|webm|mov|mkv|avi|m4v)$/i.test(name)) results.push({ name, handle });
+    } else if(handle.kind === 'directory'){
+      await walkDirectoryForVideo(handle, results);
+    }
+  }
+}
 
 /* Restore the playlist, video, and preferences on startup */
 async function restoreMediaLibrary(){
+  loadVideoPrefs();
   try{
     const records = await mediaDbGetAllTracks();
     records.sort((a,b)=>(a.order||0)-(b.order||0));
@@ -3046,20 +4063,45 @@ async function restoreMediaLibrary(){
   const audio = getBgAudio();
   if(audio) audio.volume = MEDIA.volume;
 
-  try{
-    const vrec = await mediaDbGetVideo();
-    if(vrec && vrec.handle){
-      const perm = await vrec.handle.queryPermission({ mode:'read' });
-      if(perm === 'granted'){
-        const file = await vrec.handle.getFile();
-        MEDIA_VIDEO = { name: vrec.name, url: URL.createObjectURL(file), handle: vrec.handle, pendingHandle: null };
-      } else {
-        MEDIA_VIDEO.pendingHandle = vrec;
-      }
+try{
+    const vrecords = await mediaDbGetAllVideoTracks();
+    vrecords.sort((a,b)=>(a.order||0)-(b.order||0));
+    const pendingV = [];
+    for(const rec of vrecords){
+      try{
+        const perm = await rec.handle.queryPermission({ mode:'read' });
+        if(perm === 'granted'){
+          const file = await rec.handle.getFile();
+          MEDIA_VIDEOS.push({ id: rec.id, name: rec.name, url: URL.createObjectURL(file), handle: rec.handle });
+        } else {
+          pendingV.push(rec);
+        }
+      }catch(e){ pendingV.push(rec); }
     }
+    pendingVideoHandles = pendingV;
+
+    // One-time migration: pick up a video saved by the old single-video system
+    const legacy = await mediaDbGetVideo();
+    if(legacy && legacy.handle && !MEDIA_VIDEOS.some(v=>v.name===legacy.name)){
+      try{
+        const perm = await legacy.handle.queryPermission({ mode:'read' });
+        if(perm === 'granted'){
+          const file = await legacy.handle.getFile();
+          const id = uid('VID-');
+          MEDIA_VIDEOS.push({ id, name: legacy.name, url: URL.createObjectURL(file), handle: legacy.handle });
+          mediaDbPutVideoTrack({ id, name: legacy.name, handle: legacy.handle, order: MEDIA_VIDEOS.length-1 });
+        } else if(!pendingVideoHandles.some(p=>p.name===legacy.name)){
+          pendingVideoHandles.push({ id: uid('VID-'), name: legacy.name, handle: legacy.handle });
+        }
+      }catch(e){}
+    }
+
+    if(MEDIA_VIDEOS.length) currentVideoIndex = 0;
+    syncMediaVideoLegacyMirror();
   }catch(e){}
 
   if(currentView === 'media') renderMediaView();
+  renderTopbarMedia();
 }
 
 function getBgAudio(){ return document.getElementById('bgAudioPlayer'); }
@@ -3071,9 +4113,9 @@ function initBgAudioEvents(){
   audio.dataset.wired = '1';
   audio.volume = MEDIA.volume;
   audio.addEventListener('ended', () => mediaPlayNext(true));
-  audio.addEventListener('timeupdate', renderMediaProgressIfVisible);
-  audio.addEventListener('play', renderMediaPlayStateIfVisible);
-  audio.addEventListener('pause', renderMediaPlayStateIfVisible);
+  audio.addEventListener('timeupdate', ()=>{ renderMediaProgressIfVisible(); syncFloatingAudioProgress(); });
+  audio.addEventListener('play', ()=>{ renderMediaPlayStateIfVisible(); renderTopbarMedia(); syncFloatingPlayerButtons(); });
+  audio.addEventListener('pause', ()=>{ renderMediaPlayStateIfVisible(); renderTopbarMedia(); syncFloatingPlayerButtons(); });
 }
 
 /* File-picker entry points: use the File System Access API (remembers file
@@ -3170,6 +4212,7 @@ function mediaRemoveTrack(id){
   persistMediaOrder();
   saveMediaPrefs();
   renderMediaView();
+  renderTopbarMedia();
 }
 
 function mediaMoveTrack(id, dir){
@@ -3184,7 +4227,7 @@ function mediaMoveTrack(id, dir){
   renderMediaView();
 }
 
-function mediaPlayTrack(index){
+function mediaPlayTrack(index, opts){
   if(index<0 || index>=MEDIA.tracks.length) return;
   MEDIA.currentIndex = index;
   initBgAudioEvents();
@@ -3193,6 +4236,11 @@ function mediaPlayTrack(index){
   audio.play().catch(()=>{ toast('Tap play again — your browser blocked autoplay until you interact with the page', 'info'); });
   saveMediaPrefs();
   renderMediaView();
+  renderTopbarMedia();
+  syncFloatingPlayerVisibility();
+  if(!opts || opts.notify !== false){
+    showMediaNotify('music', MEDIA.tracks[index].name);
+  }
 }
 
 function mediaTogglePlayPause(){
@@ -3204,6 +4252,7 @@ function mediaTogglePlayPause(){
   }
   if(audio.paused){ audio.play().catch(()=>{}); } else { audio.pause(); }
   renderMediaView();
+  renderTopbarMedia();
 }
 
 function mediaPlayNext(auto){
@@ -3272,6 +4321,170 @@ function renderMediaPlayStateIfVisible(){
   });
 }
 
+/* ---------------- Topbar mini transport (music) ---------------- */
+function wireTopbarMediaControls(){
+  const prevBtn = document.getElementById('tmPrevBtn');
+  const playBtn = document.getElementById('tmPlayBtn');
+  const nextBtn = document.getElementById('tmNextBtn');
+  if(prevBtn) prevBtn.onclick = mediaPlayPrev;
+  if(playBtn) playBtn.onclick = mediaTogglePlayPause;
+  if(nextBtn) nextBtn.onclick = () => mediaPlayNext(false);
+}
+function renderTopbarMedia(){
+  const wrap = document.getElementById('topbarMedia');
+  if(!wrap) return;
+  const audio = getBgAudio();
+  const track = mediaCurrentTrack();
+  const active = !!track;
+  wrap.classList.toggle('show', active);
+  if(active){
+    const nameEl = document.getElementById('tmName');
+    if(nameEl) nameEl.textContent = track.name;
+    const playBtn = document.getElementById('tmPlayBtn');
+    if(playBtn) playBtn.innerHTML = (audio && !audio.paused) ? '⏸' : '▶';
+  }
+}
+
+/* ---------------- Floating (persistent) mini player ---------------- */
+let floatingPlayerPos = null; // {left, top} — remembered while the tab is open
+let floatingPlayerMinimized = false;
+let floatingPlayerDragging = false;
+
+function syncFloatingPlayerVisibility(){
+  const el = document.getElementById('floatingMediaPlayer');
+  if(!el) return;
+  // Floating mini-player disabled by request — media controls only
+  // live on the Media tab and the topbar mini transport.
+  el.classList.remove('show');
+}
+
+function renderFloatingPlayer(){
+  const el = document.getElementById('floatingMediaPlayer');
+  if(!el) return;
+  const hasVideo = !!(MEDIA_VIDEO && MEDIA_VIDEO.url);
+  const track = mediaCurrentTrack();
+  const audio = getBgAudio();
+  const title = hasVideo ? (MEDIA_VIDEO.name || 'Video') : (track ? track.name : 'Nothing playing');
+
+  if(!floatingPlayerPos){
+    floatingPlayerPos = { left: window.innerWidth - 320, top: window.innerHeight - 260 };
+  }
+  el.style.left = Math.max(8, Math.min(floatingPlayerPos.left, window.innerWidth-60)) + 'px';
+  el.style.top = Math.max(8, Math.min(floatingPlayerPos.top, window.innerHeight-60)) + 'px';
+  el.classList.toggle('minimized', floatingPlayerMinimized);
+
+  el.innerHTML = `
+    <div class="fmp-drag" id="fmpDrag">
+      <span>${hasVideo?'🎬':'🎵'} ${escapeHtml(title)}</span>
+      <button id="fmpMinBtn" title="${floatingPlayerMinimized?'Expand':'Minimize'}">${floatingPlayerMinimized?'▢':'—'}</button>
+      <button id="fmpCloseBtn" title="Stop & hide">✕</button>
+    </div>
+    <div class="fmp-body">
+      ${hasVideo ? `<video id="fmpVideo" playsinline></video>` : ''}
+      <div class="fmp-transport">
+        <button id="fmpPrevBtn" title="Previous">⏮</button>
+        <button class="fmp-play" id="fmpPlayBtn" title="Play/Pause">▶</button>
+        <button id="fmpNextBtn" title="Next">⏭</button>
+        ${hasVideo ? `<button id="fmpFullBtn" title="Open in Media tab">⤢</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  if(hasVideo){
+    const v = document.getElementById('fmpVideo');
+    const mainVideo = document.getElementById('mediaVideoPlayer');
+    v.src = MEDIA_VIDEO.url;
+    // Continue exactly where the main player left off
+    const resumeTime = (mainVideo && !mainVideo.paused) ? mainVideo.currentTime : (window.__videoResumeTime||0);
+    v.currentTime = resumeTime || 0;
+    v.play().catch(()=>{});
+    v.onpause = () => { window.__videoResumeTime = v.currentTime; syncFloatingPlayerButtons(); };
+    v.onplay = () => { syncFloatingPlayerButtons(); };
+    v.ontimeupdate = () => { window.__videoResumeTime = v.currentTime; };
+  }
+
+  document.getElementById('fmpMinBtn').onclick = () => { floatingPlayerMinimized = !floatingPlayerMinimized; renderFloatingPlayer(); };
+  document.getElementById('fmpCloseBtn').onclick = () => {
+    const audioEl = getBgAudio(); if(audioEl) audioEl.pause();
+    const v = document.getElementById('fmpVideo'); if(v) v.pause();
+    document.getElementById('floatingMediaPlayer').classList.remove('show');
+  };
+  document.getElementById('fmpPrevBtn').onclick = () => { if(hasVideo){ /* single video: restart */ const v=document.getElementById('fmpVideo'); if(v) v.currentTime=0; } else { mediaPlayPrev(); renderFloatingPlayer(); } };
+  document.getElementById('fmpNextBtn').onclick = () => { if(hasVideo){ /* no playlist for video */ } else { mediaPlayNext(false); renderFloatingPlayer(); } };
+  document.getElementById('fmpPlayBtn').onclick = () => {
+    if(hasVideo){
+      const v = document.getElementById('fmpVideo');
+      if(v.paused){ v.play().catch(()=>{}); } else { v.pause(); }
+    } else {
+      mediaTogglePlayPause();
+    }
+    syncFloatingPlayerButtons();
+  };
+  const fullBtn = document.getElementById('fmpFullBtn');
+  if(fullBtn) fullBtn.onclick = () => { switchToMediaViewNav(); };
+
+  wireFloatingDrag();
+  syncFloatingPlayerButtons();
+}
+
+function switchToMediaViewNav(){
+  // Programmatically behave like clicking the Media nav item
+  const navEl = document.querySelector('.nav-item[data-view="media"]');
+  if(navEl) navEl.click(); else switchView('media');
+}
+
+function syncFloatingPlayerButtons(){
+  const el = document.getElementById('floatingMediaPlayer');
+  if(!el || !el.classList.contains('show')) return;
+  const hasVideo = !!(MEDIA_VIDEO && MEDIA_VIDEO.url);
+  const playBtn = document.getElementById('fmpPlayBtn');
+  if(!playBtn) return;
+  if(hasVideo){
+    const v = document.getElementById('fmpVideo');
+    playBtn.innerHTML = (v && !v.paused) ? '⏸' : '▶';
+  } else {
+    const audio = getBgAudio();
+    playBtn.innerHTML = (audio && !audio.paused) ? '⏸' : '▶';
+  }
+}
+function syncFloatingAudioProgress(){ /* reserved for future mini progress bar */ }
+
+function wireFloatingDrag(){
+  const el = document.getElementById('floatingMediaPlayer');
+  const handle = document.getElementById('fmpDrag');
+  if(!el || !handle || handle.dataset.wired) return;
+  handle.dataset.wired = '1';
+  let startX, startY, origLeft, origTop;
+  function onDown(e){
+    floatingPlayerDragging = true;
+    const point = e.touches ? e.touches[0] : e;
+    startX = point.clientX; startY = point.clientY;
+    origLeft = floatingPlayerPos.left; origTop = floatingPlayerPos.top;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, {passive:false});
+    document.addEventListener('touchend', onUp);
+  }
+  function onMove(e){
+    if(!floatingPlayerDragging) return;
+    e.preventDefault();
+    const point = e.touches ? e.touches[0] : e;
+    const dx = point.clientX - startX; const dy = point.clientY - startY;
+    floatingPlayerPos = { left: origLeft+dx, top: origTop+dy };
+    el.style.left = Math.max(8, Math.min(floatingPlayerPos.left, window.innerWidth-60)) + 'px';
+    el.style.top = Math.max(8, Math.min(floatingPlayerPos.top, window.innerHeight-60)) + 'px';
+  }
+  function onUp(){
+    floatingPlayerDragging = false;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+  }
+  handle.addEventListener('mousedown', onDown);
+  handle.addEventListener('touchstart', onDown, {passive:true});
+}
+
 function renderMediaView(){
   const el = document.getElementById('viewMedia');
   if(!el) return;
@@ -3284,7 +4497,7 @@ function renderMediaView(){
       <div><h1>Media</h1><p>Play background music for your shop, or a video — entirely optional, and kept local to this device</p></div>
     </div>
     <div class="form-grid" style="grid-template-columns:1.3fr 1fr;">
-      <div class="card" style="padding:20px;">
+      <div class="card media-player-card" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎵 Background Music</h3>
         <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Pick individual songs or an entire folder from this computer.${fsSupported ? ' Their file locations are remembered, so the playlist reloads automatically next time you open this app.' : ' This browser can\'t remember file locations between sessions — you\'ll need to re-add files after closing.'} Nothing here is uploaded or synced to the cloud.</p>
         <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px;">
@@ -3320,23 +4533,54 @@ function renderMediaView(){
           </div>
         </div>
 
-        <div id="mediaPlaylist"></div>
+        <div class="media-playlist-scroll" id="mediaPlaylist"></div>
       </div>
 
-      <div class="card" style="padding:20px;">
+<div class="card media-player-card media-player-card-video" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎬 Video</h3>
-        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Pick a video to play on this screen. Background music pauses automatically while a video is playing.</p>
-        <button class="btn btn-outline btn-sm mb-16" id="mediaVideoBtn">${ICONS.upload} Choose Video</button>
-        <input type="file" id="mediaVideoInput" accept="video/*" class="hidden">
-        ${MEDIA_VIDEO.pendingHandle ? `
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Pick one or more videos, or a whole folder, from this computer.${fsSupported ? ' Their file locations are remembered, so the playlist reloads automatically next time you open this app.' : ' This browser can\'t remember file locations between sessions — you\'ll need to re-add them after closing.'} Background music pauses automatically while a video is playing. Drag the video's bottom-right corner to resize it, use the timeline to jump anywhere, or go fullscreen.</p>
+        <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px;">
+          <button class="btn btn-outline btn-sm" id="mediaVideoBtn">${ICONS.upload} Add Video Files</button>
+          <button class="btn btn-outline btn-sm" id="mediaVideoFolderBtn">${ICONS.upload} Add Video Folder</button>
+          <input type="file" id="mediaVideoInput" accept="video/*" multiple class="hidden">
+          <input type="file" id="mediaVideoFolderInput" webkitdirectory directory multiple class="hidden">
+        </div>
+        ${pendingVideoHandles && pendingVideoHandles.length ? `
         <div class="card" style="padding:12px 14px;background:var(--orange-light);border-color:var(--orange);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <span style="font-size:12.5px;font-weight:600;">"${escapeHtml(MEDIA_VIDEO.pendingHandle.name)}" needs permission to reopen.</span>
-          <button class="btn btn-primary btn-sm" id="mediaVideoReconnectBtn">Reconnect</button>
+          <span style="font-size:12.5px;font-weight:600;">${pendingVideoHandles.length} previously added video(s) need permission to reopen.</span>
+          <button class="btn btn-primary btn-sm" id="mediaVideoReconnectBtn">Reconnect Videos</button>
         </div>` : ''}
-        ${MEDIA_VIDEO.url ? `
+${MEDIA_VIDEO.url ? `
           <div class="text-muted" style="font-size:12px;margin-bottom:8px;">${escapeHtml(MEDIA_VIDEO.name)}</div>
-          <video id="mediaVideoPlayer" controls style="width:100%;border-radius:10px;background:#000;" src="${MEDIA_VIDEO.url}"></video>
-        ` : `<div class="empty-state"><div class="ico">🎬</div><h3>No video chosen</h3><p>Pick a video file to play it here.</p></div>`}
+          <div class="video-player-wrap" id="videoPlayerWrap">
+            <video id="mediaVideoPlayer" playsinline src="${MEDIA_VIDEO.url}"></video>
+            <div class="video-controls" id="videoControls">
+              <input type="range" class="video-seek" id="videoSeek" min="0" max="1000" value="0">
+              <div class="video-controls-row">
+                <span class="video-time"><span id="vpCurTime">0:00</span> / <span id="vpDurTime">0:00</span></span>
+                <span class="spacer"></span>
+                <button id="vpFullBtn" title="Fullscreen">⛶</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-8" style="justify-content:center;margin:14px 0;">
+            <button class="btn-icon btn-outline" id="mediaVideoPrevBtn" title="Previous video">⏮</button>
+            <button class="btn-icon btn-primary" id="vpPlayBtn" style="width:46px;height:46px;font-size:18px;" title="Play/Pause">▶</button>
+            <button class="btn-icon btn-outline" id="mediaVideoNextBtn" title="Next video">⏭</button>
+          </div>
+          <div class="flex items-center gap-8" style="justify-content:center;flex-wrap:wrap;margin-bottom:6px;">
+            <button class="chip ${VIDEO_PREFS.shuffle?'active':''}" id="videoShuffleBtn" style="padding:6px 14px;font-size:11.5px;">🔀 Shuffle</button>
+            <button class="chip ${VIDEO_PREFS.repeat?'active':''}" id="videoRepeatBtn" style="padding:6px 14px;font-size:11.5px;">🔁 Repeat</button>
+            <button class="chip ${VIDEO_PREFS.muted?'active':''}" id="videoMuteBtn" style="padding:6px 14px;font-size:11.5px;">${VIDEO_PREFS.muted?'🔇 Muted':'🔊 Mute'}</button>
+            <span class="flex items-center gap-8" style="font-size:11.5px;color:var(--muted);">🔉<input type="range" id="videoVolume" min="0" max="1" step="0.05" value="${VIDEO_PREFS.volume}" style="width:90px;accent-color:var(--orange);"></span>
+            <select id="videoSpeed" class="hist-input" style="padding:6px 10px;font-size:11.5px;">
+              ${[0.5,0.75,1,1.25,1.5,2].map(s=>`<option value="${s}" ${VIDEO_PREFS.speed===s?'selected':''}>${s}x</option>`).join('')}
+            </select>
+          </div>
+          ${MEDIA_VIDEOS.length > 1 ? `<p class="text-muted" style="font-size:11px;text-align:center;margin-bottom:6px;">The next video plays automatically when this one ends.</p>` : ''}
+        ` : `<div class="empty-state"><div class="ico">🎬</div><h3>No video chosen</h3><p>Add a video file or folder to play it here.</p></div>`}
+        <div class="media-playlist-scroll mt-16" id="videoPlaylist"></div>
       </div>
     </div>
   `;
@@ -3355,6 +4599,7 @@ function renderMediaView(){
       mediaDbClearTracks();
       try{ localStorage.removeItem(K_MEDIA_PREFS); }catch(e){}
       renderMediaView();
+      renderTopbarMedia();
     });
   };
   const reconnectBtn = document.getElementById('mediaReconnectBtn');
@@ -3371,25 +4616,243 @@ function renderMediaView(){
     if(a && isFinite(a.duration) && a.duration>0){ a.currentTime = (e.target.value/1000)*a.duration; }
   };
 
-  document.getElementById('mediaVideoBtn').onclick = () => mediaPickVideo();
-  document.getElementById('mediaVideoInput').onchange = (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    if(MEDIA_VIDEO.url) URL.revokeObjectURL(MEDIA_VIDEO.url);
-    MEDIA_VIDEO = { name: file.name, url: URL.createObjectURL(file), handle: null, pendingHandle: null };
-    renderMediaView();
-  };
+document.getElementById('mediaVideoBtn').onclick = () => mediaPickVideoFiles();
+  document.getElementById('mediaVideoFolderBtn').onclick = () => mediaPickVideoFolder();
+  document.getElementById('mediaVideoInput').onchange = (e) => { if(e.target.files.length) mediaAddVideoFiles(e.target.files); e.target.value=''; };
+  document.getElementById('mediaVideoFolderInput').onchange = (e) => { if(e.target.files.length) mediaAddVideoFiles(e.target.files); e.target.value=''; };
   const videoReconnectBtn = document.getElementById('mediaVideoReconnectBtn');
-  if(videoReconnectBtn) videoReconnectBtn.onclick = () => mediaReconnectVideo();
-  const videoPlayer = document.getElementById('mediaVideoPlayer');
-  if(videoPlayer){
-    videoPlayer.onplay = () => { const a = getBgAudio(); if(a && !a.paused) a.pause(); };
-  }
+  if(videoReconnectBtn) videoReconnectBtn.onclick = () => mediaReconnectPendingVideos();
+  const videoPrevBtn = document.getElementById('mediaVideoPrevBtn');
+  if(videoPrevBtn) videoPrevBtn.onclick = () => mediaVideoPrev();
+  const videoNextBtn = document.getElementById('mediaVideoNextBtn');
+  if(videoNextBtn) videoNextBtn.onclick = () => mediaVideoNext();
+
+  renderVideoPlaylist();
+  wireVideoPlayer();
 
   renderMediaProgressIfVisible();
   renderMediaPlayStateIfVisible();
 }
 
+/* ---- Video file picking (with File System Access remembering, like audio) ---- */
+/* ---- Video file picking (with File System Access remembering, like audio) ---- */
+async function mediaPickVideoFiles(){
+  if(fsAccessSupported()){
+    try{
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        types: [{ description:'Video files', accept:{'video/*':['.mp4','.webm','.mov','.mkv','.avi','.m4v']} }]
+      });
+      await mediaAddVideoFromHandles(handles.map(h=>({handle:h})));
+    }catch(e){ /* user cancelled the picker */ }
+  } else {
+    document.getElementById('mediaVideoInput').click();
+  }
+}
+async function mediaPickVideoFolder(){
+  if(fsAccessSupported()){
+    try{
+      const dirHandle = await window.showDirectoryPicker();
+      const found = [];
+      await walkDirectoryForVideo(dirHandle, found);
+      if(!found.length){ toast('No video files found in that folder', 'error'); return; }
+      await mediaAddVideoFromHandles(found);
+    }catch(e){ /* user cancelled the picker */ }
+  } else {
+    document.getElementById('mediaVideoFolderInput').click();
+  }
+}
+async function mediaAddVideoFromHandles(items){
+  let added = 0;
+  for(const item of items){
+    try{
+      const file = await item.handle.getFile();
+      if(!file.type.startsWith('video/') && !/\.(mp4|webm|mov|mkv|avi|m4v)$/i.test(file.name)) continue;
+      const id = uid('VID-');
+      const name = (item.name || file.name).replace(/\.[^/.]+$/, '');
+      MEDIA_VIDEOS.push({ id, name, url: URL.createObjectURL(file), handle: item.handle });
+      await mediaDbPutVideoTrack({ id, name, handle: item.handle, order: MEDIA_VIDEOS.length-1 });
+      added++;
+    }catch(e){ /* skip a file that couldn't be opened */ }
+  }
+  if(!added){ toast('No video files could be added', 'error'); return; }
+  if(currentVideoIndex === -1) currentVideoIndex = 0;
+  syncMediaVideoLegacyMirror();
+  toast(`Added ${added} video(s) — their file locations are remembered for next time`, 'success');
+  renderMediaView();
+}
+function mediaAddVideoFiles(fileList){
+  const files = Array.from(fileList).filter(f=>f.type.startsWith('video/'));
+  if(!files.length){ toast('No video files found in your selection', 'error'); return; }
+  files.forEach(f=>{
+    MEDIA_VIDEOS.push({ id: uid('VID-'), name: f.name.replace(/\.[^/.]+$/, ''), url: URL.createObjectURL(f) });
+  });
+  if(currentVideoIndex === -1) currentVideoIndex = 0;
+  syncMediaVideoLegacyMirror();
+  toast(`Added ${files.length} video(s) — this browser can't remember file locations, so you'll need to re-add them next time`, 'success');
+  renderMediaView();
+}
+function mediaPlayVideoTrack(index, opts){
+  if(index<0 || index>=MEDIA_VIDEOS.length) return;
+  currentVideoIndex = index;
+  syncMediaVideoLegacyMirror();
+  window.__videoResumeTime = 0;
+  window.__videoAutoplay = !!(opts && opts.autoplay);
+  showMediaNotify('video', MEDIA_VIDEOS[index].name);
+  renderMediaView();
+  syncFloatingPlayerVisibility();
+}
+function mediaVideoNext(){
+  if(!MEDIA_VIDEOS.length) return;
+  let nextIndex;
+  if(VIDEO_PREFS.shuffle){
+    if(MEDIA_VIDEOS.length===1){ nextIndex = 0; }
+    else{ do{ nextIndex = Math.floor(Math.random()*MEDIA_VIDEOS.length); } while(nextIndex===currentVideoIndex); }
+  } else {
+    nextIndex = currentVideoIndex + 1;
+    if(nextIndex >= MEDIA_VIDEOS.length){
+      if(VIDEO_PREFS.repeat){ nextIndex = 0; } else { return; }
+    }
+  }
+  mediaPlayVideoTrack(nextIndex, {autoplay:true});
+}
+function mediaVideoPrev(){
+  if(!MEDIA_VIDEOS.length) return;
+  let prevIndex = currentVideoIndex - 1;
+  if(prevIndex < 0) prevIndex = VIDEO_PREFS.repeat ? MEDIA_VIDEOS.length-1 : 0;
+  mediaPlayVideoTrack(prevIndex, {autoplay:true});
+}
+function mediaRemoveVideoTrack(id){
+  const idx = MEDIA_VIDEOS.findIndex(v=>v.id===id);
+  if(idx===-1) return;
+  const wasCurrent = idx === currentVideoIndex;
+  MEDIA_VIDEOS.splice(idx,1);
+  mediaDbDeleteVideoTrack(id);
+  if(wasCurrent){
+    const vEl = document.getElementById('mediaVideoPlayer');
+    if(vEl){ vEl.pause(); }
+    currentVideoIndex = MEDIA_VIDEOS.length ? Math.min(idx, MEDIA_VIDEOS.length-1) : -1;
+  } else if(currentVideoIndex > idx){
+    currentVideoIndex--;
+  }
+  persistVideoOrder();
+  syncMediaVideoLegacyMirror();
+  renderMediaView();
+}
+function mediaMoveVideoTrack(id, dir){
+  const idx = MEDIA_VIDEOS.findIndex(v=>v.id===id);
+  const newIdx = idx + dir;
+  if(idx===-1 || newIdx<0 || newIdx>=MEDIA_VIDEOS.length) return;
+  const currentId = currentVideoIndex>=0 ? MEDIA_VIDEOS[currentVideoIndex].id : null;
+  const [item] = MEDIA_VIDEOS.splice(idx,1);
+  MEDIA_VIDEOS.splice(newIdx,0,item);
+  if(currentId) currentVideoIndex = MEDIA_VIDEOS.findIndex(v=>v.id===currentId);
+  persistVideoOrder();
+  renderMediaView();
+}
+async function mediaReconnectPendingVideos(){
+  const stillPending = [];
+  for(const rec of (pendingVideoHandles||[])){
+    try{
+      const perm = await rec.handle.requestPermission({ mode:'read' });
+      if(perm === 'granted'){
+        const file = await rec.handle.getFile();
+        MEDIA_VIDEOS.push({ id: rec.id, name: rec.name, url: URL.createObjectURL(file), handle: rec.handle });
+      } else { stillPending.push(rec); }
+    }catch(e){ stillPending.push(rec); }
+  }
+  pendingVideoHandles = stillPending;
+  if(currentVideoIndex === -1 && MEDIA_VIDEOS.length) currentVideoIndex = 0;
+  syncMediaVideoLegacyMirror();
+  toast(stillPending.length ? `Reconnected some videos — ${stillPending.length} still need access` : 'All videos reconnected', stillPending.length?'info':'success');
+  renderMediaView();
+}
+
+/* ---- Custom video player controls: timeline, play/prev/next, fullscreen ---- */
+function wireVideoPlayer(){
+  const video = document.getElementById('mediaVideoPlayer');
+  const wrap = document.getElementById('videoPlayerWrap');
+  if(!video || !wrap) return;
+
+  if(window.__videoResumeTime){ try{ video.currentTime = window.__videoResumeTime; }catch(e){} }
+  video.volume = VIDEO_PREFS.muted ? 0 : VIDEO_PREFS.volume;
+  video.muted = VIDEO_PREFS.muted;
+  video.playbackRate = VIDEO_PREFS.speed;
+
+  const seek = document.getElementById('videoSeek');
+  const playBtn = document.getElementById('vpPlayBtn');
+  const fullBtn = document.getElementById('vpFullBtn');
+  const curTime = document.getElementById('vpCurTime');
+  const durTime = document.getElementById('vpDurTime');
+  const muteBtn = document.getElementById('videoMuteBtn');
+  const volumeSlider = document.getElementById('videoVolume');
+  const speedSelect = document.getElementById('videoSpeed');
+  const shuffleBtn = document.getElementById('videoShuffleBtn');
+  const repeatBtn = document.getElementById('videoRepeatBtn');
+
+  function syncPlayIcon(){ if(playBtn) playBtn.innerHTML = video.paused ? '▶' : '⏸'; }
+  function syncTime(){
+    if(isFinite(video.duration) && video.duration>0){
+      seek.max = 1000;
+      seek.value = (video.currentTime/video.duration)*1000;
+      durTime.textContent = mediaFmtTime(video.duration);
+    }
+    curTime.textContent = mediaFmtTime(video.currentTime);
+    window.__videoResumeTime = video.currentTime;
+  }
+
+  if(playBtn) playBtn.onclick = () => { if(video.paused){ video.play().catch(()=>{}); } else { video.pause(); } };
+  seek.oninput = (e) => { if(isFinite(video.duration) && video.duration>0){ video.currentTime = (e.target.value/1000)*video.duration; } };
+  fullBtn.onclick = () => {
+    if(document.fullscreenElement){ document.exitFullscreen(); }
+    else if(wrap.requestFullscreen){ wrap.requestFullscreen(); }
+    else if(video.requestFullscreen){ video.requestFullscreen(); }
+  };
+
+  if(muteBtn) muteBtn.onclick = () => {
+    VIDEO_PREFS.muted = !VIDEO_PREFS.muted;
+    video.muted = VIDEO_PREFS.muted;
+    saveVideoPrefs();
+    renderMediaView();
+  };
+  if(volumeSlider) volumeSlider.oninput = (e) => {
+    VIDEO_PREFS.volume = parseFloat(e.target.value);
+    if(VIDEO_PREFS.volume > 0 && VIDEO_PREFS.muted){ VIDEO_PREFS.muted = false; video.muted = false; }
+    video.volume = VIDEO_PREFS.volume;
+    saveVideoPrefs();
+  };
+  if(speedSelect) speedSelect.onchange = (e) => {
+    VIDEO_PREFS.speed = parseFloat(e.target.value);
+    video.playbackRate = VIDEO_PREFS.speed;
+    saveVideoPrefs();
+  };
+  if(shuffleBtn) shuffleBtn.onclick = () => { VIDEO_PREFS.shuffle = !VIDEO_PREFS.shuffle; saveVideoPrefs(); renderMediaView(); };
+  if(repeatBtn) repeatBtn.onclick = () => { VIDEO_PREFS.repeat = !VIDEO_PREFS.repeat; saveVideoPrefs(); renderMediaView(); };
+
+  video.addEventListener('play', () => {
+    syncPlayIcon();
+    const a = getBgAudio(); if(a && !a.paused) a.pause();
+    wrap.classList.add('controls-visible');
+    syncFloatingPlayerButtons();
+  });
+  video.addEventListener('pause', ()=>{ syncPlayIcon(); syncFloatingPlayerButtons(); });
+  video.addEventListener('timeupdate', syncTime);
+  video.addEventListener('loadedmetadata', syncTime);
+  video.addEventListener('ended', ()=>{
+    if(MEDIA_VIDEOS.length > 1 || VIDEO_PREFS.repeat){
+      mediaVideoNext();
+    } else {
+      showMediaNotify('video', MEDIA_VIDEO.name + ' — finished');
+    }
+  });
+
+  syncPlayIcon(); syncTime();
+
+  if(window.__videoAutoplay){
+    video.play().catch(()=>{});
+    window.__videoAutoplay = false;
+  }
+}
 function renderMediaPlaylist(){
   const wrap = document.getElementById('mediaPlaylist');
   if(!wrap) return;
@@ -3417,6 +4880,30 @@ function renderMediaPlaylist(){
     row.querySelector('[data-act="up"]').onclick = (e)=>{ e.stopPropagation(); mediaMoveTrack(id,-1); };
     row.querySelector('[data-act="down"]').onclick = (e)=>{ e.stopPropagation(); mediaMoveTrack(id,1); };
     row.querySelector('[data-act="remove"]').onclick = (e)=>{ e.stopPropagation(); mediaRemoveTrack(id); };
+  });
+}
+function renderVideoPlaylist(){
+  const wrap = document.getElementById('videoPlaylist');
+  if(!wrap) return;
+  if(!MEDIA_VIDEOS.length){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = MEDIA_VIDEOS.map((v,i)=>`
+    <div class="media-track-row ${i===currentVideoIndex?'playing':''}" data-id="${v.id}" style="display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px dashed var(--border);cursor:pointer;">
+      <span style="width:20px;text-align:center;font-size:12px;color:var(--muted);">${i===currentVideoIndex?'▶':(i+1)}</span>
+      <span style="flex:1;min-width:0;font-size:13px;font-weight:${i===currentVideoIndex?'700':'500'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(v.name)}</span>
+      <button class="btn-icon btn-ghost" data-act="up" title="Move up" style="width:26px;height:26px;">↑</button>
+      <button class="btn-icon btn-ghost" data-act="down" title="Move down" style="width:26px;height:26px;">↓</button>
+      <button class="btn-icon btn-ghost" data-act="remove" title="Remove" style="width:26px;height:26px;color:var(--danger);">✕</button>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.media-track-row').forEach(row=>{
+    const id = row.dataset.id;
+row.addEventListener('click', (e)=>{
+      if(e.target.closest('button')) return;
+      mediaPlayVideoTrack(MEDIA_VIDEOS.findIndex(v=>v.id===id), {autoplay:true});
+    });
+    row.querySelector('[data-act="up"]').onclick = (e)=>{ e.stopPropagation(); mediaMoveVideoTrack(id,-1); };
+    row.querySelector('[data-act="down"]').onclick = (e)=>{ e.stopPropagation(); mediaMoveVideoTrack(id,1); };
+    row.querySelector('[data-act="remove"]').onclick = (e)=>{ e.stopPropagation(); mediaRemoveVideoTrack(id); };
   });
 }
 
@@ -3689,6 +5176,49 @@ function renderSettingsView(){
       </div>
 
       <div class="card" style="padding:20px;grid-column:1/-1;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎨 Advanced — Themes</h3>
+        <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">👁️ Menu Visibility</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Hide menu items or the price field from cashiers. Uncheck to hide, check to show.</p>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvCustomers" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).customers?'checked':''}> Show "Customers" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvMedia" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).media?'checked':''}> Show "Media" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvProducts" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).products?'checked':''}> Show "Products" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:14px;">
+          <input type="checkbox" id="mvPriceEdit" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).priceEdit?'checked':''}> Allow changing product price
+        </label>
+        <button class="btn btn-primary" id="saveMenuVisibility">Save Menu Visibility</button>
+      </div>
+
+      <div class="card" style="padding:20px;grid-column:1/-1;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎨 Advanced — Themes</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Beyond the quick light/dark toggle in the topbar, pick from a few extra color palettes — some darker, some lighter.</p>
+        <div class="flex gap-8" style="flex-wrap:wrap;" id="themeSwatches"></div>
+      </div>
+
+      <div class="card" style="padding:20px;grid-column:1/-1;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🔍 Advanced — Display Zoom</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:16px;">Scale the whole app up or down to fit your screen — handy on laptops with smaller or higher-resolution displays. This is remembered and applied automatically every time the app opens, until you change it again.</p>
+        <div class="flex items-center gap-12" style="flex-wrap:wrap;">
+          <input type="range" id="zoomSlider" min="50" max="150" step="5"
+                 value="${SETTINGS.appZoom || 100}"
+                 style="flex:1;min-width:220px;accent-color:var(--orange);">
+          <div class="flex items-center gap-8">
+            <input type="number" id="zoomNumber" min="50" max="150" step="5"
+                   value="${SETTINGS.appZoom || 100}"
+                   style="width:70px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;text-align:center;background:var(--card);color:var(--text);font-weight:700;">
+            <span style="font-weight:700;font-size:13px;color:var(--muted);">%</span>
+          </div>
+          <button class="btn btn-outline btn-sm" id="zoomResetBtn">Reset to 100%</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:20px;grid-column:1/-1;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🔐 Security — Separate Passwords</h3>
         <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Each action below can use its own password. All start the same until you change them — set different ones so, for example, a cashier can log in and message customers but can't delete records or change prices.</p>
         <div class="form-grid" style="grid-template-columns:repeat(4,1fr);">
@@ -3698,9 +5228,9 @@ function renderSettingsView(){
             return `
             <div>
               <h4 style="font-size:13px;margin-bottom:8px;">${label}</h4>
-              <div class="field-row"><label>Current</label><input type="password" id="cur_${field}" placeholder="••••••••"></div>
-              <div class="field-row"><label>New</label><input type="password" id="new_${field}" placeholder="••••••••"></div>
-              <div class="field-row"><label>Confirm</label><input type="password" id="conf_${field}" placeholder="••••••••"></div>
+              <div class="field-row"><label>Current</label><input type="password" id="cur_${field}" placeholder="••••••••" autocomplete="new-password"></div>
+              <div class="field-row"><label>New</label><input type="password" id="new_${field}" placeholder="••••••••" autocomplete="new-password"></div>
+              <div class="field-row"><label>Confirm</label><input type="password" id="conf_${field}" placeholder="••••••••" autocomplete="new-password"></div>
               <button class="btn btn-dark btn-sm w-full" data-pwfield="${field}">Update</button>
             </div>`;
           }).join('')}
@@ -3757,8 +5287,47 @@ function renderSettingsView(){
     </div>
   `;
 
-  renderSyncHistoryList();
+renderSyncHistoryList();
+  renderThemeSwatches();
 
+  /* ---- Display Zoom ---- */
+  const zoomSlider = document.getElementById('zoomSlider');
+  const zoomNumber = document.getElementById('zoomNumber');
+  const zoomResetBtn = document.getElementById('zoomResetBtn');
+  if(zoomSlider && zoomNumber){
+    zoomSlider.oninput = (e) => {
+      const v = applyZoom(e.target.value);
+      zoomNumber.value = v;
+    };
+    zoomNumber.oninput = (e) => {
+      const v = applyZoom(e.target.value);
+      zoomSlider.value = v;
+    };
+    zoomNumber.onblur = (e) => {
+      const v = applyZoom(e.target.value);
+      e.target.value = v;
+      zoomSlider.value = v;
+    };
+    zoomResetBtn.onclick = () => {
+      const v = applyZoom(100);
+      zoomSlider.value = v;
+      zoomNumber.value = v;
+      toast('Zoom reset to 100%', 'success');
+    };
+  }
+
+  document.getElementById('saveMenuVisibility').onclick = () => {
+    SETTINGS.menuVisibility = {
+      customers: document.getElementById('mvCustomers').checked,
+      media: document.getElementById('mvMedia').checked,
+      products: document.getElementById('mvProducts').checked,
+      priceEdit: document.getElementById('mvPriceEdit').checked
+    };
+    saveSettings();
+    renderShell();
+    switchView('settings');
+    toast('Menu visibility saved', 'success');
+  };
   /* ---- Logo upload ---- */
   let pendingLogo = SETTINGS.storeLogo || '';
   document.getElementById('logoInput').onchange = (e)=>{
@@ -3867,6 +5436,7 @@ function renderSettingsView(){
     toast('Message templates saved', 'success');
   };
 
+document.querySelectorAll('input[type="password"]').forEach(inp=>{ inp.value = ''; });
   document.querySelectorAll('[data-pwfield]').forEach(btn=>{
     btn.onclick = () => {
       const field = btn.dataset.pwfield;
@@ -3933,6 +5503,26 @@ function renderSettingsView(){
   };
 }
 
+function renderThemeSwatches(){
+  const wrap = document.getElementById('themeSwatches');
+  if(!wrap) return;
+  wrap.innerHTML = THEME_LIST.map(t=>{
+    const active = (SETTINGS.theme||'light') === t.key;
+    return `<button class="chip ${active?'active':''}" data-theme-key="${t.key}" style="display:flex;align-items:center;gap:6px;">
+      <span style="width:10px;height:10px;border-radius:50%;background:${t.dark ? '#222' : '#fff'};border:1.5px solid var(--border);display:inline-block;"></span>
+      ${t.label}
+    </button>`;
+  }).join('');
+  wrap.querySelectorAll('[data-theme-key]').forEach(btn=>{
+    btn.onclick = () => {
+      applyTheme(btn.dataset.themeKey);
+      saveSettings();
+      renderThemeSwatches();
+      toast(`Theme set to ${btn.textContent.trim()}`, 'success');
+    };
+  });
+}
+
 /* ============================================================
    FULL BACKUP EXPORT / IMPORT (products+images, sales, customers, settings)
    ============================================================ */
@@ -3991,7 +5581,9 @@ function exportFullExcel(){
   const productsSheet = PRODUCTS.map(p=>({
     'Product ID': p.id, 'Name': p.name, 'Category': p.category||'Uncategorized',
     'Price': p.price, 'Quantity in Stock': p.qty, 'Date Added': fmtDate(p.dateAdded),
-    'Has Picture': p.image ? 'Yes' : 'No'
+    'Has Picture': p.image ? 'Yes' : 'No',
+    'Cost Price': p.costPrice ?? '',
+    'Active Batches': (p.batches||[]).length
   }));
   const wsProducts = XLSX.utils.json_to_sheet(productsSheet);
   XLSX.utils.book_append_sheet(wb, wsProducts, 'Products & Stock');
@@ -4178,7 +5770,7 @@ function showLockGate(){
       <p>0599888073-0209562230-0245032899</p>
       <p>Contact me for more information</p>
       <p>Created by Gliffits Amponsah</p>
-      <input type="password" id="gatePwInput" placeholder="••••••••" autocomplete="off">
+     <input type="password" id="gatePwInput" placeholder="••••••••" autocomplete="new-password">
       <div class="lock-err" id="gateErr"></div>
       <button class="btn btn-primary btn-block" id="gateSubmit">Unlock App</button>
     </div>
@@ -4259,6 +5851,323 @@ document.addEventListener('wheel', (event) => {
     }
 }, { passive: false });
 
+// Keep the floating mini player positioned sensibly if the window is resized
+window.addEventListener('resize', () => {
+  if(typeof syncFloatingPlayerVisibility === 'function') syncFloatingPlayerVisibility();
+  updateMediaLayoutMode(); // ← add this
+});
+
+
+let stockAnalysisFilter = { preset:'all', from:'', to:'' };
+function stockAnalysisRange(){
+  const now = new Date();
+  if(stockAnalysisFilter.preset==='today'){
+    const start = new Date(now); start.setHours(0,0,0,0);
+    return { from: start, to: now };
+  }
+  if(stockAnalysisFilter.preset==='7d'){
+    const start = new Date(now); start.setDate(start.getDate()-7);
+    return { from: start, to: now };
+  }
+  if(stockAnalysisFilter.preset==='month'){
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { from: start, to: now };
+  }
+  if(stockAnalysisFilter.preset==='custom'){
+    return {
+      from: stockAnalysisFilter.from ? new Date(stockAnalysisFilter.from) : null,
+      to: stockAnalysisFilter.to ? new Date(stockAnalysisFilter.to+'T23:59:59') : null
+    };
+  }
+  return { from:null, to:null }; // all time
+}
+function filterHistoryByRange(historyArr){
+  const { from, to } = stockAnalysisRange();
+  return historyArr.filter(h=>{
+    const t = new Date(h.timestamp);
+    if(from && t < from) return false;
+    if(to && t > to) return false;
+    return true;
+  });
+}
+
+let stockAnalysisTableSearch = '';
+function renderStockAnalysisView(){
+  const el = document.getElementById('viewStockAnalysis');
+  el.innerHTML = `
+    <div class="section-head"><div><h1>Stock Analysis</h1><p>Batches, refills, price changes & sales per product</p></div></div>
+    <div class="table-toolbar" style="flex-direction:column;align-items:stretch;">
+      <div class="flex gap-8 items-center" style="flex-wrap:wrap;justify-content:space-between;">
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+          <select id="saPreset" class="hist-input">
+            <option value="all">All time</option>
+            <option value="today">Today</option>
+            <option value="7d">Last 7 days</option>
+            <option value="month">This month</option>
+            <option value="custom">Custom range</option>
+          </select>
+          <input type="date" id="saFrom" class="hist-input hidden">
+          <input type="date" id="saTo" class="hist-input hidden">
+        </div>
+        <div class="right-tools">
+          <span class="text-muted" style="font-size:12px;align-self:center;margin-right:2px;">Export all filtered products:</span>
+          <button class="btn btn-outline btn-sm" id="saExportJsonBtn">${ICONS.download} JSON</button>
+          <button class="btn btn-outline btn-sm" id="saExportExcelBtn">${ICONS.download} Excel</button>
+          <button class="btn btn-outline btn-sm" id="saExportPdfBtn">${ICONS.print} PDF</button>
+        </div>
+      </div>
+      <div class="search-wrap" style="max-width:none;width:100%;margin-left:0;margin-top:10px;">
+        <span class="icon">${ICONS.search}</span>
+        <input type="text" id="saTableSearch" placeholder="Search by name, ID, category...">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Product</th><th>ID</th><th>Category</th><th>Selling Price</th><th>Cost Price</th><th>Stock</th><th>Status</th><th>Activity in range</th><th></th>
+        </tr></thead>
+        <tbody id="saTbody"></tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('saPreset').onchange = (e)=>{
+    stockAnalysisFilter.preset = e.target.value;
+    document.getElementById('saFrom').classList.toggle('hidden', e.target.value!=='custom');
+    document.getElementById('saTo').classList.toggle('hidden', e.target.value!=='custom');
+    renderSaTable();
+  };
+  document.getElementById('saFrom').onchange = e=>{ stockAnalysisFilter.from=e.target.value; renderSaTable(); };
+  document.getElementById('saTo').onchange = e=>{ stockAnalysisFilter.to=e.target.value; renderSaTable(); };
+  document.getElementById('saTableSearch').oninput = debounce(e=>{
+    stockAnalysisTableSearch = e.target.value.trim().toLowerCase();
+    renderSaTable();
+  }, 150);
+  document.getElementById('saExportJsonBtn').onclick = exportStockAnalysisJson;
+  document.getElementById('saExportExcelBtn').onclick = exportStockAnalysisExcel;
+  document.getElementById('saExportPdfBtn').onclick = exportStockAnalysisPdf;
+  renderSaTable();
+}
+
+function stockAnalysisFilteredProducts(){
+  let list = PRODUCTS.slice().sort((a,b)=> a.name.localeCompare(b.name));
+  if(stockAnalysisTableSearch){
+    list = list.filter(p => p.name.toLowerCase().includes(stockAnalysisTableSearch) ||
+      p.id.toLowerCase().includes(stockAnalysisTableSearch) ||
+      (p.category||'').toLowerCase().includes(stockAnalysisTableSearch));
+  }
+  return list;
+}
+
+function historyRowLabel(h){
+  if(h.type==='refill') return { type:'Refill', details:`+${h.addedQty} units (${h.oldQty} \u2192 ${h.newQty})`, amount: fmtMoney(h.price) + (h.costPrice!=null?' (cost '+fmtMoney(h.costPrice)+')':''), stockAfter: h.newQty };
+  if(h.type==='price_change') return { type:(h.field==='price'?'Selling':'Cost')+' Price Change', details:`${fmtMoney(h.oldValue)} \u2192 ${fmtMoney(h.newValue)}`, amount:'', stockAfter:'' };
+  if(h.type==='sale') return { type:'Sale', details:`${h.qty} unit(s) to ${h.customerName}`, amount: fmtMoney(h.unitPriceApplied) + (h.profit!=null?' (profit '+fmtMoney(h.profit)+')':''), stockAfter: h.remainingStockAfter };
+  return { type:'', details:'', amount:'', stockAfter:'' };
+}
+
+function stockAnalysisFlattenRows(products){
+  const rows = [];
+  products.forEach(p=>{
+    filterHistoryByRange(p.history||[]).forEach(h=>{
+      const lbl = historyRowLabel(h);
+      rows.push({ 'Product': p.name, 'Product ID': p.id, 'Date': fmtDate(h.timestamp), 'Type': lbl.type, 'Details': lbl.details, 'Amount': lbl.amount, 'Stock After': lbl.stockAfter });
+    });
+  });
+  return rows;
+}
+
+function exportStockAnalysisJson(){
+  const products = stockAnalysisFilteredProducts();
+  if(!products.length){ toast('No products to export', 'error'); return; }
+  const data = products.map(p=>({ id:p.id, name:p.name, category:p.category, price:p.price, costPrice:p.costPrice, qty:p.qty, history: filterHistoryByRange(p.history||[]) }));
+  downloadBlob(JSON.stringify({exportedAt:new Date().toISOString(), store:SETTINGS.storeName, products:data}, null, 2), `stock-analysis-${Date.now()}.json`, 'application/json');
+  toast('Stock analysis exported as JSON', 'success');
+}
+
+function exportStockAnalysisExcel(){
+  if(typeof XLSX === 'undefined'){ toast('Excel library failed to load — check your internet connection', 'error'); return; }
+  const rows = stockAnalysisFlattenRows(stockAnalysisFilteredProducts());
+  if(!rows.length){ toast('No activity to export in this range', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, 'Stock Analysis');
+  XLSX.writeFile(wb, `stock-analysis-${Date.now()}.xlsx`);
+  toast('Stock analysis exported to Excel', 'success');
+}
+
+function exportStockAnalysisPdf(){
+  const rows = stockAnalysisFlattenRows(stockAnalysisFilteredProducts());
+  if(!rows.length){ toast('No activity to export in this range', 'error'); return; }
+  const cols = ['Product','Product ID','Date','Type','Details','Amount','Stock After'];
+  const html = `
+    <div style="font-family:Arial,sans-serif;padding:10px;">
+      <h2 style="margin-bottom:2px;">${escapeHtml(SETTINGS.storeName)} — Stock Analysis</h2>
+      <p style="color:#555;margin-bottom:14px;font-size:12px;">Generated ${fmtDate(new Date().toISOString())} · ${rows.length} event(s)</p>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;">
+        <thead><tr style="background:#f0f0f0;">${cols.map(h=>`<th style="text-align:left;padding:5px;border:1px solid #ddd;">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(r=>`<tr>${cols.map(k=>`<td style="padding:5px;border:1px solid #ddd;">${escapeHtml(String(r[k]??''))}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  setPrintPageStyle();
+  document.getElementById('print-area').innerHTML = html;
+  toast('Opening print dialog — choose "Save as PDF"', 'info');
+  setTimeout(()=>{ window.print(); setTimeout(()=>{ document.getElementById('print-area').innerHTML=''; }, 500); }, 200);
+}
+function renderSaTable(){
+  const tbody = document.getElementById('saTbody');
+  if(!tbody) return;
+  const tvm = SETTINGS.productViewMode || 'large';
+  let list = PRODUCTS.slice().sort((a,b)=> a.name.localeCompare(b.name));
+  if(stockAnalysisTableSearch){
+    list = list.filter(p => p.name.toLowerCase().includes(stockAnalysisTableSearch) ||
+      p.id.toLowerCase().includes(stockAnalysisTableSearch) ||
+      (p.category||'').toLowerCase().includes(stockAnalysisTableSearch));
+  }
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="ico">📊</div><h3>No products found</h3><p>Try a different search.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(p=>{
+    const status = p.qty<=0 ? `<span class="badge badge-danger">Out of stock</span>`
+      : p.qty<=SETTINGS.lowStockThreshold ? `<span class="badge badge-warning">Low stock</span>`
+      : `<span class="badge badge-success">In stock</span>`;
+    const activityCount = filterHistoryByRange(p.history||[]).length;
+    return `
+    <tr data-id="${p.id}">
+      <td><div class="cell-prod tvm-${tvm}"><div class="thumb-sz">${p.image?`<img src="${p.image}">`:ICONS.box}</div><span>${escapeHtml(p.name)}</span></div></td>
+      <td><span class="pid-tag">${p.id}</span></td>
+      <td>${escapeHtml(p.category||'Uncategorized')}</td>
+      <td>${fmtMoney(p.price)}</td>
+      <td>${p.costPrice!=null ? fmtMoney(p.costPrice) : '—'}</td>
+      <td>${p.qty}</td>
+      <td>${status}</td>
+      <td><span class="badge badge-info">${activityCount} event(s)</span></td>
+      <td><button class="btn btn-outline btn-sm" data-act="view">View Timeline</button></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr').forEach(row=>{
+    const id = row.dataset.id;
+    row.querySelector('[data-act="view"]').onclick = () => openProductHistoryModal(id);
+  });
+}
+
+function openProductHistoryModal(productId){
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if(!p) return;
+  ensureModalRoot();
+  const root = document.getElementById('modalRoot');
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-overlay show';
+  const hist = filterHistoryByRange(p.history||[]).slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
+
+  const rows = hist.map(h=>{
+    const lbl = historyRowLabel(h);
+    const typeClass = h.type==='refill' ? 'refill' : (h.type==='price_change' ? 'price' : 'sale');
+    const icon = h.type==='refill' ? '📦' : (h.type==='price_change' ? (h.newValue>h.oldValue?'⬆':'⬇') : '🧾');
+    let sub = '';
+    if(h.type==='sale' && h.batchesUsed && h.batchesUsed.length){
+      sub = `<div class="audit-detail-sub">Batches: ${h.batchesUsed.map(b=>`${b.qty}@${fmtMoney(b.price)}`).join(', ')}</div>`;
+    }
+    return `<tr>
+      <td class="audit-date">${fmtDate(h.timestamp)}</td>
+      <td><span class="audit-row-type ${typeClass}">${icon} ${lbl.type}</span></td>
+      <td>${escapeHtml(lbl.details)}${sub}</td>
+      <td class="audit-amount">${lbl.amount || '—'}</td>
+      <td>${lbl.stockAfter!=='' ? lbl.stockAfter : '—'}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5"><div class="empty-state" style="padding:30px 10px;"><div class="ico">📄</div><h3>No activity</h3><p>Nothing happened in this range.</p></div></td></tr>`;
+
+  wrap.innerHTML = `
+    <div class="modal modal-lg modal-audit">
+      <div class="modal-head"><h3>${escapeHtml(p.name)} — Audit Timeline</h3><button class="modal-close" id="phClose">✕</button></div>
+      <div class="modal-body">
+        <div class="audit-stats">
+          <div class="audit-stat stock">Current Stock<b>${p.qty}</b></div>
+          <div class="audit-stat sell">Selling Price<b>${fmtMoney(p.price)}</b></div>
+          ${p.costPrice!=null ? `<div class="audit-stat cost">Cost Price<b>${fmtMoney(p.costPrice)}</b></div>` : ''}
+          <div class="audit-stat">Events in Range<b>${hist.length}</b></div>
+        </div>
+        <div class="audit-table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Amount</th><th>Stock After</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-sm" id="phPrint">${ICONS.print} Print / PDF</button>
+        <button class="btn btn-outline btn-sm" id="phExcel">${ICONS.download} Excel</button>
+        <button class="btn btn-outline btn-sm" id="phJson">${ICONS.download} JSON</button>
+        <button class="btn btn-primary" id="phClose2" style="margin-left:auto;">Close</button>
+      </div>
+    </div>`;
+  root.appendChild(wrap);
+  const close = () => wrap.remove();
+  document.getElementById('phClose').onclick = close;
+  document.getElementById('phClose2').onclick = close;
+  document.getElementById('phPrint').onclick = () => printProductHistory(p.id);
+  document.getElementById('phExcel').onclick = () => exportProductHistoryExcel(p.id);
+  document.getElementById('phJson').onclick = () => exportProductHistoryJson(p.id);
+  wrap.onclick = (e)=>{ if(e.target===wrap) close(); };
+}
+
+function exportProductHistoryJson(productId){
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if(!p) return;
+  const hist = filterHistoryByRange(p.history||[]);
+  if(!hist.length){ toast('No activity to export in this range', 'error'); return; }
+  downloadBlob(JSON.stringify({exportedAt:new Date().toISOString(), product:{id:p.id,name:p.name,category:p.category,price:p.price,costPrice:p.costPrice,qty:p.qty}, history:hist}, null, 2),
+    `${p.name.replace(/[^a-z0-9]+/gi,'-')}-history-${Date.now()}.json`, 'application/json');
+  toast('Product history exported as JSON', 'success');
+}
+
+function exportProductHistoryExcel(productId){
+  if(typeof XLSX === 'undefined'){ toast('Excel library failed to load — check your internet connection', 'error'); return; }
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if(!p) return;
+  const rows = stockAnalysisFlattenRows([p]);
+  if(!rows.length){ toast('No activity to export in this range', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, 'History');
+  XLSX.writeFile(wb, `${p.name.replace(/[^a-z0-9]+/gi,'-')}-history-${Date.now()}.xlsx`);
+  toast('Product history exported to Excel', 'success');
+}
+
+function printProductHistory(productId){
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if(!p) return;
+  const hist = filterHistoryByRange(p.history||[]).slice().sort((a,b)=> new Date(b.timestamp)-new Date(a.timestamp));
+  if(!hist.length){ toast('No activity to export in this range', 'error'); return; }
+  const rowsHtml = hist.map(h=>{
+    const lbl = historyRowLabel(h);
+    return `<tr>
+      <td style="padding:6px;border:1px solid #ddd;">${fmtDate(h.timestamp)}</td>
+      <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(lbl.type)}</td>
+      <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(lbl.details)}</td>
+      <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(String(lbl.amount||''))}</td>
+      <td style="padding:6px;border:1px solid #ddd;">${lbl.stockAfter!=='' ? lbl.stockAfter : '—'}</td>
+    </tr>`;
+  }).join('');
+  const html = `
+    <div style="font-family:Arial,sans-serif;padding:10px;">
+      <h2 style="margin-bottom:2px;">${escapeHtml(SETTINGS.storeName)} — ${escapeHtml(p.name)}</h2>
+      <p style="color:#555;margin-bottom:14px;font-size:12px;">Generated ${fmtDate(new Date().toISOString())} · Stock: ${p.qty} · Selling: ${fmtMoney(p.price)}${p.costPrice!=null?' · Cost: '+fmtMoney(p.costPrice):''} · ${hist.length} event(s)</p>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#f0f0f0;">
+          ${['Date','Type','Details','Amount','Stock After'].map(h=>`<th style="text-align:left;padding:6px;border:1px solid #ddd;">${h}</th>`).join('')}
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+  setPrintPageStyle();
+  document.getElementById('print-area').innerHTML = html;
+  toast('Opening print dialog — choose "Save as PDF"', 'info');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{ document.getElementById('print-area').innerHTML = ''; }, 500);
+  }, 200);
+}
 </script>
 </body>
 </html>
