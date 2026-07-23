@@ -1315,6 +1315,69 @@ body.media-narrow #viewMedia .form-grid{
 .audit-detail-sub{ font-size:11px; color:var(--muted); margin-top:3px; }
 .audit-amount{ font-family:var(--font-mono); font-weight:700; white-space:nowrap; }
 .audit-date{ font-size:12px; color:var(--muted); white-space:nowrap; }
+
+/* ============================================================
+   KEYBOARD SHORTCUTS — numbered badges + out-of-stock fade
+   ============================================================ */
+.kbd-num{
+  position:absolute; top:7px; left:7px; z-index:3;
+  background:var(--ink); color:#fff; font-family:var(--font-mono);
+  font-size:10.5px; font-weight:800; width:19px; height:19px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+}
+.product-card.mode-small .kbd-num{ width:16px; height:16px; font-size:9.5px; top:5px; left:5px; }
+.kbd-num-inline{
+  flex-shrink:0; background:var(--bg); color:var(--muted); font-family:var(--font-mono);
+  font-size:10.5px; font-weight:800; width:20px; height:20px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center; margin-right:2px;
+}
+.shortcuts-hint-btn{
+  background:var(--card); border:1.5px solid var(--border); color:var(--muted);
+  font-size:11.5px; font-weight:700; padding:8px 12px; border-radius:8px;
+  display:flex; align-items:center; gap:6px; transition: all .15s ease;
+}
+.shortcuts-hint-btn:hover{ border-color:var(--orange); color:var(--orange-dark); }
+.shortcuts-hint-btn kbd, .kbd-key{
+  background:var(--bg); border:1px solid var(--border); border-radius:4px;
+  padding:1px 6px; font-family:var(--font-mono); font-size:11px;
+}
+
+/* Out-of-stock cards fade so they're unmistakable at a glance */
+.product-card:has(.stock-tag.out){
+  opacity:0.42;
+  filter:grayscale(55%);
+}
+.product-card:has(.stock-tag.out):hover{
+  transform:none; box-shadow:none; border-color:var(--border);
+}
+.product-card:has(.stock-tag.out) .thumb img{ filter:grayscale(35%); }
+/* ============================================================
+   KEYBOARD SHORTCUTS — numbered quick-add badges
+   ============================================================ */
+.kbd-num{
+  position:absolute; top:7px; left:7px; z-index:3;
+  background:var(--ink); color:#fff; font-family:var(--font-mono);
+  font-size:10.5px; font-weight:800; width:19px; height:19px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+}
+.product-card.mode-small .kbd-num{ width:16px; height:16px; font-size:9.5px; top:5px; left:5px; }
+.kbd-num-inline{
+  flex-shrink:0; background:var(--bg); color:var(--muted); font-family:var(--font-mono);
+  font-size:10.5px; font-weight:800; width:20px; height:20px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center; margin-right:2px;
+}
+.shortcuts-hint-btn{
+  background:var(--card); border:1.5px solid var(--border); color:var(--muted);
+  font-size:11.5px; font-weight:700; padding:8px 12px; border-radius:8px;
+  display:flex; align-items:center; gap:6px; transition: all .15s ease;
+}
+.shortcuts-hint-btn:hover{ border-color:var(--orange); color:var(--orange-dark); }
+.shortcuts-hint-btn kbd{
+  background:var(--bg); border:1px solid var(--border); border-radius:4px;
+  padding:1px 6px; font-family:var(--font-mono); font-size:11px;
+}
 </style>
 </head>
 <body>
@@ -1341,7 +1404,11 @@ const K_UNLOCKED  = 'gth_pos_session_unlocked';
 
 /* ---------------- DEFAULT SETTINGS ---------------- */
 const DEFAULT_SETTINGS = {
-  menuVisibility: { customers: true, media: true, products: true, priceEdit: true },
+  menuVisibility: { dashboard: true, media: true, products: true, customers: true, history: true, reports: true, stockAnalysis: true, help: true, priceEdit: true },
+  quickSaleMode: false,
+  autoQtyPopup: false,
+  saleDetailsVisibility: { discount: true, customerName: true, customerPhone: true },
+  paymentMethodsEnabled: { cash: true, momo: true, card: true },
   storeName: 'Gliffits Mart',
   storeAddress: '',
   storeContacts: [],
@@ -1363,8 +1430,8 @@ const DEFAULT_SETTINGS = {
   directPrintEnabled: false,
   printerBaudRate: 9600,
   appZoom: 100,   /* ← ADD THIS LINE */
-  whatsappTemplate: 'Hi {name}, thanks for shopping at {store}! Your receipt {receiptId}: total {total}. We appreciate you!',
-  smsTemplate: 'Hi {name}, thanks for shopping at {store}! Receipt {receiptId}, total {total}.',
+  whatsappTemplate: 'Hi {name}, thanks for shopping at {store}!\n\nReceipt: {receiptId}\n\nItems:\n{items}\n\nSubtotal: {subtotal}\nDiscount: {discount}\nTotal: {total}\nPayment Method: {paymentMethod}\nAmount Paid: {tendered}\nChange: {change}\n\nWe appreciate you!\nCall/WhatsApp us: {contacts}',
+  smsTemplate: 'Hi {name}, thanks for shopping at {store}! Receipt {receiptId}.\nItems:\n{items}\nTotal: {total}\nPaid via {paymentMethod}\nChange: {change}\nContact us: {contacts}',
   offerWhatsappTemplate: 'Hi {name}, {store} has something special for you: {message}',
   offerSmsTemplate: 'Hi {name}, {store}: {message}'
 };
@@ -1406,6 +1473,8 @@ let CART = []; // [{productId, qty}]
 let currentView = 'pos';
 let activeCategory = 'All';
 let productSearchTerm = '';
+let searchBarActive = false;
+let searchAutoClearTimer = null;
 let editingProductId = null;
 let editingCustomerId = null;
 let cartDetailsOpen = false;
@@ -1459,6 +1528,11 @@ function loadState(){
   if(!SETTINGS.pricePassword) SETTINGS.pricePassword = DEFAULT_SETTINGS.pricePassword;
   if(!SETTINGS.messagePassword) SETTINGS.messagePassword = DEFAULT_SETTINGS.messagePassword;
   if(!Array.isArray(SETTINGS.cashiers)) SETTINGS.cashiers = [];
+  SETTINGS.menuVisibility = { ...DEFAULT_SETTINGS.menuVisibility, ...(SETTINGS.menuVisibility||{}) };
+  SETTINGS.saleDetailsVisibility = { ...DEFAULT_SETTINGS.saleDetailsVisibility, ...(SETTINGS.saleDetailsVisibility||{}) };
+  SETTINGS.paymentMethodsEnabled = { ...DEFAULT_SETTINGS.paymentMethodsEnabled, ...(SETTINGS.paymentMethodsEnabled||{}) };
+  if(SETTINGS.quickSaleMode === undefined) SETTINGS.quickSaleMode = false;
+  if(SETTINGS.autoQtyPopup === undefined) SETTINGS.autoQtyPopup = false;
   loadDeletedQueue();
   saveSettings();
   applyTheme(SETTINGS.theme || 'light');
@@ -1915,17 +1989,17 @@ function renderShell(){
     </div>
 <nav class="sidebar-nav" id="sidebarNav">
       ${navItem('pos', ICONS.pos, 'Sell / POS')}
-      ${navItem('dashboard', ICONS.dashboard, 'Dashboard')}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).dashboard ? navItem('dashboard', ICONS.dashboard, 'Dashboard') : ''}
       ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).media ? navItem('media', ICONS.media, 'Media') : ''}
       <div class="nav-section-label">Manage</div>
       ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).products ? navItem('products', ICONS.products, 'Products', true) : ''}
       ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).customers ? navItem('customers', ICONS.customers, 'Customers', true) : ''}
-      ${navItem('history', ICONS.history, 'Sales History')}
-      ${navItem('reports', ICONS.reports, 'Reports')}
-      ${navItem('stockAnalysis', ICONS.stockAnalysis, 'Stock Analysis', true)}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).history ? navItem('history', ICONS.history, 'Sales History') : ''}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).reports ? navItem('reports', ICONS.reports, 'Reports') : ''}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).stockAnalysis ? navItem('stockAnalysis', ICONS.stockAnalysis, 'Stock Analysis', true) : ''}
 <div class="nav-section-label">System</div>
       ${navItem('settings', ICONS.settings, 'Settings', true)}
-      ${navItem('help', ICONS.help, 'Help / How It Works')}
+      ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).help ? navItem('help', ICONS.help, 'Help / How It Works') : ''}
     </nav>
     <div class="sidebar-foot">
       <b>${escapeHtml(SETTINGS.storeName)}</b> POS · v1.1<br>Built for offline & online use
@@ -2003,10 +2077,33 @@ function renderShell(){
   document.getElementById('cartTopBtn').onclick = () => { switchView('pos'); };
   document.getElementById('exitAppBtn').onclick = () => requestAppExit();
   document.getElementById('notifBtn').onclick = () => { switchView('reports'); };
+  document.getElementById('globalSearch').onfocus = () => { searchBarActive = true; };
   document.getElementById('globalSearch').oninput = debounce(e=>{
+    clearTimeout(searchAutoClearTimer);
     productSearchTerm = e.target.value.trim().toLowerCase();
-    if(currentView==='pos') renderPosView();
+    if(currentView==='pos') renderProductGrid();
   }, 150);
+  document.getElementById('globalSearch').onkeydown = (e) => {
+    if(e.key !== 'Enter') return;
+    e.preventDefault();
+    const term = e.target.value.trim().toLowerCase();
+    if(!term) return;
+    let match = PRODUCTS.find(p => p.id.toLowerCase() === term);
+    if(!match){
+      const candidates = PRODUCTS.filter(p => p.name.toLowerCase().includes(term) || p.id.toLowerCase().includes(term));
+      if(candidates.length === 1) match = candidates[0];
+    }
+    if(match){
+      searchBarActive = true;
+      addToCart(match.id);
+      e.target.value = '';
+      productSearchTerm = '';
+      if(currentView==='pos') renderProductGrid();
+      e.target.focus();
+    } else {
+      toast('No single matching product — refine your search, or use Alt+1..9 to pick from the list', 'error');
+    }
+  };
   renderViewSwitch();
 
   document.querySelectorAll('.nav-item').forEach(el=>{
@@ -2323,6 +2420,7 @@ function renderPosView(){
         <h1>Sell Products</h1>
         <p>Tap a product to add it to the cart</p>
       </div>
+      <button class="shortcuts-hint-btn" id="shortcutsHintBtn">⌨️ Shortcuts <kbd>?</kbd></button>
     </div>
     <div class="pos-layout">
       <div class="pos-main">
@@ -2337,6 +2435,8 @@ function renderPosView(){
   document.querySelectorAll('#chipRow .chip').forEach(c=>{
     c.onclick = () => { activeCategory = c.dataset.cat; renderPosView(); };
   });
+  const shBtn = document.getElementById('shortcutsHintBtn');
+  if(shBtn) shBtn.onclick = toggleShortcutsModal;
   syncViewSwitchActiveState();
   renderProductGrid();
   renderCartPanel();
@@ -2346,11 +2446,14 @@ function productCardHtml(p, mode, i){
   const stockClass = p.qty<=0 ? 'out' : (p.qty<=SETTINGS.lowStockThreshold ? 'low' : '');
   const stockLabel = p.qty<=0 ? 'OUT OF STOCK' : (p.qty<=SETTINGS.lowStockThreshold ? `LOW · ${p.qty}` : `${p.qty} IN STOCK`);
   const thumb = p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : `<span class="ph">${ICONS.box}</span>`;
+  const kbdBadge = i<9 ? `<span class="kbd-num">${i+1}</span>` : '';
+  const kbdBadgeInline = i<9 ? `<span class="kbd-num-inline">${i+1}</span>` : '';
 
   if(mode === 'titles'){
     return `
     <div class="product-card mode-titles" data-id="${p.id}">
       <div class="info">
+        ${kbdBadgeInline}
         <div class="pname">${escapeHtml(p.name)}</div>
         <span class="stock-tag ${stockClass}">${stockLabel}</span>
         <div class="pprice">${fmtMoney(p.price)}</div>
@@ -2360,6 +2463,7 @@ function productCardHtml(p, mode, i){
   if(mode === 'list'){
     return `
     <div class="product-card mode-list" data-id="${p.id}">
+      ${kbdBadgeInline}
       <div class="thumb">${thumb}</div>
       <div class="info">
         <div>
@@ -2376,6 +2480,7 @@ function productCardHtml(p, mode, i){
   if(mode === 'content'){
     return `
     <div class="product-card mode-content" data-id="${p.id}">
+      ${kbdBadgeInline}
       <div class="thumb">${thumb}</div>
       <div class="info">
         <div>
@@ -2394,6 +2499,7 @@ function productCardHtml(p, mode, i){
     <div class="product-card ${mode==='small'?'mode-small':''}" data-id="${p.id}" style="animation-delay:${Math.min(i*0.02,0.3)}s">
       <div class="thumb">
         ${thumb}
+        ${kbdBadge}
         <span class="stock-tag ${stockClass}">${stockLabel}</span>
         <div class="add-flash">Added ✓</div>
       </div>
@@ -2428,6 +2534,14 @@ function renderProductGrid(){
 }
 
 /* ---------------- CART LOGIC ---------------- */
+function deactivateSearchBar(){
+  clearTimeout(searchAutoClearTimer);
+  searchBarActive = false;
+  productSearchTerm = '';
+  const gs = document.getElementById('globalSearch');
+  if(gs){ gs.value = ''; gs.blur(); }
+  if(currentView==='pos') renderProductGrid();
+}
 function addToCart(productId, cardEl){
   const p = PRODUCTS.find(x=>x.id===productId);
   if(!p) return;
@@ -2436,16 +2550,32 @@ function addToCart(productId, cardEl){
   const currentQty = line ? line.qty : 0;
   if(currentQty+1 > p.qty){ toast(`Only ${p.qty} left in stock`, 'error'); return; }
   if(line){ line.qty += 1; } else { CART.push({productId, qty:1}); }
+  lastActiveProductId = productId;
   if(cardEl){ cardEl.classList.remove('flash'); void cardEl.offsetWidth; cardEl.classList.add('flash'); }
   renderCartPanel();
   updateTopBadges();
-  // Auto-clear the product search bar once a product has been chosen
+  if(searchBarActive && !document.querySelector('.modal-overlay.show')){
+    const gsNow = document.getElementById('globalSearch');
+    if(gsNow) gsNow.focus();
+  }
+  if(SETTINGS.autoQtyPopup){
+    setTimeout(()=> openQuickQtyModal(), 80);
+  }
+  // Auto-clear the product search bar once a product has been chosen —
+  // but only if the user hasn't already started typing a new search
   if(productSearchTerm){
-    setTimeout(()=>{
+    clearTimeout(searchAutoClearTimer);
+    const termAtAdd = productSearchTerm;
+    searchAutoClearTimer = setTimeout(()=>{
+      if(productSearchTerm !== termAtAdd) return; // user typed something new — leave it alone
       productSearchTerm = '';
       const gs = document.getElementById('globalSearch');
       if(gs) gs.value = '';
       renderProductGrid();
+      if(searchBarActive && !document.querySelector('.modal-overlay.show')){
+        const gs2 = document.getElementById('globalSearch');
+        if(gs2) gs2.focus();
+      }
     }, 650);
   }
 }
@@ -2500,6 +2630,11 @@ function cartSubtotal(){ return cartLines().reduce((s,l)=>s+l.lineTotal,0); }
 function renderCartPanel(){
   const panel = document.getElementById('cartPanel');
   if(!panel) return;
+  const payEnabled = SETTINGS.paymentMethodsEnabled || DEFAULT_SETTINGS.paymentMethodsEnabled;
+  const payKeyMap = { 'Cash':'cash', 'Mobile Money':'momo', 'Card':'card' };
+  if(!payEnabled[payKeyMap[activePayMethod]]){
+    activePayMethod = payEnabled.cash ? 'Cash' : (payEnabled.momo ? 'Mobile Money' : (payEnabled.card ? 'Card' : 'Cash'));
+  }
   const lines = cartLines();
   const subtotal = cartSubtotal();
 
@@ -2548,19 +2683,22 @@ function renderCartPanel(){
       <span>Sale Details (Discount, Payment)</span><span class="chevron">▾</span>
     </button>
     <div class="cart-details ${cartDetailsOpen?'':'collapsed'}" id="cartDetails">
+      ${(SETTINGS.saleDetailsVisibility||DEFAULT_SETTINGS.saleDetailsVisibility).discount ? `
       <div class="field-row">
         <label>Discount (${SETTINGS.currency})</label>
         <input type="number" id="discountInput" min="0" step="0.01" value="${window.__discount||0}" placeholder="0.00">
-      </div>
+      </div>` : ''}
+      ${(SETTINGS.saleDetailsVisibility||DEFAULT_SETTINGS.saleDetailsVisibility).customerName ? `
       <div class="field-row">
         <label>Customer Name (optional)</label>
         <input type="text" id="custNameInput" value="${window.__custName||''}" placeholder="Walk-in customer" list="custDatalist">
         <datalist id="custDatalist">${CUSTOMERS.map(c=>`<option value="${escapeHtml(c.name)}">`).join('')}</datalist>
-      </div>
+      </div>` : ''}
+      ${(SETTINGS.saleDetailsVisibility||DEFAULT_SETTINGS.saleDetailsVisibility).customerPhone ? `
       <div class="field-row">
         <label>Customer Phone (optional, for receipt via WhatsApp/SMS)</label>
         <input type="text" id="custPhoneInput" value="${window.__custPhone||''}" placeholder="e.g. 024xxxxxxx">
-      </div>
+      </div>` : ''}
       ${SETTINGS.cashiers.length ? `
       <div class="field-row">
         <label>Sold By (Cashier)</label>
@@ -2572,15 +2710,16 @@ function renderCartPanel(){
       <div class="field-row">
         <label>Payment Method</label>
         <div class="pay-methods">
-          <button data-pay="Cash" class="${activePayMethod==='Cash'?'active':''}"><span class="pm-ico">${ICONS.money}</span><span>Cash</span></button>
-          <button data-pay="Mobile Money" class="${activePayMethod==='Mobile Money'?'active':''}"><span class="pm-ico">${ICONS.momo}</span><span>MoMo</span></button>
-          <button data-pay="Card" class="${activePayMethod==='Card'?'active':''}"><span class="pm-ico">${ICONS.card}</span><span>Card</span></button>
+          ${(SETTINGS.paymentMethodsEnabled||DEFAULT_SETTINGS.paymentMethodsEnabled).cash ? `<button data-pay="Cash" class="${activePayMethod==='Cash'?'active':''}"><span class="pm-ico">${ICONS.money}</span><span>Cash</span></button>` : ''}
+          ${(SETTINGS.paymentMethodsEnabled||DEFAULT_SETTINGS.paymentMethodsEnabled).momo ? `<button data-pay="Mobile Money" class="${activePayMethod==='Mobile Money'?'active':''}"><span class="pm-ico">${ICONS.momo}</span><span>MoMo</span></button>` : ''}
+          ${(SETTINGS.paymentMethodsEnabled||DEFAULT_SETTINGS.paymentMethodsEnabled).card ? `<button data-pay="Card" class="${activePayMethod==='Card'?'active':''}"><span class="pm-ico">${ICONS.card}</span><span>Card</span></button>` : ''}
         </div>
       </div>
+      ${!SETTINGS.quickSaleMode ? `
       <div class="field-row" id="tenderedRow">
         <label>Amount Tendered (${SETTINGS.currency})</label>
         <input type="number" id="tenderedInput" min="0" step="0.01" value="${window.__tendered!==undefined?window.__tendered:''}" placeholder="0.00">
-      </div>
+      </div>` : ''}
     </div>
 
     <div class="totals-box">
@@ -2625,7 +2764,16 @@ function renderCartPanel(){
   const cashierSelect = document.getElementById('cashierSelect');
   if(cashierSelect) cashierSelect.onchange = (e)=>{ window.__cashierId = e.target.value; };
   const tenderedInput = document.getElementById('tenderedInput');
-  if(tenderedInput) tenderedInput.oninput = (e)=>{ window.__tendered = e.target.value===''?undefined:parseFloat(e.target.value); refreshTotalsOnly(); };
+  if(tenderedInput){
+    tenderedInput.oninput = (e)=>{ window.__tendered = e.target.value===''?undefined:parseFloat(e.target.value); refreshTotalsOnly(); };
+    tenderedInput.onkeydown = (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        const btn = document.getElementById('checkoutBtn');
+        if(btn && !btn.disabled) completeSale();
+      }
+    };
+  }
 
   document.querySelectorAll('[data-pay]').forEach(btn=>{
     btn.onclick = () => { activePayMethod = btn.dataset.pay; renderCartPanel(); };
@@ -2673,7 +2821,9 @@ function completeSale(){
   const discount = Math.min(window.__discount||0, subtotal);
   const total = Math.max(subtotal-discount,0);
   let tendered = window.__tendered;
-  if(activePayMethod==='Cash'){
+  if(SETTINGS.quickSaleMode){
+    tendered = total;
+  } else if(activePayMethod==='Cash'){
     if(tendered===undefined || isNaN(tendered) || tendered < total){
       toast('Enter a valid amount tendered (must cover the total)', 'error');
       cartDetailsOpen = true; renderCartPanel();
@@ -2683,7 +2833,7 @@ function completeSale(){
   } else {
     tendered = total;
   }
-  const change = activePayMethod==='Cash' ? (tendered-total) : 0;
+  const change = (!SETTINGS.quickSaleMode && activePayMethod==='Cash') ? (tendered-total) : 0;
 
   for(const l of lines){
     const p = PRODUCTS.find(x=>x.id===l.productId);
@@ -2698,6 +2848,7 @@ const nowIso = new Date().toISOString();
     items: lines.map(l=>({ productId:l.productId, name:l.product.name, price:l.product.price, qty:l.qty, lineTotal:l.lineTotal })),
     subtotal, discount, total, paymentMethod: activePayMethod,
     amountTendered: tendered, change,
+    quickSale: !!SETTINGS.quickSaleMode,
     customerName: (window.__custName||'').trim() || 'Walk-in customer',
     customerPhone: (window.__custPhone||'').trim(),
     cashierName: cashier ? cashier.name : ''
@@ -2734,6 +2885,7 @@ const nowIso = new Date().toISOString();
   cartDetailsOpen = false;
   activePayMethod = 'Cash';
   renderPosView();
+  deactivateSearchBar();
   updateTopBadges();
   toast('Sale completed successfully', 'success');
   openReceiptModal(sale);
@@ -2781,8 +2933,9 @@ function buildReceiptHtml(sale){
       <div class="rline"><span>Subtotal</span><span>${fmtMoney(sale.subtotal)}</span></div>
       <div class="rline"><span>Discount</span><span>- ${fmtMoney(sale.discount)}</span></div>
       <div class="rtotal"><span>TOTAL</span><span>${fmtMoney(sale.total)}</span></div>
+      ${!sale.quickSale ? `
       <div class="rline"><span>Tendered</span><span>${fmtMoney(sale.amountTendered)}</span></div>
-      <div class="rline"><span>Change</span><span>${fmtMoney(sale.change)}</span></div>
+      <div class="rline"><span>Change</span><span>${fmtMoney(sale.change)}</span></div>` : ''}
       <div class="rfoot">
         <b>${escapeHtml(SETTINGS.receiptFooter)}</b>
         Powered by Gliffits Tech Hub POS
@@ -2792,14 +2945,25 @@ function buildReceiptHtml(sale){
   `;
 }
 
+function buildItemsListText(sale){
+  return sale.items.map(it => `${it.qty} x ${it.name} - ${fmtMoney(it.lineTotal)}`).join('\n');
+}
+
 function receiptMessageText(sale, template){
+  const contacts = (SETTINGS.storeContacts||[]).filter(Boolean).join(' / ');
   return (template||'')
     .replace(/\{name\}/g, sale.customerName || 'Customer')
     .replace(/\{store\}/g, SETTINGS.storeName)
     .replace(/\{receiptId\}/g, sale.id)
-    .replace(/\{total\}/g, fmtMoney(sale.total));
+    .replace(/\{items\}/g, buildItemsListText(sale))
+    .replace(/\{subtotal\}/g, fmtMoney(sale.subtotal))
+    .replace(/\{discount\}/g, fmtMoney(sale.discount))
+    .replace(/\{total\}/g, fmtMoney(sale.total))
+    .replace(/\{tendered\}/g, fmtMoney(sale.amountTendered))
+    .replace(/\{change\}/g, fmtMoney(sale.change))
+    .replace(/\{paymentMethod\}/g, sale.paymentMethod || '')
+    .replace(/\{contacts\}/g, contacts || 'N/A');
 }
-
 function sendReceiptWhatsApp(sale){
   const phone = normalizePhone(sale.customerPhone);
   if(!phone){ toast('No phone number saved for this sale', 'error'); return; }
@@ -2840,14 +3004,31 @@ function openReceiptModal(sale){
     </div>
   `;
   root.appendChild(wrap);
-  document.getElementById('receiptCloseBtn').onclick = () => wrap.remove();
-  document.getElementById('newSaleBtn').onclick = () => wrap.remove();
+  function closeReceipt(){
+    document.removeEventListener('keydown', receiptKeyHandler);
+    wrap.remove();
+  }
+  function receiptKeyHandler(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      printReceipt(sale);
+    } else if(e.key === 'Escape'){
+      e.preventDefault();
+      closeReceipt();
+    } else if((e.ctrlKey||e.metaKey) && (e.key==='p' || e.key==='P')){
+      e.preventDefault();
+      printReceipt(sale);
+    }
+  }
+  document.addEventListener('keydown', receiptKeyHandler);
+  document.getElementById('receiptCloseBtn').onclick = closeReceipt;
+  document.getElementById('newSaleBtn').onclick = closeReceipt;
   document.getElementById('printReceiptBtn').onclick = () => printReceipt(sale);
   const waBtn = document.getElementById('waReceiptBtn');
   if(waBtn) waBtn.onclick = () => sendReceiptWhatsApp(sale);
   const smsBtn = document.getElementById('smsReceiptBtn');
   if(smsBtn) smsBtn.onclick = () => sendReceiptSms(sale);
-  wrap.onclick = (e)=>{ if(e.target===wrap) wrap.remove(); };
+  wrap.onclick = (e)=>{ if(e.target===wrap) closeReceipt(); };
 }
 
 function setPrintPageStyle(){
@@ -2861,6 +3042,7 @@ function setPrintPageStyle(){
 }
 
 function printReceipt(sale){
+  deactivateSearchBar();
   // We forced it to check ONLY if the browser supports serial printing, ignoring the settings toggle!
   if('serial' in navigator){
     printReceiptDirect(sale);
@@ -3003,8 +3185,10 @@ function escposReceiptBytes(sale){
   bold(true);
   line(padRow('TOTAL', fmtMoney(sale.total)));
   bold(false);
-  line(padRow('Tendered', fmtMoney(sale.amountTendered)));
-  line(padRow('Change', fmtMoney(sale.change)));
+  if(!sale.quickSale){
+    line(padRow('Tendered', fmtMoney(sale.amountTendered)));
+    line(padRow('Change', fmtMoney(sale.change)));
+  }
   divider();
   center(true);
   wrap(SETTINGS.receiptFooter).forEach(line);
@@ -5171,17 +5355,15 @@ function renderSettingsView(){
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:14px;">💬 Messaging Templates</h3>
         <div class="field-row"><label>WhatsApp Receipt Message</label><textarea id="setWaTpl" rows="2">${escapeHtml(SETTINGS.whatsappTemplate)}</textarea></div>
         <div class="field-row"><label>SMS Receipt Message</label><textarea id="setSmsTpl" rows="2">${escapeHtml(SETTINGS.smsTemplate)}</textarea></div>
-        <div class="msg-tpl-vars mb-16">Variables: <b>{name}</b> <b>{store}</b> <b>{receiptId}</b> <b>{total}</b></div>
+        <div class="msg-tpl-vars mb-16">Variables: <b>{name}</b> <b>{store}</b> <b>{receiptId}</b> <b>{items}</b> <b>{subtotal}</b> <b>{discount}</b> <b>{total}</b> <b>{tendered}</b> <b>{change}</b> <b>{paymentMethod}</b> <b>{contacts}</b> — {items} lists every product bought, one per line; {contacts} pulls from your saved Contact Numbers below</div>
         <button class="btn btn-primary" id="saveMsgTemplates">Save Templates</button>
       </div>
 
-      <div class="card" style="padding:20px;grid-column:1/-1;">
-        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">🎨 Advanced — Themes</h3>
-        <div class="card" style="padding:20px;">
+      <div class="card" style="padding:20px;">
         <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">👁️ Menu Visibility</h3>
-        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Hide menu items or the price field from cashiers. Uncheck to hide, check to show.</p>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Hide menu items or the price field from cashiers. "Sell / POS" and "Settings" always stay visible.</p>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
-          <input type="checkbox" id="mvCustomers" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).customers?'checked':''}> Show "Customers" menu
+          <input type="checkbox" id="mvDashboard" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).dashboard?'checked':''}> Show "Dashboard" menu
         </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
           <input type="checkbox" id="mvMedia" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).media?'checked':''}> Show "Media" menu
@@ -5189,10 +5371,59 @@ function renderSettingsView(){
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
           <input type="checkbox" id="mvProducts" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).products?'checked':''}> Show "Products" menu
         </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvCustomers" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).customers?'checked':''}> Show "Customers" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvHistory" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).history?'checked':''}> Show "Sales History" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvReports" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).reports?'checked':''}> Show "Reports" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvStockAnalysis" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).stockAnalysis?'checked':''}> Show "Stock Analysis" menu
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="mvHelp" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).help?'checked':''}> Show "Help / How It Works" menu
+        </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:14px;">
           <input type="checkbox" id="mvPriceEdit" ${(SETTINGS.menuVisibility||DEFAULT_SETTINGS.menuVisibility).priceEdit?'checked':''}> Allow changing product price
         </label>
         <button class="btn btn-primary" id="saveMenuVisibility">Save Menu Visibility</button>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:var(--font-display);font-size:15px;margin-bottom:6px;">⚡ Quick Sale / Checkout Options</h3>
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Tune the checkout flow for busy periods — skip steps you don't need, or hide fields cashiers shouldn't touch.</p>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="qsQuickSale" ${SETTINGS.quickSaleMode?'checked':''}> Quick Sale Mode — skip "Amount Tendered" and change, just print the total directly
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:14px;">
+          <input type="checkbox" id="qsAutoQty" ${SETTINGS.autoQtyPopup?'checked':''}> Auto-popup quantity box every time a product is added
+        </label>
+        <div class="divider"></div>
+        <h4 style="font-size:13px;margin-bottom:8px;">Sale Details Fields</h4>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="qsShowDiscount" ${(SETTINGS.saleDetailsVisibility||DEFAULT_SETTINGS.saleDetailsVisibility).discount?'checked':''}> Show Discount field
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="qsShowCustName" ${(SETTINGS.saleDetailsVisibility||DEFAULT_SETTINGS.saleDetailsVisibility).customerName?'checked':''}> Show Customer Name field
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:14px;">
+          <input type="checkbox" id="qsShowCustPhone" ${(SETTINGS.saleDetailsVisibility||DEFAULT_SETTINGS.saleDetailsVisibility).customerPhone?'checked':''}> Show Customer Phone field
+        </label>
+        <div class="divider"></div>
+        <h4 style="font-size:13px;margin-bottom:8px;">Payment Methods</h4>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="qsPayCash" ${(SETTINGS.paymentMethodsEnabled||DEFAULT_SETTINGS.paymentMethodsEnabled).cash?'checked':''}> Enable Cash
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;">
+          <input type="checkbox" id="qsPayMomo" ${(SETTINGS.paymentMethodsEnabled||DEFAULT_SETTINGS.paymentMethodsEnabled).momo?'checked':''}> Enable Mobile Money
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:14px;">
+          <input type="checkbox" id="qsPayCard" ${(SETTINGS.paymentMethodsEnabled||DEFAULT_SETTINGS.paymentMethodsEnabled).card?'checked':''}> Enable Card
+        </label>
+        <button class="btn btn-primary" id="saveQuickSaleSettings">Save Checkout Options</button>
       </div>
 
       <div class="card" style="padding:20px;grid-column:1/-1;">
@@ -5318,15 +5549,42 @@ renderSyncHistoryList();
 
   document.getElementById('saveMenuVisibility').onclick = () => {
     SETTINGS.menuVisibility = {
+      dashboard: document.getElementById('mvDashboard').checked,
       customers: document.getElementById('mvCustomers').checked,
       media: document.getElementById('mvMedia').checked,
       products: document.getElementById('mvProducts').checked,
+      history: document.getElementById('mvHistory').checked,
+      reports: document.getElementById('mvReports').checked,
+      stockAnalysis: document.getElementById('mvStockAnalysis').checked,
+      help: document.getElementById('mvHelp').checked,
       priceEdit: document.getElementById('mvPriceEdit').checked
     };
     saveSettings();
     renderShell();
     switchView('settings');
     toast('Menu visibility saved', 'success');
+  };
+
+  document.getElementById('saveQuickSaleSettings').onclick = () => {
+    SETTINGS.quickSaleMode = document.getElementById('qsQuickSale').checked;
+    SETTINGS.autoQtyPopup = document.getElementById('qsAutoQty').checked;
+    SETTINGS.saleDetailsVisibility = {
+      discount: document.getElementById('qsShowDiscount').checked,
+      customerName: document.getElementById('qsShowCustName').checked,
+      customerPhone: document.getElementById('qsShowCustPhone').checked
+    };
+    const enabledPayments = {
+      cash: document.getElementById('qsPayCash').checked,
+      momo: document.getElementById('qsPayMomo').checked,
+      card: document.getElementById('qsPayCard').checked
+    };
+    if(!enabledPayments.cash && !enabledPayments.momo && !enabledPayments.card){
+      toast('At least one payment method must stay enabled', 'error');
+      return;
+    }
+    SETTINGS.paymentMethodsEnabled = enabledPayments;
+    saveSettings();
+    toast('Checkout options saved', 'success');
   };
   /* ---- Logo upload ---- */
   let pendingLogo = SETTINGS.storeLogo || '';
@@ -5740,6 +5998,7 @@ function init(){
 function startApp(){
   renderShell();
   switchView('pos');
+  initPosShortcuts();
 
   setInterval(updateTopBadges, 5000);
 
@@ -6167,6 +6426,277 @@ function printProductHistory(productId){
     window.print();
     setTimeout(()=>{ document.getElementById('print-area').innerHTML = ''; }, 500);
   }, 200);
+}
+
+/* ============================================================
+   POS KEYBOARD SHORTCUTS — fast cashier workflow
+   ============================================================ */
+let lastActiveProductId = null;
+
+function isTypingContext(e){
+  const tag = (e.target.tagName||'').toLowerCase();
+  return tag==='input' || tag==='textarea' || tag==='select' || e.target.isContentEditable;
+}
+
+function currentCartTargetId(){
+  if(CART.find(c=>c.productId===lastActiveProductId)) return lastActiveProductId;
+  return CART.length ? CART[CART.length-1].productId : null;
+}
+
+function initPosShortcuts(){
+  document.addEventListener('keydown', (e)=>{
+    const anyModalOpen = document.querySelector('.modal-overlay.show');
+
+    // "?" — toggle shortcuts cheat sheet, works everywhere (not while typing)
+    if(e.key === '?' && !isTypingContext(e)){
+      e.preventDefault();
+      toggleShortcutsModal();
+      return;
+    }
+
+    if(anyModalOpen) return;          // let open modals handle their own Enter/Esc
+    if(currentView !== 'pos') return; // everything below is POS-only
+
+    // Alt + 1-9 — select the Nth visible product, even while typing in search
+    if(e.altKey && /^[1-9]$/.test(e.key)){
+      e.preventDefault();
+      const idx = parseInt(e.key,10) - 1;
+      const grid = document.getElementById('productGrid');
+      const cards = grid ? grid.querySelectorAll('.product-card') : [];
+      if(cards[idx]) addToCart(cards[idx].dataset.id, cards[idx]);
+      return;
+    }
+
+    // Alt + Q — quick "set quantity" for the last item added
+    if(e.altKey && (e.key==='q' || e.key==='Q')){
+      e.preventDefault();
+      openQuickQtyModal();
+      return;
+    }
+
+    // Alt + Up/Down — bump the last item's quantity by 1
+    if(e.altKey && (e.key==='ArrowUp' || e.key==='ArrowDown')){
+      e.preventDefault();
+      const targetId = currentCartTargetId();
+      if(targetId) changeCartQty(targetId, e.key==='ArrowUp' ? 1 : -1);
+      return;
+    }
+
+    // Alt + F — jump straight into the Discount field
+    if(e.altKey && (e.key==='f' || e.key==='F')){
+      e.preventDefault();
+      if(!cartDetailsOpen){ cartDetailsOpen = true; renderCartPanel(); }
+      const di = document.getElementById('discountInput');
+      if(di){ di.focus(); di.select(); }
+      return;
+    }
+
+    // Alt + P — reprint the last completed sale's receipt
+    if(e.altKey && (e.key==='p' || e.key==='P')){
+      e.preventDefault();
+      if(lastReceiptSale) openReceiptModal(lastReceiptSale);
+      else toast('No completed sale yet this session', 'error');
+      return;
+    }
+
+    // Plain 1-9 — same as Alt+1-9, but only when you're not typing anywhere
+    if(!isTypingContext(e) && /^[1-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey){
+      const idx = parseInt(e.key,10) - 1;
+      const grid = document.getElementById('productGrid');
+      const cards = grid ? grid.querySelectorAll('.product-card') : [];
+      if(cards[idx]){
+        e.preventDefault();
+        addToCart(cards[idx].dataset.id, cards[idx]);
+      }
+      return;
+    }
+
+    // "/" — toggle the search bar: jump in, or deactivate it if it's already focused
+    if(e.key === '/'){
+      const gs = document.getElementById('globalSearch');
+      const searchIsFocused = gs && document.activeElement === gs;
+      if(searchIsFocused){
+        e.preventDefault();
+        searchBarActive = false;
+        gs.blur();
+        return;
+      }
+      if(!isTypingContext(e)){
+        e.preventDefault();
+        searchBarActive = true;
+        if(gs){ gs.focus(); gs.select(); }
+        return;
+      }
+    }
+
+    // Esc — clear the search bar if it has text
+    if(e.key === 'Escape'){
+      const gs = document.getElementById('globalSearch');
+      if(gs && document.activeElement === gs && gs.value){
+        gs.value = ''; productSearchTerm = ''; renderProductGrid();
+        return;
+      }
+    }
+
+    // P — cycle payment method Cash -> Mobile Money -> Card -> Cash...
+    if((e.key === 'p' || e.key === 'P') && !isTypingContext(e) && !e.altKey){
+      e.preventDefault();
+      const order = ['Cash','Mobile Money','Card'];
+      const next = order[(order.indexOf(activePayMethod)+1) % order.length];
+      activePayMethod = next;
+      renderCartPanel();
+      toast('Payment method: ' + next, 'info');
+      return;
+    }
+
+    // Ctrl/Cmd + Enter — complete the sale
+    if((e.ctrlKey||e.metaKey) && e.key === 'Enter'){
+      e.preventDefault();
+      const btn = document.getElementById('checkoutBtn');
+      if(btn && !btn.disabled) completeSale();
+      return;
+    }
+
+    // Ctrl/Cmd + Backspace — clear the whole cart (confirms first)
+    if((e.ctrlKey||e.metaKey) && e.key === 'Backspace'){
+      e.preventDefault();
+      if(CART.length) confirmDialog('Clear the current cart?', clearCart);
+      return;
+    }
+
+    // Backspace alone — remove the last item added to the cart
+    if(e.key === 'Backspace' && !isTypingContext(e)){
+      e.preventDefault();
+      if(CART.length) removeFromCart(CART[CART.length-1].productId);
+      return;
+    }
+
+    // H — hold the cart
+    if((e.key === 'h' || e.key === 'H') && !isTypingContext(e)){
+      e.preventDefault();
+      if(CART.length) toast('Cart held (stays until cleared)', 'info');
+      return;
+    }
+
+    // D — toggle the Sale Details panel
+    if((e.key === 'd' || e.key === 'D') && !isTypingContext(e)){
+      e.preventDefault();
+      const toggleBtn = document.getElementById('toggleDetailsBtn');
+      if(toggleBtn) toggleBtn.click();
+      return;
+    }
+  });
+}
+
+/* Quick quantity box for the last item added to the cart */
+function openQuickQtyModal(){
+  const targetId = currentCartTargetId();
+  if(!targetId){ toast('Cart is empty — add an item first', 'error'); return; }
+  const line = CART.find(c=>c.productId===targetId);
+  const p = PRODUCTS.find(x=>x.id===targetId);
+  if(!line || !p) return;
+
+  ensureModalRoot();
+  const root = document.getElementById('modalRoot');
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-overlay show';
+  wrap.id = 'quickQtyModalOverlay';
+  wrap.innerHTML = `
+    <div class="modal" style="max-width:340px;">
+      <div class="modal-body">
+        <div class="gate-box" style="padding-top:0;">
+          <h3 style="margin-bottom:4px;">${escapeHtml(p.name)}</h3>
+          <p>Currently ${line.qty} in cart · ${p.qty} in stock</p>
+          <input type="number" id="quickQtyInput" min="1" max="${p.qty}" value="${line.qty}" style="text-align:center;font-size:20px;font-weight:800;letter-spacing:1px;">
+          <div class="mt-16"><button class="btn btn-primary btn-block" id="quickQtySubmit">Set Quantity</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  root.appendChild(wrap);
+  const input = wrap.querySelector('#quickQtyInput');
+  input.focus(); input.select();
+
+  function apply(){
+    let v = parseInt(input.value,10);
+    if(isNaN(v) || v<1) v = 1;
+    if(v > p.qty){ toast(`Only ${p.qty} in stock`, 'error'); v = p.qty; }
+    line.qty = v;
+    renderCartPanel(); updateTopBadges();
+    toast(`${p.name} quantity set to ${v}`, 'success');
+    closeQtyModal();
+  }
+  function closeQtyModal(){
+    wrap.remove();
+    if(searchBarActive){
+      const gs = document.getElementById('globalSearch');
+      if(gs) gs.focus();
+    }
+  }
+  wrap.querySelector('#quickQtySubmit').onclick = apply;
+  input.onkeydown = (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); apply(); }
+    if(e.key==='Escape'){ e.preventDefault(); closeQtyModal(); }
+  };
+  wrap.onclick = (e)=>{ if(e.target===wrap) closeQtyModal(); };
+}
+
+function toggleShortcutsModal(){
+  const existing = document.getElementById('shortcutsModalOverlay');
+  if(existing){ existing.remove(); return; }
+  ensureModalRoot();
+  const root = document.getElementById('modalRoot');
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-overlay show';
+  wrap.id = 'shortcutsModalOverlay';
+  const rows = [
+    ['1 – 9', 'Add the matching numbered product to the cart'],
+    ['Alt + 1 – 9', 'Same, but works even while typing in the search bar'],
+    ['Alt + Q', 'Set the quantity of the last item added'],
+    ['Alt + \u2191 / Alt + \u2193', 'Bump the last item\'s quantity by 1'],
+    ['/', 'Toggle the search bar (press once to jump in, press again to exit)'],
+    ['Enter (in search)', 'Add a scanned/typed product instantly (barcode-style)'],
+    ['Esc', 'Clear the search bar'],
+    ['P', 'Cycle payment method: Cash \u2192 Mobile Money \u2192 Card'],
+    ['D', 'Open/close Sale Details (discount, customer, payment)'],
+    ['Alt + F', 'Jump straight into the Discount field'],
+    ['Alt + P', 'Reprint the last completed sale\'s receipt'],
+    ['Backspace', 'Remove the last item added to the cart'],
+    ['Ctrl/Cmd + Backspace', 'Clear the whole cart'],
+    ['Ctrl/Cmd + Enter', 'Complete the sale'],
+    ['H', 'Hold the current cart'],
+    ['Enter (receipt open)', 'Print the receipt'],
+    ['Esc (receipt open)', 'Close receipt & start a new sale'],
+    ['Ctrl/Cmd + P (receipt open)', 'Print the receipt'],
+    ['?', 'Show/hide this shortcuts list']
+  ];
+  wrap.innerHTML = `
+    <div class="modal" style="max-width:480px;">
+      <div class="modal-head">
+        <h3>⌨️ Keyboard Shortcuts</h3>
+        <button class="modal-close" id="scClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px;">Available on the Sell / POS screen. Plain keys don't fire while you're typing in a text field — anything marked <b>Alt +</b> works even while you are.</p>
+        <div class="history-list">
+          ${rows.map(([k,d])=>`
+            <div class="history-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <span class="kbd-key" style="white-space:nowrap;">${escapeHtml(k)}</span>
+              <span style="font-size:12.5px;color:var(--text);text-align:right;">${escapeHtml(d)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary btn-block" id="scClose2">Got it</button>
+      </div>
+    </div>
+  `;
+  root.appendChild(wrap);
+  const close = () => wrap.remove();
+  document.getElementById('scClose').onclick = close;
+  document.getElementById('scClose2').onclick = close;
+  wrap.onclick = (e)=>{ if(e.target===wrap) close(); };
 }
 </script>
 </body>
